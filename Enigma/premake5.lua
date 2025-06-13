@@ -24,12 +24,14 @@ project "Enigma"
     includedirs {
         "Enigma",
         rootdir .. "Vendor/GLFW/GLFW/include",
+        rootdir .. "Vendor/GLAD/GLAD/include",
         rootdir .. "Vendor/GLM/GLM",
     }
 
 -- Link libraries ===================
 
     links {
+        "GLAD",
         "GLFW"
     }
 

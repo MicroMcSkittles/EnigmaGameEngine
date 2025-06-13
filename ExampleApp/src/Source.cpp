@@ -1,6 +1,7 @@
 #include <Enigma/Enigma.h>
 #include <Enigma/Core/Input.h>
 #include <Enigma/Core/EntryPoint.h>
+
 #include <glm/glm.hpp>
 #include <iostream>
 
@@ -20,22 +21,32 @@ public:
 		return false;
 	}
 	virtual void Update(float deltaTime) override {
-		glm::vec2 pos = Core::Input::GetMousePosition();
-		std::cout << pos.x << ", " << pos.y << std::endl;
+		
 	}
 };
 
 class App : public Core::Application {
 public:
-	App() : Application({
-		{ "Example Application", 800, 600, true, true },
-		{ Core::File | Core::Function | Core::Priority, 5 }
-	}) 
+	App(Core::ApplicationConfig config) : Application(config)
 	{
 		CreateSubProc<MainProc>();
 	}
 };
 
 Enigma::Core::Application* Enigma::Core::CreateApplication(int argc, char** argv) {
-	return new App();
+	Core::WindowConfig windowConfig;
+	windowConfig.title = "Example Application";
+	windowConfig.width = 800;
+	windowConfig.height = 600;
+	windowConfig.resizable = true;
+	windowConfig.vSync = true;
+
+	Core::LoggerConfig loggerConfig;
+	loggerConfig.flags = Core::File | Core::Function | Core::Priority;
+	loggerConfig.priorityLevel = 5;
+	
+	ApplicationConfig config;
+	config.windowConfig = windowConfig;
+	config.loggerConfig = loggerConfig;
+	return new App(config);
 }

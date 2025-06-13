@@ -3,6 +3,7 @@
 #include "Core/Event/InputEvent.h"
 #include "Core/Core.h"
 
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 namespace Enigma {
@@ -45,6 +46,12 @@ namespace Enigma {
 			}
 			glfwMakeContextCurrent(window);
 			m_Handle = (void*)window;
+
+			//TEMP delete later
+			if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+				LOG_ERROR("Failed to initialize GLAD");
+				return;
+			}
 
 			SetVSync(m_Config.vSync);
 

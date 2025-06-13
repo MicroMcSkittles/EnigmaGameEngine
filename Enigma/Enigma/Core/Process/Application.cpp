@@ -1,6 +1,10 @@
 #include "Core/Process/Application.h"
 #include "Core/Core.h"
 
+//TEMP delete later
+#include "Core/Input.h"
+#include <glad/glad.h>
+
 namespace Enigma {
 	namespace Core {
 		void Application::Initialize(const ApplicationConfig& config)
@@ -59,6 +63,13 @@ namespace Enigma {
 				m_SubProcStack.Render();
 
 				m_SubProcStack.ImGui();
+
+				//TEMP delete later
+				auto pos = Input::GetMousePosition();
+				pos.x /= (float)m_Window->GetWidth();
+				pos.y /= (float)m_Window->GetHeight();
+				glClearColor(pos.x, pos.y, 1, 1);
+				glClear(GL_COLOR_BUFFER_BIT);
 
 				m_Window->Update();
 			}
