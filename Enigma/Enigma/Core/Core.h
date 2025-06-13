@@ -3,7 +3,7 @@
 
 #pragma region utils
 
-#define BIT(x) x << 1
+#define BIT(x) 1 << x
 
 #pragma endregion
 
@@ -16,12 +16,16 @@
 
 #include "Core/Logger.h"
 
+#define INIT_LOGGER(config) Enigma::Core::Logger::Init(config)
+
 #define LOG_ERROR(msg) Enigma::Core::Logger::Log(msg, 0, Enigma::Core::LogType::Error, { __FILE__, __func__, __LINE__  })
 #define LOG_SOFT_ERROR(msg) Enigma::Core::Logger::Log(msg, 0, Enigma::Core::LogType::SoftError, { __FILE__, __func__, __LINE__  })
 #define LOG_WARNING(msg) Enigma::Core::Logger::Log(msg, 1, Enigma::Core::LogType::Warning, { __FILE__, __func__, __LINE__  })
 #define LOG_MESSAGE(msg, priority) Enigma::Core::Logger::Log(msg, priority, Enigma::Core::LogType::Message, { __FILE__, __func__, __LINE__  })
 
 #else
+
+#define INIT_LOGGER(config)
 
 #define LOG_ERROR(msg) exit(-1)
 #define LOG_SOFT_ERROR(msg)

@@ -1,15 +1,22 @@
 #pragma once
-#include "Core/SubProcess.h"
+#include "Core/Process/SubProcess.h"
+#include "Core/Window.h"
+#include "Core/Logger.h"
 #include <vector>
 #include <string>
 
 namespace Enigma {
 	namespace Core {
 
+		struct ApplicationConfig {
+			WindowConfig windowConfig;
+			LoggerConfig loggerConfig; // only applies if ENABLE_LOGGER is defined
+		};
+
 		class Application {
 		public:
-			Application();
-			Application(int argc, char** argv);
+			Application(const ApplicationConfig& config);
+			Application(const ApplicationConfig& config, int argc, char** argv);
 			~Application();
 
 			static Application* Get() { return s_Instance; }
@@ -29,7 +36,7 @@ namespace Enigma {
 			void run();
 
 		private:
-			void Initialize();
+			void Initialize(const ApplicationConfig& config);
 
 		private:
 			// All command line arguments the program received
@@ -37,6 +44,8 @@ namespace Enigma {
 			bool m_IsRunning;
 
 			SubProcStack m_SubProcStack;
+
+			Window* m_Window;
 
 		private:
 			inline static Application* s_Instance;

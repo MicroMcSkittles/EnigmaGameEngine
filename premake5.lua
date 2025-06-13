@@ -10,6 +10,7 @@ workspace "EnigmaGameEngine"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 -- Libraries
+include "Vendor/GLFW"
 include "Enigma"
 
 include "ExampleApp" -- Example project

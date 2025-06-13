@@ -1,9 +1,9 @@
-#include "Core/Application.h"
+#include "Core/Process/Application.h"
 #include "Core/Core.h"
 
 namespace Enigma {
 	namespace Core {
-		void Application::Initialize()
+		void Application::Initialize(const ApplicationConfig& config)
 		{
 			if (s_Instance) {
 				LOG_SOFT_ERROR("Application Instance already exists");
@@ -11,26 +11,22 @@ namespace Enigma {
 			}
 			s_Instance = this;
 
-			// Setup logger if its enabled
-#ifdef ENABLE_LOGGER
-			LoggerConfig loggerConfig;
-			loggerConfig.flags = File | Function | Priority;
-			loggerConfig.priorityLevel = 5;
-			Logger::Init(loggerConfig);
-#endif
+			INIT_LOGGER(config.loggerConfig);
+
+			m_Window = Window::Create(config.windowConfig);
 
 			// Set to false for testing reasons
-			m_IsRunning = false;
+			m_IsRunning = true;
 		}
 
-		Application::Application() {
-			Initialize();
+		Application::Application(const ApplicationConfig& config) {
+			Initialize(config);
 		}
-		Application::Application(int argc, char** argv)
+		Application::Application(const ApplicationConfig& config, int argc, char** argv)
 		{
 			m_Arguments = std::vector<std::string>(argv, argv + argc);
 
-			Initialize();
+			Initialize(config);
 		}
 		Application::~Application()
 		{
@@ -51,6 +47,9 @@ namespace Enigma {
 				m_SubProcStack.Render();
 
 				m_SubProcStack.ImGui();
+
+				if (m_Window->ShouldClose()) m_IsRunning = false;
+				m_Window->Update();
 			}
 		}
 	};

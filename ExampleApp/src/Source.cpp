@@ -18,7 +18,11 @@ public:
 
 class App : public Core::Application {
 public:
-	App(): Application() { 
+	App() : Application({
+		{ "Example Application", 800, 600, true, true },
+		{ Core::File | Core::Function | Core::Priority }
+	}) 
+	{
 		CreateSubProc<MainProc>();
 	}
 };

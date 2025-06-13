@@ -8,14 +8,14 @@ namespace Enigma {
 		enum LoggerFlag {
 			None = 0,
 			Time     = 1 << 1, // Not impl yet
-			Date     = 2 << 1, // Not impl yet
-			Priority = 3 << 1,
+			Date     = 1 << 2, // Not impl yet
+			Priority = 1 << 3,
 
 			// Implemented in Core.h
 
-			Function = 4 << 1, 
-			Line     = 5 << 1,
-			File     = 6 << 1,
+			Function = 1 << 4, 
+			Line     = 1 << 5,
+			File     = 1 << 6,
 		};
 		enum class LogType {
 			None = 0,
@@ -32,6 +32,11 @@ namespace Enigma {
 			// For when I add the ability to save logs to a file
 			bool saveToFile = false; // Tells the logger to save logs to a file.
 			std::string path = "";
+
+			LoggerConfig(uint32_t flags = File | Function | Priority,
+				uint32_t priorityLevel = 5, bool saveToFile = false, 
+				const std::string& path = "")
+				: flags(flags), priorityLevel(priorityLevel), saveToFile(saveToFile), path(path) { }
 		};
 
 		struct LogInfo {
