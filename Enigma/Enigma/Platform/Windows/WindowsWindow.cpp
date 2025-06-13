@@ -1,20 +1,30 @@
 #include "Platform/Windows/WindowsWindow.h"
+#include "Core/Event/WindowEvent.h"
+#include "Core/Event/InputEvent.h"
 #include "Core/Core.h"
 
 #include <GLFW/glfw3.h>
 
 namespace Enigma {
 
-	Core::Window* Core::Window::Create(const Core::WindowConfig& config) {
-		return new Platform::WindowsWindow(config);
+	Core::Window* Core::Window::Create(const Core::WindowConfig& config, std::function<void(Core::Event&)> eventCallback) {
+		return new Platform::WindowsWindow(config, eventCallback);
 	}
 
 	namespace Platform {
 
-		WindowsWindow::WindowsWindow(const Core::WindowConfig& config)
+		WindowsWindow::WindowsWindow(const Core::WindowConfig& config, std::function<void(Core::Event&)> eventCallback)
 		{
-			m_Data = config;
-			
+			if (s_Instance) {
+				LOG_ERROR("Window instance already exists");
+			}
+			s_Instance = this;
+
+			m_Config = config;
+			m_Data.width = m_Config.width;
+			m_Data.height = m_Config.height;
+			m_Data.callback = eventCallback;
+
 			if (!glfwInit()) {
 				LOG_ERROR("Failed to initialize GLFW");
 			}
@@ -25,21 +35,56 @@ namespace Enigma {
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 			// Configure window
-			glfwWindowHint(GLFW_RESIZABLE, m_Data.resizable);
+			glfwWindowHint(GLFW_RESIZABLE, m_Config.resizable);
 
 			// Create window handle
-			GLFWwindow* window = glfwCreateWindow(m_Data.width, m_Data.height, m_Data.title.c_str(), NULL, NULL);
+			GLFWwindow* window = glfwCreateWindow(m_Data.width, m_Data.height, m_Config.title.c_str(), NULL, NULL);
 			if (window == NULL) {
 				glfwTerminate();
-				LOG_ERROR("Failed to initalize window ( " + m_Data.title + " )");
+				LOG_ERROR("Failed to initalize window ( " + m_Config.title + " )");
 			}
 			glfwMakeContextCurrent(window);
 			m_Handle = (void*)window;
 
-			SetVSync(m_Data.vSync);
+			SetVSync(m_Config.vSync);
 
-			// TODO: Set callback functions
+			// Set callback functions
 			glfwSetWindowUserPointer(window, (void*)&m_Data);
+
+			glfwSetWindowCloseCallback(window, [](GLFWwindow* window) {
+				auto data = (WindowData*)glfwGetWindowUserPointer(window);
+				Core::WindowClose e;
+				data->callback(e);
+			});
+			glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+				auto data = (WindowData*)glfwGetWindowUserPointer(window);
+				data->width = width;
+				data->height = height;
+				Core::WindowResize e(width, height);
+				data->callback(e);
+			});
+
+			// Set input callback events
+			glfwSetCursorPosCallback(window, [](GLFWwindow* window, double x, double y) {
+				auto data = (WindowData*)glfwGetWindowUserPointer(window);
+				Core::MouseMoved e((float)x, (float)y);
+				data->callback(e);
+			});
+			glfwSetScrollCallback(window, [](GLFWwindow* window, double x, double y) {
+				auto data = (WindowData*)glfwGetWindowUserPointer(window);
+				Core::MouseScroll e((float)x, (float)y);
+				data->callback(e);
+			});
+			glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
+				auto data = (WindowData*)glfwGetWindowUserPointer(window);
+				Core::MouseButton e(button, action, mods);
+				data->callback(e);
+			});
+			glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+				auto data = (WindowData*)glfwGetWindowUserPointer(window);
+				Core::Keyboard e(key, scancode, action, mods);
+				data->callback(e);
+			});
 		}
 		WindowsWindow::~WindowsWindow()
 		{
@@ -71,7 +116,7 @@ namespace Enigma {
 		}
 		void WindowsWindow::SetVSync(bool vSync)
 		{
-			m_Data.vSync = vSync;
+			m_Config.vSync = vSync;
 			if (vSync) glfwSwapInterval(1);
 			else	   glfwSwapInterval(0);
 		}

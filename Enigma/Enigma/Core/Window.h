@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <functional>
+#include "Core/Event/Event.h"
 
 namespace Enigma {
 	namespace Core {
@@ -22,7 +24,8 @@ namespace Enigma {
 
 		class Window {
 		public:
-			static Window* Create(const WindowConfig& config);
+			static Window* Create(const WindowConfig& config, std::function<void(Event&)> eventCallback);
+			static Window* Get() { return s_Instance; }
 
 			virtual int GetWidth() = 0;
 			virtual int GetHeight() = 0;
@@ -33,6 +36,9 @@ namespace Enigma {
 			virtual void Update() = 0;
 
 			virtual void SetVSync(bool vSync) = 0;
+
+		protected:
+			inline static Window* s_Instance;
 		};
 
 	}

@@ -11,6 +11,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 -- Libraries
 include "Vendor/GLFW"
+include "Vendor/GLM"
 include "Enigma"
 
 include "ExampleApp" -- Example project

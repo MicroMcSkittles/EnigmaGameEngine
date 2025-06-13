@@ -13,9 +13,8 @@ namespace Enigma {
 
 			INIT_LOGGER(config.loggerConfig);
 
-			m_Window = Window::Create(config.windowConfig);
+			m_Window = Window::Create(config.windowConfig, CLASS_BIND_ARGS_1(Application::OnEvent));
 
-			// Set to false for testing reasons
 			m_IsRunning = true;
 		}
 
@@ -36,6 +35,19 @@ namespace Enigma {
 			}
 		}
 
+		void Application::OnEvent(Event& e)
+		{
+			EventHandler handler(e);
+			handler.Dispatch<WindowClose>(CLASS_BIND_ARGS_1(Application::OnWindowClose));
+
+			m_SubProcStack.OnEvent(e);
+		}
+		bool Application::OnWindowClose(WindowClose& e)
+		{
+			m_IsRunning = false;
+			return false;
+		}
+
 		void Application::run()
 		{
 			while (m_IsRunning) {
@@ -48,7 +60,6 @@ namespace Enigma {
 
 				m_SubProcStack.ImGui();
 
-				if (m_Window->ShouldClose()) m_IsRunning = false;
 				m_Window->Update();
 			}
 		}

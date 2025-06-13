@@ -33,6 +33,17 @@ namespace Enigma {
 			return m_SubProcesses;
 		}
 
+		void SubProcStack::OnEvent(Event& e)
+		{
+			if (e.Handled()) return;
+			// Loop through each sub process from front to back and
+			for (int i = m_SubProcesses.size() - 1; i >= 0; i--) {
+				auto proc = m_SubProcesses[i];
+				e.Handled(proc->OnEvent(e));
+				if (e.Handled()) break;
+			}
+		}
+
 		void SubProcStack::Update(float deltaTime)
 		{
 			for (auto& proc : m_SubProcesses) {

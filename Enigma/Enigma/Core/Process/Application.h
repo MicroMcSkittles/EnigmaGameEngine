@@ -1,6 +1,8 @@
 #pragma once
 #include "Core/Process/SubProcess.h"
 #include "Core/Window.h"
+#include "Core/Event/Event.h"
+#include "Core/Event/WindowEvent.h"
 #include "Core/Logger.h"
 #include <vector>
 #include <string>
@@ -21,6 +23,10 @@ namespace Enigma {
 
 			static Application* Get() { return s_Instance; }
 			std::vector<std::string>& GetArguments() { return m_Arguments; }
+
+			// Events trical down to sub processes from front to back
+			void OnEvent(Event& e);
+			bool OnWindowClose(WindowClose& e);
 
 			// Creates a sub process and stores it to the sub process stack
 			// Returns a pointer to the process

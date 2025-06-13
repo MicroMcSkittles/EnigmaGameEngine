@@ -18,6 +18,7 @@ project "ExampleApp"
     includedirs {
         "src",
         rootdir .. "Enigma",
+        rootdir .. "Vendor/GLM/GLM",
     }
 
 -- Link libraries ===================

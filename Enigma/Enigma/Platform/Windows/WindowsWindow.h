@@ -6,7 +6,7 @@ namespace Enigma {
 
 		class WindowsWindow : public Core::Window {
 		public:
-			WindowsWindow(const Core::WindowConfig& config);
+			WindowsWindow(const Core::WindowConfig& config, std::function<void(Core::Event&)> eventCallback);
 			~WindowsWindow();
 
 			virtual int GetWidth() override;
@@ -19,8 +19,17 @@ namespace Enigma {
 
 			virtual void SetVSync(bool vSync) override;
 
+			void* GetHandle() { return m_Handle; }
+
 		private:
-			Core::WindowConfig m_Data;
+			struct WindowData {
+				int width;
+				int height;
+
+				std::function<void(Core::Event&)> callback;
+			};
+			WindowData m_Data;
+			Core::WindowConfig m_Config;
 			void* m_Handle;
 		};
 

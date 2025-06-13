@@ -5,6 +5,14 @@
 
 #define BIT(x) 1 << x
 
+#define BIND_ARGS_1(func) std::bind(func, std::placeholders::_1)
+#define BIND_ARGS_2(func) std::bind(func, std::placeholders::_1, std::placeholders::_2)
+#define BIND_ARGS_3(func) std::bind(func, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+
+#define CLASS_BIND_ARGS_1(func) std::bind(&func, this, std::placeholders::_1)
+#define CLASS_BIND_ARGS_2(func) std::bind(&func, this, std::placeholders::_1, std::placeholders::_2)
+#define CLASS_BIND_ARGS_3(func) std::bind(&func, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+
 #pragma endregion
 
 #pragma region Logger Impl

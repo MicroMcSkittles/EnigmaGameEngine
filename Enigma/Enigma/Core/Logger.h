@@ -27,7 +27,7 @@ namespace Enigma {
 
 		struct LoggerConfig {
 			uint32_t flags;
-			uint32_t priorityLevel = 5; // Tells the logger what to keep and ignore
+			uint32_t priorityLevel = 5; // Tells the logger what to keep and ignore, the higher the number the lower the priority
 
 			// For when I add the ability to save logs to a file
 			bool saveToFile = false; // Tells the logger to save logs to a file.
