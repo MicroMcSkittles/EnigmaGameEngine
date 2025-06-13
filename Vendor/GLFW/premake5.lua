@@ -4,8 +4,8 @@ project "GLFW"
 
 -- Output Directories ===============
     rootdir = "../../"
-    targetdir (rootdir .. "bin/" .. outputdir .. "/%{prj.name}")
     objdir (rootdir .. "bin-int/" .. outputdir .. "/%{prj.name}")
+    targetdir (rootdir .. "bin/" .. outputdir .. "/%{prj.name}")
 
 -- Include all c/c++ files in project
     files
@@ -22,10 +22,16 @@ project "GLFW"
 		"GLFW/src/null_joystick.c",
 		"GLFW/src/null_monitor.c",
 		"GLFW/src/null_window.c",
+		"GLFW/src/null_platform.h",
+		"GLFW/src/null_joystick.h",
 
 		"GLFW/src/platform.c",
 		"GLFW/src/vulkan.c",
 		"GLFW/src/window.c",
+
+		"GLFW/src/internal.h",
+		"GLFW/src/platform.h",
+		"GLFW/src/mappings.h",
 	}
 
 -- Windows ==========================
@@ -54,6 +60,42 @@ project "GLFW"
 			"_GLFW_WIN32",
 			"_CRT_SECURE_NO_WARNINGS"
 		}
+
+-- Linux ============================
+	filter "system:linux"
+		pic "On"
+
+		systemversion "latest"
+		staticruntime "On"
+
+		files {
+			"GLFW/src/x11_init.c",
+			"GLFW/src/x11_monitor.c",
+			"GLFW/src/x11_window.c",
+			"GLFW/src/x11_platform.h",
+			"GLFW/src/xkb_unicode.c",
+			"GLFW/src/posix_time.h",
+			"GLFW/src/posix_time.c",
+			"GLFW/src/posix_thread.h",
+			"GLFW/src/posix_thread.c",
+			"GLFW/src/posix_module.c",
+			"GLFW/src/posix_poll.c",
+			"GLFW/src/posix_poll.h",
+			"GLFW/src/glx_context.c",
+			"GLFW/src/egl_context.c",
+			"GLFW/src/osmesa_context.c",
+			"GLFW/src/linux_joystick.c",
+		}
+
+		includedirs {
+			"GLFW/src"
+		}
+
+		defines {
+			"_GLFW_X11",
+			"_CRT_SECURE_NO_WARNINGS"
+		}
+
 
 -- Configurations ===================
     filter "configurations:Debug"

@@ -1,6 +1,7 @@
 project "ExampleApp"
     kind "ConsoleApp"
     language "C++"
+    cppdialect "C++17"
 
 -- Output Directories ===============
     rootdir = "../"
@@ -18,6 +19,7 @@ project "ExampleApp"
     includedirs {
         "src",
         rootdir .. "Enigma",
+        rootdir .. "Enigma/Enigma",
         rootdir .. "Vendor/GLM/GLM",
     }
 
@@ -28,12 +30,23 @@ project "ExampleApp"
 
 -- Windows ==========================
     filter "system:windows"
-        cppdialect "C++17"
         staticruntime "On"
         systemversion "latest"
 
         defines {
             "PLATFORM_WINDOWS"
+        }
+
+-- Linux ==========================
+    filter "system:linux"
+
+        links {
+            "GLAD",
+            "GLFW"
+        }
+
+        defines {
+            "PLATFORM_LINUX"
         }
 
 -- Configuations ====================

@@ -12,5 +12,5 @@ if [[ "$1" == "" ]] ; then
     echo ""
 
 else
-    vendor/premake/Linux/premake5 $1
+    Vendor/premake/Linux/premake5 $1
 fi

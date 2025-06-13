@@ -1,6 +1,7 @@
 project "Enigma"
     kind "StaticLib"
     language "C++"
+    cppdialect "C++17"
 
 -- Output Directories ===============
     rootdir = "../"
@@ -37,7 +38,6 @@ project "Enigma"
 
 -- Windows ==========================
     filter "system:windows"
-        cppdialect "C++17"
 		systemversion "latest"
 		staticruntime "On"
 
@@ -51,6 +51,21 @@ project "Enigma"
 
         defines {
             "PLATFORM_WINDOWS"
+        }
+
+-- Linux ============================
+    filter "system:linux"
+
+        files
+        {
+            "Enigma/Platform/Linux/**.c",
+            "Enigma/Platform/Linux/**.h",
+            "Enigma/Platform/Linux/**.cpp",
+            "Enigma/Platform/Linux/**.hpp"
+        }
+
+        defines {
+            "PLATFORM_LINUX"
         }
 
 -- Configurations ===================
