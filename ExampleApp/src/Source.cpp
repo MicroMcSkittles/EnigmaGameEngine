@@ -1,7 +1,7 @@
-#include <Enigma.h>
-#include <Core/EntryPoint.h>
+#include <Enigma/Enigma.h>
+#include <Enigma/Core/EntryPoint.h>
 
-Enigma::Application* Enigma::CreateApplication(int argc, char** argv) {
+Enigma::Core::Application* Enigma::Core::CreateApplication(int argc, char** argv) {
 	Application* app = new Application();
 	return app;
 }

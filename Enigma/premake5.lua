@@ -10,13 +10,13 @@ project "Enigma"
 -- Include all c/c++ files in project
     files
 	{
-        "src/**.c",
-        "src/**.h",
-        "src/**.cpp",
-        "src/**.hpp"
+        "Enigma/**.c",
+        "Enigma/**.h",
+        "Enigma/**.cpp",
+        "Enigma/**.hpp"
     }
     includedirs {
-        "src"
+        "Enigma"
     }
 
 
@@ -32,15 +32,11 @@ project "Enigma"
 
 -- Configurations ===================
     filter "configurations:Debug"
+        defines "DEBUG"
 		runtime "Debug"
 		symbols "on"
-
-	filter { "system:windows", "configurations:Debug-AS" }	
-		runtime "Debug"
-		symbols "on"
-		sanitize { "Address" }
-		flags { "NoRuntimeChecks", "NoIncrementalLink" }
 
 	filter "configurations:Release"
+        defines "RELEASE"
 		runtime "Release"
 		optimize "speed"
