@@ -1,4 +1,7 @@
 #pragma once
+#include "Core/SubProcess.h"
+#include <vector>
+#include <string>
 
 namespace Enigma {
 	namespace Core {
@@ -6,9 +9,34 @@ namespace Enigma {
 		class Application {
 		public:
 			Application();
+			Application(int argc, char** argv);
 			~Application();
 
+			static Application* Get() { return s_Instance; }
+			std::vector<std::string>& GetArguments() { return m_Arguments; }
+
+			// Creates a sub process and stores it to the sub process stack
+			// Returns a pointer to the process
+			// T must be a inherited class of the SubProcess class
+			template<typename T>
+			T* CreateSubProc() {
+				T* proc = new T;
+				proc->StartUp();
+				m_SubProcStack.PushProcBack(proc);
+				return proc;
+			}
+
 			void run();
+
+		private:
+			void Initialize();
+
+		private:
+			// All command line arguments the program received
+			std::vector<std::string> m_Arguments;
+			bool m_IsRunning;
+
+			SubProcStack m_SubProcStack;
 
 		private:
 			inline static Application* s_Instance;

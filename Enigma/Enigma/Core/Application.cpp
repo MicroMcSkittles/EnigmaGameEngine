@@ -3,7 +3,7 @@
 
 namespace Enigma {
 	namespace Core {
-		Application::Application()
+		void Application::Initialize()
 		{
 			if (s_Instance) {
 				LOG_SOFT_ERROR("Application Instance already exists");
@@ -19,16 +19,39 @@ namespace Enigma {
 			Logger::Init(loggerConfig);
 #endif
 
-			LOG_MESSAGE("Application created successfully", 2);
+			// Set to false for testing reasons
+			m_IsRunning = false;
+		}
+
+		Application::Application() {
+			Initialize();
+		}
+		Application::Application(int argc, char** argv)
+		{
+			m_Arguments = std::vector<std::string>(argv, argv + argc);
+
+			Initialize();
 		}
 		Application::~Application()
 		{
-			LOG_MESSAGE("Application closed successfully", 2);
+			// Destroy all processes
+			for (auto& proc : m_SubProcStack.GetData()) {
+				proc->ShutDown();
+			}
 		}
 
 		void Application::run()
 		{
-			LOG_MESSAGE("Running application", 2);
+			while (m_IsRunning) {
+
+				float deltaTime = 0;
+
+				m_SubProcStack.Update(deltaTime);
+
+				m_SubProcStack.Render();
+
+				m_SubProcStack.ImGui();
+			}
 		}
 	};
 };
