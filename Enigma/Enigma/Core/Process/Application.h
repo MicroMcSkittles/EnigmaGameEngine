@@ -4,6 +4,7 @@
 #include "Core/Event/Event.h"
 #include "Core/Event/WindowEvent.h"
 #include "Core/Logger.h"
+#include "Renderer/RenderEnum.h"
 #include <vector>
 #include <string>
 
@@ -11,6 +12,7 @@ namespace Enigma {
 	namespace Core {
 
 		struct ApplicationConfig {
+			Renderer::API rendererAPI;
 			WindowConfig windowConfig;
 			LoggerConfig loggerConfig; // only applies if ENABLE_LOGGER is defined
 		};

@@ -40,7 +40,9 @@ namespace Enigma {
 
 		std::string LinuxInput::GetKeyNameImpl(int key)
 		{
-			std::string name = glfwGetKeyName(key, glfwGetKeyScancode(key));
+			const char* temp = glfwGetKeyName(key, glfwGetKeyScancode(key));
+			if(temp == nullptr) return std::to_string(key);
+			std::string name = temp;
 			return name;
 		}
 		std::string LinuxInput::GetButtonNameImpl(int button)
@@ -61,7 +63,7 @@ namespace Enigma {
 		}
 		std::string LinuxInput::GetModsNameImpl(int action)
 		{
-			return std::string();
+			return " ";
 		}
 	}
 }

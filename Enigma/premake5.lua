@@ -20,7 +20,12 @@ project "Enigma"
         "Enigma/Renderer/**.c",
         "Enigma/Renderer/**.h",
         "Enigma/Renderer/**.cpp",
-        "Enigma/Renderer/**.hpp"
+        "Enigma/Renderer/**.hpp",
+        
+        "Enigma/Platform/OpenGL/**.c",
+        "Enigma/Platform/OpenGL/**.h",
+        "Enigma/Platform/OpenGL/**.cpp",
+        "Enigma/Platform/OpenGL/**.hpp"
     }
     includedirs {
         "Enigma",

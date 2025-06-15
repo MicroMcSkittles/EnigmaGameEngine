@@ -10,7 +10,7 @@ using namespace Enigma;
 class MainProc : public Core::SubProcess {
 public:
 	virtual void StartUp()override {
-		LOG_MESSAGE("Main process!!", 2);
+		LOG_MESSAGE("Using " + Core::System::GetOSName(), 2);
 	}
 	virtual void ShutDown() {
 		LOG_MESSAGE("Main process shutting down :(", 2);
@@ -42,10 +42,11 @@ Enigma::Core::Application* Enigma::Core::CreateApplication(int argc, char** argv
 	windowConfig.vSync = true;
 
 	Core::LoggerConfig loggerConfig;
-	loggerConfig.flags = Core::File | Core::Function | Core::Priority;
+	loggerConfig.flags = Core::LoggerFile | Core::LoggerFunction | Core::LoggerPriority | Core::LoggerTime;
 	loggerConfig.priorityLevel = 5;
 	
 	ApplicationConfig config;
+	config.rendererAPI = Renderer::API::OpenGL;
 	config.windowConfig = windowConfig;
 	config.loggerConfig = loggerConfig;
 	return new App(config);

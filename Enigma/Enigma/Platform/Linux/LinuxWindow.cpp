@@ -83,11 +83,13 @@ namespace Enigma {
 				data->callback(e);
 			});
 			glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
+				if(button < 0) return;
 				auto data = (WindowData*)glfwGetWindowUserPointer(window);
 				Core::MouseButton e(button, action, mods);
 				data->callback(e);
 			});
 			glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+				if(key < 0) return;
 				auto data = (WindowData*)glfwGetWindowUserPointer(window);
 				Core::Keyboard e(key, scancode, action, mods);
 				data->callback(e);

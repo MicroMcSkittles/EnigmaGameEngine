@@ -1,6 +1,9 @@
 #include "Core/Logger.h"
+#include "Core/System.h"
 #include <iostream>
 #include <sstream>
+#include <math.h>
+#include <iomanip>
 
 namespace Enigma {
 	namespace Core {
@@ -28,18 +31,33 @@ namespace Enigma {
 
 			std::string filename = std::string(info.file.begin() + info.file.find_last_of("\\") + 1, info.file.end());
 
-			if((s_Config->flags & LoggerFlag::File) && (s_Config->flags & LoggerFlag::Line))
+			if((s_Config->flags & LoggerFile) && (s_Config->flags & LoggerLine))
 				ss << "from file ( " << filename << " ) at line ( " << info.line << " ) ";
-			else if (s_Config->flags & LoggerFlag::File)
+			else if (s_Config->flags & LoggerFile)
 				ss << "from file ( " << filename << " ) ";
-			else if (s_Config->flags & LoggerFlag::Line)
+			else if (s_Config->flags & LoggerLine)
 				ss << "from line ( " << info.line << " ) ";
-			if (s_Config->flags & LoggerFlag::Function)
-				ss << "in function ( " << info.function << " )";
+			if (s_Config->flags & LoggerFunction)
+				ss << "in function ( " << info.function << " ) ";
 
+			if (s_Config->flags & LoggerPriority)
+				ss << "with priority level " << priority;
 			ss << std::endl;
-			if (s_Config->flags & LoggerFlag::Priority)
-				ss << "Priority " << priority << std::endl;
+
+			if(s_Config->flags & LoggerDate) {
+				Time t = System::GetTime();
+				int year = 1900 + t.year;
+				ss << t.dayName << " ( " << t.month << " / " << t.day << " / " << year << " )" << std::endl;
+			}
+			if(s_Config->flags & LoggerTime) {
+				Time t = System::GetTime();
+				bool PM = t.hours > 12;
+				int hours = t.hours - (PM? 12 : 0);
+
+				ss << hours << " : ";
+				ss << std::right << std::setw(2) << std::setfill('0') << t.minutes;
+				ss << " " << ((PM)? "PM" : "AM") << std::endl;
+			}
 
 			ss << "\"" << std::endl;
 			ss << message << std::endl;

@@ -60,8 +60,8 @@ namespace Enigma {
 
 			virtual std::string ToString() override {
 				std::stringstream ss;
-				ss << "Mouse Button ( " << Input::GetButtonName(m_Button);
-				ss << " ), Action ( " << Input::GetActionName(m_Action);
+				ss << "Mouse Button ( " << m_Button;
+				ss << " ), Action ( " << m_Action;
 				ss << " ), Mods ( " << m_Mods << " )";
 				return ss.str();
 			}
