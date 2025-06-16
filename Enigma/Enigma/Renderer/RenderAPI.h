@@ -9,19 +9,22 @@ namespace Enigma {
         class RenderAPI {
         public:
             static void Init(API api);
+            static API GetAPI() { return s_Instance->GetAPImpl(); }
 
-            static void SetClearColor(const glm::vec4& color);
+            static void SetClearColor(const glm::vec4& color) { s_Instance->SetClearColorImpl(color); }
 
-            static void SetClearMask(uint32_t mask);
-            static void Clear();
+            static void SetClearMask(uint32_t mask) { s_Instance->SetClearMaskImpl(mask); }
+            static void Clear() { s_Instance->ClearImpl(); }
 
-            static void SetViewport(int width, int height);
+            static void SetViewport(int width, int height) { s_Instance->SetViewportImpl(width, height); }
 
-            static void SetDrawMode(DrawMode mode);
-            static void DrawIndexed(int count, DataType type, void* data);
-            static void DrawArrays(int first, int count);
+            static void SetDrawMode(DrawMode mode) { s_Instance->SetDrawModeImpl(mode); }
+            static void DrawIndexed(int count, DataType type, void* data) { s_Instance->DrawIndexedImpl(count, type, data); }
+            static void DrawArrays(int first, int count) { s_Instance->DrawArraysImpl(first, count); }
 
         protected:
+            virtual API GetAPImpl() = 0;
+
             virtual void SetClearColorImpl(const glm::vec4& color) = 0;
 
             virtual void SetClearMaskImpl(uint32_t mask) = 0;

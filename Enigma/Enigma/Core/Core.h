@@ -1,6 +1,10 @@
 #pragma once
 #include <cstdlib>
 
+// Disable the "Enum type is unscoped" warning
+// It's kinda annoying
+#pragma warning(disable : 26812)
+
 #pragma region utils
 
 #define BIT(x) 1 << x

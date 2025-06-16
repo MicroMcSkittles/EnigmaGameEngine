@@ -23,6 +23,11 @@ project "ExampleApp"
         rootdir .. "Vendor/GLM/GLM",
     }
 
+    defines {
+        "STB_IMAGE_IMPLEMENTATION",
+        "GLM_ENABLE_EXPERIMENTAL"
+    }
+
 -- Link libraries ===================
     links {
         "Enigma"

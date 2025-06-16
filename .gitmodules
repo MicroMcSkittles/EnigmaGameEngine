@@ -4,3 +4,6 @@
 [submodule "Vendor/GLM/GLM"]
 	path = Vendor/GLM/GLM
 	url = https://github.com/icaven/glm.git
+[submodule "Vendor/stb/stb"]
+	path = Vendor/stb/stb
+	url = https://github.com/nothings/stb.git

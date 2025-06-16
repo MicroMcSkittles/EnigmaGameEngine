@@ -6,6 +6,8 @@ workspace "EnigmaGameEngine"
         "Release"
     }
 
+    startproject "ExampleApp"
+
 -- Directory final files will be placed into
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
@@ -13,6 +15,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 include "Vendor/GLAD"
 include "Vendor/GLFW"
 include "Vendor/GLM"
+include "Vendor/stb"
 include "Enigma"
 
 include "ExampleApp" -- Example project

@@ -47,12 +47,6 @@ namespace Enigma {
 			glfwMakeContextCurrent(window);
 			m_Handle = (void*)window;
 
-			//TEMP delete later
-			if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-				LOG_ERROR("Failed to initialize GLAD");
-				return;
-			}
-
 			SetVSync(m_Config.vSync);
 
 			// Set callback functions

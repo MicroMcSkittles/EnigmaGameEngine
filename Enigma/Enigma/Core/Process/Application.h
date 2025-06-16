@@ -24,7 +24,10 @@ namespace Enigma {
 			~Application();
 
 			static Application* Get() { return s_Instance; }
+			// Argument 0 should always be a path to the exe file
 			std::vector<std::string>& GetArguments() { return m_Arguments; }
+			// Argument 0 should always be a path to the exe file
+			const std::string& GetArgument(int id) const;
 
 			// Events trical down to sub processes from front to back
 			void OnEvent(Event& e);
@@ -50,6 +53,9 @@ namespace Enigma {
 			// All command line arguments the program received
 			std::vector<std::string> m_Arguments;
 			bool m_IsRunning;
+
+			// Used to find delta time
+			float m_LastMS;
 
 			SubProcStack m_SubProcStack;
 

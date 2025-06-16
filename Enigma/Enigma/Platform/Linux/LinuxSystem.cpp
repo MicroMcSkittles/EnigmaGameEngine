@@ -2,7 +2,6 @@
 
 #include <GLFW/glfw3.h>
 #include <ctime>
-#include <iostream>
 
 namespace Enigma {
 
@@ -17,14 +16,14 @@ namespace Enigma {
             timestruct = *localtime(&timestamp);
 
             Core::Time rslt;
-            rslt.miliseconds = glfwGetTime();
+            rslt.miliseconds = GetTimeMSImpl();
             rslt.seconds = timestruct.tm_sec;
             rslt.minutes = timestruct.tm_min;
             rslt.hours = timestruct.tm_hour;
 
             rslt.day = timestruct.tm_mday + 1;
             
-            if(timestruct.tm_wday == 0) rslt.dayName = "Sunday";
+            if(timestruct.tm_wday == 0)      rslt.dayName = "Sunday";
             else if(timestruct.tm_wday == 1) rslt.dayName = "Monday";
             else if(timestruct.tm_wday == 2) rslt.dayName = "Tuesday";
             else if(timestruct.tm_wday == 3) rslt.dayName = "Wednesday";
@@ -38,6 +37,8 @@ namespace Enigma {
             return rslt;
         }
         float LinuxSystem::GetTimeMSImpl() {
+            float ms = glfwGetTime();
+            if (ms == 0) LOG_ERROR("GLFW failed to get the time from start of application");
             return glfwGetTime();
         }
 
