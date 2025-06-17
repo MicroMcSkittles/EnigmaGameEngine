@@ -2,11 +2,7 @@
 #include <Enigma/Core/Input.h>
 #include <Enigma/Core/EntryPoint.h>
 
-#include <Enigma/Renderer/RenderAPI.h>
-#include <Enigma/Renderer/VertexArray.h>
-#include <Enigma/Renderer/Shader.h>
-#include <Enigma/Renderer/Texture.h>
-#include <Enigma/Renderer/Camera.h>
+#include <Enigma/Renderer/Renderer2D.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,61 +12,26 @@ using namespace Enigma;
 class MainProc : public Core::SubProcess {
 public:
 	virtual void StartUp()override {
-		Renderer::ShaderConfig config;
-		config.vertexPath = "assets/shader.vert";
-		config.pixelPath = "assets/shader.frag";
-		m_Shader = Renderer::Shader::Create(config);
+		Renderer::ViewBox viewBox;
+		viewBox = Renderer::ViewBox::ScreenViewBox();
+		m_Camera = new Renderer::OrthographicCamera(viewBox);
 
-		float vertex_data[] = {
-			 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
-			 0.5f, -0.5f, 0.0f,	1.0f, 0.0f,
-			-0.5f, -0.5f, 0.0f,	0.0f, 0.0f,
-			-0.5f,  0.5f, 0.0f,	0.0f, 1.0f
-		};
-		unsigned int index_data[] = {
-			0,1,3,
-			1,2,3
-		};
+		Renderer::TextureConfig textureConfig;
+		m_Texture = Renderer::Texture::Create("assets/test.jpg", textureConfig);
 
-		m_Quad = Renderer::VertexArray::Create();
-		m_Quad->Bind();
-
-		Renderer::VertexBuffer* vbo = Renderer::VertexBuffer::Create(
-			{ Renderer::DataType::Float3, Renderer::DataType::Float2 }, 
-			Renderer::Usage::StaticDraw
-		);
-		vbo->SetData((void*)vertex_data, sizeof(vertex_data));
-		vbo->Initialize();
-		m_Quad->AttachBuffer(vbo);
-
-		Renderer::IndexBuffer* ebo = Renderer::IndexBuffer::Create(Renderer::DataType::UnsignedInt, Renderer::Usage::StaticDraw);
-		ebo->SetData(index_data, sizeof(index_data));
-		ebo->Initialize();
-		m_Quad->AttachBuffer(ebo);
-
-		m_Quad->Unbind();
-
-		m_Texture = Renderer::Texture::Create("assets/test.jpg");
-
-		Renderer::Frustum frustum;
-		frustum = Renderer::Frustum::ScreenFrustum();
-		m_Camera = new Renderer::PerspectiveCamera(frustum, { 0,0,3 }, {0,0,-1});
+		Renderer::Render2D::Init({});
 
 		m_Rotation = 0;
-
-		Renderer::RenderAPI::SetDrawMode(Renderer::DrawMode::Triangles);
-		Renderer::RenderAPI::SetClearMask(Renderer::ColorBufferBit);
-		Renderer::RenderAPI::SetClearColor({ 0,0,0,1 });
 
 		LOG_MESSAGE("Using " + Core::System::GetOSName(), 2);
 	}
 	virtual void ShutDown() {
+		delete m_Camera;
 		LOG_MESSAGE("Main process shutting down :(", 2);
 	}
 
 	bool OnResize(Core::WindowResize& e) {
-		Renderer::RenderAPI::SetViewport(e.GetWidth(), e.GetHeight());
-		m_Camera->Resize(e.GetWidth(), e.GetHeight());
+		Renderer::Render2D::Resize(e.GetWidth(), e.GetHeight());
 		return false;
 	}
 	virtual bool OnEvent(Core::Event& e) {
@@ -83,29 +44,16 @@ public:
 		m_Rotation += deltaTime * 50;
 	}
 	virtual void Render() override {
-		Renderer::RenderAPI::Clear();
+		Renderer::Render2D::StartFrame(m_Camera);
 
-		m_Texture->Bind();
+		Renderer::Render2D::DrawQuad({ 0,0 }, { 0.5,0.5 }, glm::radians(m_Rotation), m_Texture);
 
-		glm::mat4 rot = glm::rotate(glm::mat4(1), glm::radians(m_Rotation), { 0,0,1 });
-
-		m_Shader->SetUniform("tex", (void*)m_Texture);
-		m_Shader->SetUniform("ViewProjection", (void*)&m_Camera->GetViewProjection());
-		m_Shader->SetUniform("Model", (void*)&rot);
-
-		m_Shader->Bind();
-		m_Quad->Bind();
-		Renderer::RenderAPI::DrawIndexed(m_Quad->GetIndexBuffer()->GetIndexCount(), m_Quad->GetIndexBuffer()->GetIndexType(), NULL);
-		m_Quad->Unbind();
-		m_Shader->Unbind();
-		m_Texture->Unbind();
+		Renderer::Render2D::EndFrame();
 	}
 
 private:
-	Renderer::Shader* m_Shader;
-	Renderer::VertexArray* m_Quad;
-	Renderer::Texture* m_Texture;
 	Renderer::Camera* m_Camera;
+	Renderer::Texture* m_Texture;
 
 	float m_Rotation;
 };

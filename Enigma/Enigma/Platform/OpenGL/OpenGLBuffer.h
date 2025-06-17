@@ -10,16 +10,16 @@ namespace Enigma {
 				OpenGLVertexBuffer(const std::vector<Renderer::DataType>& layout, Renderer::Usage usage);
 				~OpenGLVertexBuffer();
 
+				virtual void InitAttribs() override;
+
 				virtual void SetData(void* vertices, int size) override;
-				virtual void Initialize() override;
+				virtual void SetSubData(void* vertices, int size, int offset) override;
 
 				virtual void Bind() override;
 				virtual void Unbind() override;
 
 			private:
 				uint32_t m_Handle;
-				void* m_Vertices;
-				int m_VerticesSize;
 				int m_Usage;
 				std::vector<Renderer::DataType> m_Layout;
 			};
@@ -32,8 +32,8 @@ namespace Enigma {
 				virtual int GetIndexCount() override;
 				virtual Renderer::DataType GetIndexType() override;
 
-				virtual void SetData(unsigned int* indices, int size) override;
-				virtual void Initialize() override;
+				virtual void SetData(void* indices, int size) override;
+				virtual void SetSubData(void* indices, int size, int offset) override;
 
 				virtual void Bind() override;
 				virtual void Unbind() override;
@@ -41,8 +41,7 @@ namespace Enigma {
 			private:
 				uint32_t m_Handle;
 				Renderer::DataType m_Type;
-				void* m_Indices;
-				int m_IndicesSize;
+				int m_IndicesCount;
 				int m_Usage;
 			};
 

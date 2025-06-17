@@ -1,5 +1,6 @@
 #pragma once
 #include "Renderer/RenderEnum.h"
+#include "Core/IdHandler.h"
 
 #include <glm/glm.hpp>
 
@@ -36,6 +37,16 @@ namespace Enigma {
 
 			virtual int GetWidth() = 0;
 			virtual int GetHeight() = 0;
+
+		public:
+			Core::ID GetID() { return m_ID; }
+			~Texture() { s_IdHandler.Delete(m_ID); }
+
+		private:
+			Core::ID m_ID;
+
+		private:
+			inline static Core::IDHandler<Texture*> s_IdHandler;
 		};
 	}
 }

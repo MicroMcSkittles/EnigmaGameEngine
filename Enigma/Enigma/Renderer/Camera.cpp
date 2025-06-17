@@ -35,6 +35,7 @@ namespace Enigma {
 		PerspectiveCamera::PerspectiveCamera(const Frustum& frustum, const glm::vec3& position, const glm::vec3& direction)
 			: Camera(position, direction), m_Frustum(frustum)
 		{
+			m_ID = s_IDHandler.Create(this);
 			m_Projection = glm::perspective(m_Frustum.fov, m_Frustum.aspectRatio, m_Frustum.near, m_Frustum.far);
 			CalculateView();
 		}
@@ -88,6 +89,8 @@ namespace Enigma {
 		OrthographicCamera::OrthographicCamera(const ViewBox& viewBox, float zoom, const glm::vec3& position, const glm::vec3& direction)
 			:Camera(position, direction)
 		{
+			m_ID = s_IDHandler.Create(this);
+
 			m_Zoom = zoom;
 			m_ViewBox = viewBox;
 			m_ZoomViewBox = viewBox.Zoom(m_Zoom);
