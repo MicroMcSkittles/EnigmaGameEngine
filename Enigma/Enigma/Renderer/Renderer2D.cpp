@@ -40,7 +40,7 @@ namespace Enigma {
 			s_Quad->Unbind();
 
 			RenderAPI::SetClearColor({0,0,0,1});
-			RenderAPI::SetClearMask(ColorBufferBit);
+			RenderAPI::SetClearMask(ColorBufferBit | DepthBufferBit);
 			RenderAPI::SetDrawMode(DrawMode::Triangles);
 		}
 
@@ -86,19 +86,19 @@ namespace Enigma {
 			s_Data->mainShader->Unbind();
 		}
 
-		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, const glm::vec3& tint)
+		void Render2D::DrawQuad(const glm::vec2& position, float depth, const glm::vec2& scale, float rotation, const glm::vec3& tint)
 		{
 			glm::mat4 transform = glm::mat4(1.0f);
-			transform = glm::translate(transform, { position, -1.0f });
+			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
 			transform = glm::scale(transform, { scale, 1.0f });
 			
 			SubmitDrawCall({ s_Data->currentCamera, s_Data->emptyTexture, transform, tint });
 		}
-		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, Texture* texture, const glm::vec3& tint)
+		void Render2D::DrawQuad(const glm::vec2& position, float depth, const glm::vec2& scale, float rotation, Texture* texture, const glm::vec3& tint)
 		{
 			glm::mat4 transform = glm::mat4(1.0f);
-			transform = glm::translate(transform, { position, -1.0f });
+			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
 			transform = glm::scale(transform, { scale, 1.0f });
 

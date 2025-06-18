@@ -25,13 +25,13 @@ namespace Enigma {
 			static void StartFrame(Camera* camera);
 			static void EndFrame();
 
-			static void DrawQuad(const glm::vec2& position, const glm::vec3& tint = { 1.0f, 1.0f, 1.0f }) { DrawQuad(position, { 1,1 }, 0.0f, tint); }
-			static void DrawQuad(const glm::vec2& position, const glm::vec2& scale, const glm::vec3& tint = { 1.0f, 1.0f, 1.0f }) { DrawQuad(position, scale, 0.0f, tint); }
-			static void DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, const glm::vec3& tint = { 1.0f, 1.0f, 1.0f });
+			static void DrawQuad(const glm::vec2& position, float depth, const glm::vec3& tint = { 1.0f, 1.0f, 1.0f }) { DrawQuad(position, depth, { 1,1 }, 0.0f, tint); }
+			static void DrawQuad(const glm::vec2& position, float depth, const glm::vec2& scale, const glm::vec3& tint = { 1.0f, 1.0f, 1.0f }) { DrawQuad(position, depth, scale, 0.0f, tint); }
+			static void DrawQuad(const glm::vec2& position, float depth, const glm::vec2& scale, float rotation, const glm::vec3& tint = { 1.0f, 1.0f, 1.0f });
 
-			static void DrawQuad(const glm::vec2& position, Texture* texture, const glm::vec3& tint = { 1.0f, 1.0f, 1.0f }) { DrawQuad(position, { 1,1 }, 0.0f, texture, tint); }
-			static void DrawQuad(const glm::vec2& position, const glm::vec2& scale, Texture* texture, const glm::vec3& tint = { 1.0f, 1.0f, 1.0f }) { DrawQuad(position, scale, 0.0f, texture, tint); }
-			static void DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, Texture* texture, const glm::vec3& tint = { 1.0f, 1.0f, 1.0f });
+			static void DrawQuad(const glm::vec2& position, float depth, Texture* texture, const glm::vec3& tint = { 1.0f, 1.0f, 1.0f }) { DrawQuad(position, depth, { 1,1 }, 0.0f, texture, tint); }
+			static void DrawQuad(const glm::vec2& position, float depth, const glm::vec2& scale, Texture* texture, const glm::vec3& tint = { 1.0f, 1.0f, 1.0f }) { DrawQuad(position, depth, scale, 0.0f, texture, tint); }
+			static void DrawQuad(const glm::vec2& position, float depth, const glm::vec2& scale, float rotation, Texture* texture, const glm::vec3& tint = { 1.0f, 1.0f, 1.0f });
 
 		private:
 			

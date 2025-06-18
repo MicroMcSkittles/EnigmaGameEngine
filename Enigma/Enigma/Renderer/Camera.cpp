@@ -119,5 +119,17 @@ namespace Enigma {
 			m_Projection = glm::ortho(m_ZoomViewBox.left, m_ZoomViewBox.right, m_ZoomViewBox.bottom, m_ZoomViewBox.top, m_ZoomViewBox.near, m_ZoomViewBox.far);
 			m_ViewProjection = m_Projection * m_View;
 		}
+		void OrthographicCamera::SetViewBox(const ViewBox& view)
+		{
+			m_ViewBox = view;
+			m_ZoomViewBox = m_ViewBox.Zoom(m_Zoom);
+			CalculateProjection();
+		}
+		void OrthographicCamera::SetZoom(float zoom)
+		{
+			m_Zoom = zoom;
+			m_ZoomViewBox = m_ViewBox.Zoom(m_Zoom);
+			CalculateProjection();
+		}
 	}
 }

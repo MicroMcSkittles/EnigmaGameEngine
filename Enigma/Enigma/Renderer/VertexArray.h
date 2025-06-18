@@ -23,7 +23,7 @@ namespace Enigma {
 			Core::ID m_ID;
 
 		private:
-			inline static Core::IDHandler<VertexArray*> s_IDHandle;
+			inline static Core::IDHandler<VertexArray> s_IDHandle;
 		};
 
 	}

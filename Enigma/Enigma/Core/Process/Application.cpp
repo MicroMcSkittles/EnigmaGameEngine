@@ -22,6 +22,8 @@ namespace Enigma {
 			if (config.useRenderProc) m_RenderProc = CreateSubProc<RenderProc>();
 			else m_RenderProc = nullptr;
 
+			m_ScriptProc = CreateSubProc<ScriptProc>();
+
 			m_IsRunning = true;
 		}
 

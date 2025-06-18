@@ -1,8 +1,10 @@
 #include "Core/Process/RenderProc.h"
+#include "Core/Window.h"
 
 #include "Renderer/Renderer2D.h"
-#include "ECS/RenderComponment.h"
+#include "ECS/RenderComponent.h"
 #include "ECS/Entity.h"
+
 
 namespace Enigma {
 	namespace Core {
@@ -11,14 +13,22 @@ namespace Enigma {
 		{
 			m_ActiveCamera = nullptr;
 			m_SearchCounter = 5;
+
+			Renderer::Render2D::Init({});
 		}
 		void RenderProc::ShutDown()
 		{
 		}
 
+		bool RenderProc::OnResize(Core::WindowResize& e) {
+			Renderer::Render2D::Resize(e.GetWidth(), e.GetHeight());
+			return false;
+		}
 		bool RenderProc::OnEvent(Event& e)
 		{
-			return false;
+			Core::EventHandler handler(e);
+			handler.Dispatch<Core::WindowResize>(CLASS_BIND_ARGS_1(RenderProc::OnResize));
+			return e.Handled();
 		}
 
 		void RenderProc::Update(float deltaTime)
@@ -39,25 +49,38 @@ namespace Enigma {
 				}
 
 				auto transform = ECS::Entity::Get(camera->GetParentID())->GetComponent<ECS::Transform>();
+				auto ortho = (ECS::OrthographicCamera*)camera;
 
-				if (m_ActiveCamera == nullptr) {
-					m_ActiveCamera = new Renderer::OrthographicCamera(Renderer::ViewBox::ScreenViewBox());
-				}
+				if (m_ActiveCamera == nullptr)
+					m_ActiveCamera = new Renderer::OrthographicCamera(ortho->GetViewBox());
+				else ((Renderer::OrthographicCamera*)m_ActiveCamera)->SetViewBox(ortho->GetViewBox());
 
+				((Renderer::OrthographicCamera*)m_ActiveCamera)->SetZoom(ortho->GetZoom());
 				m_ActiveCamera->SetPosition(transform->GetPosition());
 
+				auto window = Window::Get();
+				m_ActiveCamera->Resize(window->GetWidth(), window->GetHeight());
+
+				m_ActiveCameraEntity = ECS::Entity::Get(camera->GetParentID());
 				found = true;
 				break;
 			}
 			if (!found) {
 				delete m_ActiveCamera;
 				m_ActiveCamera = nullptr;
+				m_ActiveCameraEntity = nullptr;
 			}
 		}
 
 		void RenderProc::Render()
 		{
 			if (m_ActiveCamera == nullptr) return;
+
+			auto transform = m_ActiveCameraEntity->GetComponent<ECS::Transform>();
+			auto ortho = (ECS::OrthographicCamera*)m_ActiveCameraEntity->GetComponent<ECS::Camera>();
+
+			((Renderer::OrthographicCamera*)m_ActiveCamera)->SetZoom(ortho->GetZoom());
+			m_ActiveCamera->SetPosition(transform->GetPosition());
 
 			Renderer::Render2D::StartFrame(m_ActiveCamera);
 
@@ -66,8 +89,9 @@ namespace Enigma {
 				if (comp->GetTexture() != nullptr) {
 					Renderer::Render2D::DrawQuad(
 						transform->GetPosition(),
+						comp->GetDepth(),
 						transform->GetScale(),
-						glm::radians(transform->GetRotation().z),
+						transform->GetRotation().z,
 						comp->GetTexture(),
 						comp->GetTint()
 					);
@@ -75,8 +99,9 @@ namespace Enigma {
 				}
 				Renderer::Render2D::DrawQuad(
 					transform->GetPosition(),
+					comp->GetDepth(),
 					transform->GetScale(),
-					glm::radians(transform->GetRotation().z),
+					transform->GetRotation().z,
 					comp->GetTint()
 				);
 			}

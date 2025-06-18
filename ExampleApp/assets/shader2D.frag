@@ -7,5 +7,7 @@ uniform sampler2D TextureMap;
 uniform vec3 Tint;
 
 void main() {
-    FragColor = texture(TextureMap, TexCoord) * vec4(Tint, 1.0);
+    vec4 textureColor = texture(TextureMap, TexCoord);
+    if (textureColor.a < 0.5) discard;
+    FragColor = textureColor * vec4(Tint, 1.0);
 }

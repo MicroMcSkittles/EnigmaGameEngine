@@ -1,6 +1,7 @@
 #pragma once
 #include "Core/Process/SubProcess.h"
 #include "Core/Process/RenderProc.h"
+#include "Core/Process/ScriptProc.h"
 #include "Core/Window.h"
 #include "Core/Event/Event.h"
 #include "Core/Event/WindowEvent.h"
@@ -62,6 +63,7 @@ namespace Enigma {
 			SubProcStack m_SubProcStack;
 
 			RenderProc* m_RenderProc;
+			ScriptProc* m_ScriptProc;
 
 			Window* m_Window;
 

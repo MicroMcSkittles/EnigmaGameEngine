@@ -183,6 +183,8 @@ namespace Enigma {
                 auto window = Core::Window::Get();
                 glViewport(0, 0, window->GetWidth(), window->GetHeight());
 
+				glEnable(GL_DEPTH_TEST);
+
                 LOG_MESSAGE("Initialized OpenGL!!", 2);
             }
 

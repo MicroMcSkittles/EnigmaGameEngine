@@ -35,14 +35,14 @@ namespace Enigma {
 		public:
 			IDHandler() = default;
 
-			std::vector<T>& GetData() { return m_Data; }
+			std::vector<T*>& GetData() { return m_Data; }
 
 			bool IsValid(ID id) {
 				if (!m_IDs.count(id)) return false;
 				if (m_IDs[id].second != id.generation) return false;
 				return (m_IDs[id].first != -1);
 			}
-			ID Create(T value) {
+			ID Create(T* value) {
 				if (!m_Slots.empty()) {
 					ID slot = m_Slots[0];
 					m_Slots.erase(m_Slots.begin());
@@ -63,18 +63,33 @@ namespace Enigma {
 				if (!IsValid(id)) return;
 				m_Data.erase(m_Data.begin() + m_IDs[id].first);
 				m_IDs[id].first = -1;
+				auto it = m_IDs.lower_bound(id);
+				it++;
+				for (; it != m_IDs.end(); ++it) {
+					it->second.first -= 1;
+				}
 				m_Slots.push_back(id);
 			}
 
-			T Get(ID id) {
+			T* Get(ID id) {
 				if (!IsValid(id)) {
 					LOG_ERROR("Invalid ID ( " + std::to_string(id.index) + ", " + std::to_string(id.generation) + " )");
 				}
 				return m_Data[m_IDs[id].first];
 			}
 
+			void Clear() {
+				for (auto d : m_Data) {
+					delete d;
+				}
+					
+				m_Data.clear();
+				m_IDs.clear();
+				m_Slots.clear();
+			}
+
 		private:
-			std::vector<T> m_Data;
+			std::vector<T*> m_Data;
 			std::map<ID, std::pair<int, uint32_t>> m_IDs;
 			std::vector<ID> m_Slots;
 		};

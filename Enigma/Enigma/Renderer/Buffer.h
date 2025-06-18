@@ -24,7 +24,7 @@ namespace Enigma {
 			Core::ID m_ID;
 
 		private:
-			inline static Core::IDHandler<VertexBuffer*> s_IDHandler;
+			inline static Core::IDHandler<VertexBuffer> s_IDHandler;
 		};
 
 		class IndexBuffer {
@@ -45,7 +45,7 @@ namespace Enigma {
 			Core::ID m_ID;
 
 		private:
-			inline static Core::IDHandler<IndexBuffer*> s_IDHandler;
+			inline static Core::IDHandler<IndexBuffer> s_IDHandler;
 		};
 	}
 }

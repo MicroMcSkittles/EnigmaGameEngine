@@ -46,7 +46,7 @@ namespace Enigma {
 			Core::ID m_ID;
 
 		private:
-			inline static Core::IDHandler<Texture*> s_IdHandler;
+			inline static Core::IDHandler<Texture> s_IdHandler;
 		};
 	}
 }

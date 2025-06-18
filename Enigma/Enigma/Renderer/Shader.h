@@ -47,7 +47,7 @@ namespace Enigma {
 			Core::ID m_ID;
 
 		private:
-			inline static Core::IDHandler<Shader*> s_IDHandler;
+			inline static Core::IDHandler<Shader> s_IDHandler;
 		};
 
 	}

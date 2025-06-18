@@ -42,7 +42,7 @@ namespace Enigma {
 			Core::ID m_ID;
 
 		protected:
-			inline static Core::IDHandler<Camera*> s_IDHandler;
+			inline static Core::IDHandler<Camera> s_IDHandler;
 		};
 
 		struct Frustum {
@@ -92,6 +92,9 @@ namespace Enigma {
 			virtual void CalculateProjection() override;
 
 			const ViewBox& GetViewBox() { return m_ViewBox; }
+			void SetViewBox(const ViewBox& view);
+
+			void SetZoom(float zoom);
 
 		private:
 			ViewBox m_ViewBox;

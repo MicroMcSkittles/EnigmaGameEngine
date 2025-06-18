@@ -39,7 +39,7 @@ namespace Enigma {
 			std::map<ComponentType, Core::ID> m_Components;
 
 		private:
-			inline static Core::IDHandler<Entity*> s_Entities;
+			inline static Core::IDHandler<Entity> s_Entities;
 		};
 
 	}

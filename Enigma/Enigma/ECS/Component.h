@@ -9,7 +9,8 @@ namespace Enigma {
 			None = 0,
 			Transform,
 			Render2D,
-			Camera
+			Camera,
+			Script
 		};
 
 // Used to make creating new components easier
@@ -18,8 +19,9 @@ namespace Enigma {
 		static Core::ID CreateID(type* value) { return s_IDHandler.Create(value); }\
 		static std::vector<type*>& GetList() { return s_IDHandler.GetData(); }\
 		static type* Get(Core::ID& id) { return s_IDHandler.Get(id); }\
+		static Core::IDHandler<type>& GetHandler() { return s_IDHandler; } \
 private:\
-		inline static Core::IDHandler<type*> s_IDHandler;\
+		inline static Core::IDHandler<type> s_IDHandler;\
 public:
 
 		class Component {
@@ -70,6 +72,24 @@ public:
 			glm::vec3 m_Position;
 			glm::vec3 m_Rotation;
 			glm::vec3 m_Scale;
+		};
+
+		class Script : public Component {
+		public:
+			COMP_DEF(Script);
+			Script() {
+				m_ID = CreateID(this);
+				m_Started = false;
+			}
+
+			virtual void Start() = 0;
+			virtual void Update(float deltaTime) = 0;
+			virtual void Shutdown() = 0;
+
+			bool& Started() { return m_Started; }
+
+		private:
+			bool m_Started;
 		};
 	}
 }
