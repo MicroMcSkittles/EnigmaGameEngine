@@ -11,11 +11,22 @@ namespace Enigma {
 			uint32_t index;
 			uint32_t generation;
 
+			// Creates an invalid id
+			static ID InvalidID() {
+				return {
+					(uint32_t)-1,
+					(uint32_t)-1
+				};
+			}
+
 			bool operator < (const ID& other) {
 				return index < other.index;
 			}
 			bool operator < (const ID other) const {
 				return index < other.index;
+			}
+			operator std::string() const {
+				return "( " + std::to_string(index) + ", " + std::to_string(generation) + " )";
 			}
 		};
 		

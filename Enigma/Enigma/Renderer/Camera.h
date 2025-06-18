@@ -84,7 +84,7 @@ namespace Enigma {
 
 		class OrthographicCamera : public Camera {
 		public:
-			OrthographicCamera(const ViewBox& viewBox, float zoom = 1.0f, const glm::vec3& position = { 0,0,0 }, const glm::vec3& direction = { 0,0,1 });
+			OrthographicCamera(const ViewBox& viewBox, float zoom = 1.0f, const glm::vec3& position = { 0,0,0 }, const glm::vec3& direction = { 0,0,-1 });
 
 			virtual void Resize(uint32_t width, uint32_t height) override;
 

@@ -110,7 +110,7 @@ namespace Enigma {
 
 		void OrthographicCamera::CalculateView()
 		{
-			m_View = glm::mat4(1); //glm::lookAt(m_Position, m_Position + m_Direction, glm::vec3(0.0f, 1.0f, 0.0f));
+			m_View = glm::lookAt(m_Position, m_Position + m_Direction, glm::vec3(0.0f, 1.0f, 0.0f));
 			m_ViewProjection = m_Projection * m_View;
 		}
 

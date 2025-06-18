@@ -4,6 +4,9 @@
 
 #include <Enigma/Renderer/Renderer2D.h>
 
+#include <Enigma/ECS/Entity.h>
+#include <Enigma/ECS/RenderComponment.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <filesystem>
@@ -13,21 +16,35 @@ using namespace Enigma;
 class MainProc : public Core::SubProcess {
 public:
 	virtual void StartUp()override {
-		Renderer::ViewBox viewBox;
-		viewBox = Renderer::ViewBox::ScreenViewBox();
-		m_Camera = new Renderer::OrthographicCamera(viewBox);
-
 		Renderer::TextureConfig textureConfig;
 		m_Texture = Renderer::Texture::Create("ExampleApp/assets/test.jpg", textureConfig);
 
 		Renderer::Render2D::Init({});
 
-		m_Rotation = 0;
+		// Init entity 1
+		{
+			m_Entity1 = ECS::Entity::Create();
+			ECS::Transform* transform = m_Entity1->GetComponent<ECS::Transform>();
+			transform->GetScale() = { 0.5,0.5,0.5 };
+			transform->GetPosition() = { 0.5,0,0 };
+			m_Entity1->AddComponent<ECS::Render2D>(new ECS::Render2D({ 1,1,1 }, m_Texture));
+		}
+
+		// Init entity 2
+		{
+			m_Entity2 = ECS::Entity::Create();
+			ECS::Transform* transform = m_Entity2->GetComponent<ECS::Transform>();
+			transform->GetScale() = { 0.15, 0.75, 1 };
+			transform->GetPosition() = { -1,0,0 };
+			m_Entity2->AddComponent<ECS::Render2D>(new ECS::Render2D({ 1,0,0 }));
+		}
+
+		m_Camera = ECS::Entity::Create();
+		m_Camera->AddComponent<ECS::Camera>(new ECS::Camera(true));
 
 		LOG_MESSAGE("Using " + Core::System::GetOSName(), 2);
 	}
 	virtual void ShutDown() {
-		delete m_Camera;
 		LOG_MESSAGE("Main process shutting down :(", 2);
 	}
 
@@ -42,21 +59,16 @@ public:
 	}
 
 	virtual void Update(float deltaTime) override {
-		m_Rotation += deltaTime * 50;
-	}
-	virtual void Render() override {
-		Renderer::Render2D::StartFrame(m_Camera);
-
-		Renderer::Render2D::DrawQuad({ 0,0 }, { 0.5,0.5 }, glm::radians(m_Rotation), m_Texture);
-
-		Renderer::Render2D::EndFrame();
+		auto transform = m_Entity1->GetComponent<ECS::Transform>();
+		transform->GetRotation().z += deltaTime * 50;
 	}
 
 private:
-	Renderer::Camera* m_Camera;
 	Renderer::Texture* m_Texture;
 
-	float m_Rotation;
+	ECS::Entity* m_Entity1;
+	ECS::Entity* m_Entity2;
+	ECS::Entity* m_Camera;
 };
 
 class App : public Core::Application {
@@ -83,5 +95,8 @@ Enigma::Core::Application* Enigma::Core::CreateApplication(int argc, char** argv
 	config.rendererAPI = Renderer::API::OpenGL;
 	config.windowConfig = windowConfig;
 	config.loggerConfig = loggerConfig;
+
+	config.useRenderProc = true;
+
 	return new App(config, argc, argv);
 }

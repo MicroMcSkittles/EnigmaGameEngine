@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Process/SubProcess.h"
+#include "Core/Process/RenderProc.h"
 #include "Core/Window.h"
 #include "Core/Event/Event.h"
 #include "Core/Event/WindowEvent.h"
@@ -15,6 +16,7 @@ namespace Enigma {
 			Renderer::API rendererAPI;
 			WindowConfig windowConfig;
 			LoggerConfig loggerConfig; // only applies if ENABLE_LOGGER is defined
+			bool useRenderProc;
 		};
 
 		class Application {
@@ -58,6 +60,8 @@ namespace Enigma {
 			float m_LastMS;
 
 			SubProcStack m_SubProcStack;
+
+			RenderProc* m_RenderProc;
 
 			Window* m_Window;
 

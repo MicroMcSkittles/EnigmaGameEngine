@@ -19,6 +19,9 @@ namespace Enigma {
 
 			Renderer::RenderAPI::Init(config.rendererAPI);
 
+			if (config.useRenderProc) m_RenderProc = CreateSubProc<RenderProc>();
+			else m_RenderProc = nullptr;
+
 			m_IsRunning = true;
 		}
 
