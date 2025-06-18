@@ -21,6 +21,11 @@ project "Enigma"
         "Enigma/Renderer/**.h",
         "Enigma/Renderer/**.cpp",
         "Enigma/Renderer/**.hpp",
+
+        "Enigma/ECS/**.c",
+        "Enigma/ECS/**.h",
+        "Enigma/ECS/**.cpp",
+        "Enigma/ECS/**.hpp",
         
         "Enigma/Platform/OpenGL/**.c",
         "Enigma/Platform/OpenGL/**.h",
