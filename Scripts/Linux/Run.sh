@@ -1,5 +1,5 @@
 #!/bin/bash
-./build.sh gmake2
+./Generate.sh gmake2
 cd ../../
 
 if [[ "$1" == "release" ]] ; then
