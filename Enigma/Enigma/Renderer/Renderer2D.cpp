@@ -2,6 +2,7 @@
 #include "Renderer/RenderAPI.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <cstring>
 
 namespace Enigma {
 	namespace Renderer {

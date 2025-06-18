@@ -6,6 +6,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <filesystem>
 
 using namespace Enigma;
 
@@ -17,7 +18,7 @@ public:
 		m_Camera = new Renderer::OrthographicCamera(viewBox);
 
 		Renderer::TextureConfig textureConfig;
-		m_Texture = Renderer::Texture::Create("assets/test.jpg", textureConfig);
+		m_Texture = Renderer::Texture::Create("ExampleApp/assets/test.jpg", textureConfig);
 
 		Renderer::Render2D::Init({});
 

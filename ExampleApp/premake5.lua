@@ -35,6 +35,7 @@ project "ExampleApp"
 
 -- Windows ==========================
     filter "system:windows"
+        location "../"
         staticruntime "On"
         systemversion "latest"
 

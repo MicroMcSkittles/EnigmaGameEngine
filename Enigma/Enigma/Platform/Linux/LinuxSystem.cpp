@@ -1,4 +1,5 @@
 #include "Platform/Linux/LinuxSystem.h"
+#include "Core/Core.h"
 
 #include <GLFW/glfw3.h>
 #include <ctime>

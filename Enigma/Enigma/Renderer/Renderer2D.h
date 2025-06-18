@@ -11,11 +11,7 @@ namespace Enigma {
 	namespace Renderer {
 
 		struct Render2DConfig {
-#ifdef PLATFORM_WINDOWS
-			std::string mainShaderPath = "../ExampleApp/assets/shader2D";
-#elif PLATFORM_LINUX
 			std::string mainShaderPath = "ExampleApp/assets/shader2D";
-#endif
 
 			bool batch = false; // Tells the renderer if it should batch quads together
 		};

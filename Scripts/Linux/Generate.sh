@@ -3,7 +3,7 @@ cd ../../
 
 if [[ "$1" == "" ]] ; then
     echo ""
-    echo "Enter 'build.sh action' where action is one of the following:"
+    echo "Enter 'Generate.sh action' where action is one of the following:"
     echo ""
     echo "   clean           Remove all binaries and intermediate binaries."
     echo "   clean_make      Remove all binaries and intermediate binaries, and make files."

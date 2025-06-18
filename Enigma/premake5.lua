@@ -51,6 +51,7 @@ project "Enigma"
 
 -- Windows ==========================
     filter "system:windows"
+        location "../"
 		systemversion "latest"
 		staticruntime "On"
 
