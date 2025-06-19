@@ -44,7 +44,36 @@ namespace Enigma {
 				int m_IndicesCount;
 				int m_Usage;
 			};
+			
+			class OpenGLFrameBuffer : public Renderer::FrameBuffer {
+			public:
+				OpenGLFrameBuffer(const Renderer::FrameBufferConfig& config);
+				~OpenGLFrameBuffer();
 
+				virtual void Resize(int width, int height) override;
+
+				virtual void Bind() override;
+				virtual void Unbind() override;
+
+				virtual std::vector<Renderer::Texture*> GetAttachments() override { return m_Attachments; }
+				virtual Renderer::Texture* GetColorAttachment(int index) override;
+				virtual Renderer::Texture* SeverColorAttachment(int index) override;
+				virtual Renderer::Texture* GetDepthAttachment() override;
+
+			private:
+				Renderer::FrameBufferConfig m_Config;
+
+				uint32_t m_Handle;
+				uint32_t m_RBO;
+
+				uint32_t m_Width;
+				uint32_t m_Height;
+
+				uint32_t m_ColorAttachmentCount;
+				uint32_t m_DepthAttachmentID;
+				uint32_t* m_Buffers;
+				std::vector<Renderer::Texture*> m_Attachments;
+			};
 		}
 	}
 }

@@ -182,6 +182,8 @@ namespace Enigma {
 
                 auto window = Core::Window::Get();
                 glViewport(0, 0, window->GetWidth(), window->GetHeight());
+				m_Data.viewportWidth = window->GetWidth();
+				m_Data.viewportHeight = window->GetHeight();
 
 				glEnable(GL_DEPTH_TEST);
 
@@ -203,6 +205,8 @@ namespace Enigma {
 
             void OpenGLRenderAPI::SetViewportImpl(int width, int height) {
                 glViewport(0, 0, width, height);
+				m_Data.viewportWidth = width;
+				m_Data.viewportHeight = height;
                 LOG_MESSAGE("OpenGL viewport set to ( " + std::to_string(width) + ", " + std::to_string(height) + " )", 6);
             }
 

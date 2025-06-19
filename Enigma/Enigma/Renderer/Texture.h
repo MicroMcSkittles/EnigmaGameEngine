@@ -1,5 +1,6 @@
 #pragma once
 #include "Renderer/RenderEnum.h"
+#include "Renderer/Shader.h"
 #include "Core/IdHandler.h"
 
 #include <glm/glm.hpp>
@@ -23,12 +24,18 @@ namespace Enigma {
 			void* data = nullptr;
 			uint32_t width = 0;
 			uint32_t height = 0;
+
+			// Used for atlases
+			Shader* preProcShader = nullptr; // Applied to a texture when its loaded
 		};
 
 		class Texture {
 		public:
 			static Texture* Create(const std::string& path, const TextureConfig& config = {});
 			static Texture* Create(const TextureConfig& config = {});
+			static Texture* Get(Core::ID id) { return s_IdHandler.Get(id); }
+			static void Delete(Core::ID id) { s_IdHandler.Delete(id); }
+			static void Delete(Texture* texture) { s_IdHandler.Delete(texture->m_ID); }
 
 			virtual void Resize(int width, int height, void* data = (void*)NULL) = 0;
 
@@ -40,13 +47,53 @@ namespace Enigma {
 
 		public:
 			Core::ID GetID() { return m_ID; }
-			~Texture() { s_IdHandler.Delete(m_ID); }
 
 		private:
 			Core::ID m_ID;
 
 		private:
 			inline static Core::IDHandler<Texture> s_IdHandler;
+		};
+
+		// TODO: make this better, it sucks rn
+		class TextureAtlas {
+		public:
+			TextureAtlas(const std::string& path, const glm::vec2& size, const TextureConfig& config);
+			~TextureAtlas();
+
+			Texture* GetTexture(const glm::vec2& id);
+
+			std::vector<Core::ID>& GetTextures() { return m_Textures; }
+
+		private:
+			Core::ID m_ID;
+			TextureConfig m_Config;
+			glm::vec2 m_Size;
+
+			std::vector<Core::ID> m_Textures;
+
+		private:
+			struct Vertex {
+				glm::vec3 position;
+				glm::vec2 textureCoord;
+			};
+			inline static std::vector<DataType> s_VertexLayout = {
+				DataType::Float3,
+				DataType::Float2
+			};
+			inline static std::vector<Vertex> s_QuadVertices = {
+				{ {  1.0f,  1.0f, 0.0f }, { 1.0f, 1.0f } },
+				{ {  1.0f, -1.0f, 0.0f }, { 1.0f, 0.0f } },
+				{ { -1.0f, -1.0f, 0.0f }, { 0.0f, 0.0f } },
+				{ { -1.0f,  1.0f, 0.0f }, { 0.0f, 1.0f } }
+			};
+			inline static std::vector<unsigned int> s_QuadIndices = {
+				0,1,3,
+				1,2,3
+			};
+
+		private:
+			inline static Core::IDHandler<TextureAtlas> s_IdHandler;
 		};
 	}
 }

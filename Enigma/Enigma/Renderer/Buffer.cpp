@@ -25,10 +25,22 @@ namespace Enigma {
 			{
 			case API::OpenGL: indexBuffer = new Platform::OpenGL::OpenGLIndexBuffer(type, usage); break;
 			default:
-				LOG_ERROR("Can't create vertex buffer, API not supported");
+				LOG_ERROR("Can't create index buffer, API not supported");
 				return nullptr;
 			}
 			return indexBuffer;
+		}
+		FrameBuffer* FrameBuffer::Create(const FrameBufferConfig& config)
+		{
+			FrameBuffer* frameBuffer;
+			switch (RenderAPI::GetAPI())
+			{
+			case API::OpenGL: frameBuffer = new Platform::OpenGL::OpenGLFrameBuffer(config); break;
+			default:
+				LOG_ERROR("Can't create frame buffer, API not supported");
+				return nullptr;
+			}
+			return frameBuffer;
 		}
 	}
 }

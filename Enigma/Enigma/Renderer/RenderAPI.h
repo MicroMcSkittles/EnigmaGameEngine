@@ -16,6 +16,7 @@ namespace Enigma {
             static void SetClearMask(uint32_t mask) { s_Instance->SetClearMaskImpl(mask); }
             static void Clear() { s_Instance->ClearImpl(); }
 
+            static glm::vec2 GetViewportSize() { return s_Instance->GetViewportSizeImpl(); }
             static void SetViewport(int width, int height) { s_Instance->SetViewportImpl(width, height); }
 
             static void SetDrawMode(DrawMode mode) { s_Instance->SetDrawModeImpl(mode); }
@@ -30,6 +31,7 @@ namespace Enigma {
             virtual void SetClearMaskImpl(uint32_t mask) = 0;
             virtual void ClearImpl() = 0;
 
+            virtual glm::vec2 GetViewportSizeImpl() = 0;
             virtual void SetViewportImpl(int width, int height) = 0;
 
             virtual void SetDrawModeImpl(DrawMode mode) = 0;

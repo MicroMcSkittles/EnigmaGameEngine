@@ -3,6 +3,7 @@
 #include "Renderer/Texture.h"
 #include "Renderer/Shader.h"
 #include "Renderer/VertexArray.h"
+#include "Renderer/Buffer.h"
 
 #include <map>
 #include <glm/glm.hpp>
@@ -12,6 +13,7 @@ namespace Enigma {
 
 		struct Render2DConfig {
 			std::string mainShaderPath = "ExampleApp/assets/shader2D";
+			std::string postProcShaderPath = "ExampleApp/assets/postProc";
 
 			bool batch = false; // Tells the renderer if it should batch quads together
 		};
@@ -62,8 +64,11 @@ namespace Enigma {
 			struct Data {
 				Render2DConfig config;
 
+				FrameBuffer* frameBuffer;
+
 				Camera* currentCamera;
 				Shader* mainShader;
+				Shader* postProcShader;
 				
 				Texture* emptyTexture; // used for anything with no texture.
 

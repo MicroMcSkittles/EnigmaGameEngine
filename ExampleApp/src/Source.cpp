@@ -67,7 +67,7 @@ public:
 		for (int i = 0; i < m_Tiles.size(); ++i) {
 			ECS::Entity::Delete(m_Tiles[i]);
 		}
-		delete m_Texture;
+		Renderer::Texture::Delete(m_Texture);
 	}
 
 private:
@@ -128,10 +128,18 @@ public:
 		m_Transform = ECS::Entity::Get(GetParentID())->GetComponent<ECS::Transform>();
 		m_Transform->GetScale() = { 0.25,0.25,1 };
 
+		Renderer::ShaderConfig shaderConfig;
+		shaderConfig.vertexPath = "ExampleApp/assets/postProc.vert";
+		shaderConfig.pixelPath = "ExampleApp/assets/postProc.frag";
+		m_PreProc = Renderer::Shader::Create(shaderConfig);
+
 		auto render2DComp = ECS::Entity::Get(GetParentID())->GetComponent<ECS::Render2D>();
-		Renderer::TextureConfig config;
-		m_Texture = Renderer::Texture::Create("ExampleApp/assets/test.jpg", config);
-		render2DComp->SetTexture(m_Texture);
+		Renderer::TextureConfig textureConfig;
+		textureConfig.minFilter = Renderer::TexFilterMode::Nearest;
+		textureConfig.magFilter = Renderer::TexFilterMode::Nearest;
+		textureConfig.preProcShader = m_PreProc;
+		m_TextureAtlas = new Renderer::TextureAtlas("ExampleApp/assets/textures/spaceships.png", { 5,2 }, textureConfig);
+		render2DComp->SetTexture(m_TextureAtlas->GetTexture({ 1,1 }));
 	}
 	virtual void Update(float deltaTime) override {
 
@@ -171,17 +179,18 @@ public:
 		if (glm::length(mouseDir) == 0) mouseDir = { 1, 0 };
 		else mouseDir = glm::normalize(mouseDir);
 		m_Direction = mouseDir;
-		m_Transform->GetRotation().z = atan2(-mouseDir.x, -mouseDir.y);
+		m_Transform->GetRotation().z = atan2(mouseDir.x, mouseDir.y);
 	}
 	virtual void Shutdown() override {
-		delete m_Texture;
+		delete m_TextureAtlas;
 	}
 
 private:
 	ECS::Transform* m_Transform;
 	ECS::Entity* m_Camera;
 
-	Renderer::Texture* m_Texture;
+	Renderer::Shader* m_PreProc;
+	Renderer::TextureAtlas* m_TextureAtlas;
 
 	glm::vec2 m_Direction;
 

@@ -89,6 +89,7 @@ namespace Enigma {
 			}
 			OpenGLTexture::~OpenGLTexture()
 			{
+				glDeleteTextures(1, &m_Handle);
 			}
 
 			void OpenGLTexture::Resize(int width, int height, void* data)

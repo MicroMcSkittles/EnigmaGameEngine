@@ -1,5 +1,8 @@
 #include "Platform/OpenGL/OpenGLBuffer.h"
 #include "Platform/OpenGL/OpenGLRenderAPI.h"
+#include "Platform/OpenGL/OpenGLTexture.h"
+
+#include "Renderer/RenderAPI.h"
 
 #include <glad/glad.h>
 
@@ -93,6 +96,150 @@ namespace Enigma {
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 			}
 
+
+			OpenGLFrameBuffer::OpenGLFrameBuffer(const Renderer::FrameBufferConfig& config)
+			{
+				m_Config = config;
+				m_Width = m_Config.width;
+				m_Height = m_Config.height;
+
+				m_ColorAttachmentCount = 0;
+				m_DepthAttachmentID = 0;
+
+				// used to make see if we need to make a RBO
+				bool depthFlag = false;
+
+				glGenFramebuffers(1, &m_Handle);
+				glBindFramebuffer(GL_FRAMEBUFFER, m_Handle);
+
+				for (int i = 0; i < m_Config.attachments.size(); ++i) {
+					auto& attachment = m_Config.attachments[i];
+
+					Renderer::TextureConfig textureConfig;
+					textureConfig.data = (void*)NULL;
+					textureConfig.width = m_Width;
+					textureConfig.height = m_Height;
+					textureConfig.format = attachment.format;
+					textureConfig.internalFormat = attachment.internalFormat;
+					textureConfig.dataType = attachment.dataType;
+
+					if (attachment.type == Renderer::AttachmentType::DepthAttachment) {
+						depthFlag = true;
+
+						textureConfig.dataType = Renderer::DataType::UnsignedInt_24_8;
+						Renderer::Texture* depthTexture = Renderer::Texture::Create(textureConfig);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, ((OpenGLTexture*)depthTexture)->GetHandle(), 0);
+						m_DepthAttachmentID = i;
+						m_Attachments.push_back(depthTexture);
+						break;
+					}
+
+					if (attachment.type == Renderer::AttachmentType::ColorAttachment) {
+						Renderer::Texture* colorTexture = Renderer::Texture::Create(textureConfig);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + m_ColorAttachmentCount, GL_TEXTURE_2D, ((OpenGLTexture*)colorTexture)->GetHandle(), 0);
+						m_Attachments.push_back(colorTexture);
+						m_ColorAttachmentCount += 1;
+					}
+				}
+				m_Buffers = new uint32_t[m_ColorAttachmentCount];
+				for (int i = 0; i < m_ColorAttachmentCount; ++i) {
+					m_Buffers[i] = GL_COLOR_ATTACHMENT0 + i;
+				}
+
+				if (!depthFlag) {
+					glGenRenderbuffers(1, &m_RBO);
+					glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
+					glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_Width, m_Height);
+					glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBO);
+				}
+
+				if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+					LOG_SOFT_ERROR("Failed to create Frame Buffer");
+				}
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			}
+			OpenGLFrameBuffer::~OpenGLFrameBuffer()
+			{
+				glDeleteFramebuffers(1, &m_Handle);
+			}
+			void OpenGLFrameBuffer::Resize(int width, int height)
+			{
+				m_Width = width;
+				m_Height = height;
+
+				glBindFramebuffer(GL_FRAMEBUFFER, m_Handle);
+
+				Renderer::RenderAPI::SetViewport(width, height);
+
+				for (auto t : m_Attachments) {
+					t->Resize(width, height);
+				}
+
+				if (m_DepthAttachmentID == 0) {
+					glDeleteRenderbuffers(1, &m_RBO);
+
+					glGenRenderbuffers(1, &m_RBO);
+					glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
+					glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_Width, m_Height);
+					glBindRenderbuffer(GL_RENDERBUFFER, 0);
+				}
+
+				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBO);
+
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			}
+			void OpenGLFrameBuffer::Bind()
+			{
+				glBindFramebuffer(GL_FRAMEBUFFER, m_Handle);
+				glDrawBuffers(m_Attachments.size(), m_Buffers);
+			}
+			void OpenGLFrameBuffer::Unbind()
+			{
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				GLenum bufs[] = { GL_COLOR_ATTACHMENT0 };
+				glDrawBuffers(1, bufs);
+			}
+			Renderer::Texture* OpenGLFrameBuffer::GetColorAttachment(int index)
+			{
+				if (index >= m_ColorAttachmentCount) {
+					LOG_WARNING("Color attachment out of bounds");
+					return nullptr;
+				}
+				return m_Attachments[index];
+			}
+			Renderer::Texture* OpenGLFrameBuffer::SeverColorAttachment(int index)
+			{
+				if (index >= m_ColorAttachmentCount) {
+					LOG_WARNING("Color attachment out of bounds");
+					return nullptr;
+				}
+				Renderer::Texture* out = m_Attachments[index];
+
+				auto& attachment = m_Config.attachments[index];
+
+				Renderer::TextureConfig textureConfig;
+				textureConfig.data = (void*)NULL;
+				textureConfig.width = m_Width;
+				textureConfig.height = m_Height;
+				textureConfig.format = attachment.format;
+				textureConfig.internalFormat = attachment.internalFormat;
+				textureConfig.dataType = attachment.dataType;
+
+				m_Attachments[index] = Renderer::Texture::Create(textureConfig);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + m_ColorAttachmentCount, GL_TEXTURE_2D, ((OpenGLTexture*)m_Attachments[index])->GetHandle(), 0);
+
+				return out;
+			}
+			Renderer::Texture* OpenGLFrameBuffer::GetDepthAttachment()
+			{
+				if (m_DepthAttachmentID == 0) {
+					LOG_WARNING("Frame buffer doesn't have a depth buffer");
+					return nullptr;
+				}
+				return m_Attachments[m_DepthAttachmentID];
+			}
 		}
 	}
 }

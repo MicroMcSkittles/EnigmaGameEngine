@@ -47,6 +47,7 @@ namespace Enigma {
                 virtual void SetClearMaskImpl(uint32_t mask) override;
                 virtual void ClearImpl() override;
 
+                virtual glm::vec2 GetViewportSizeImpl() override { return { (float)m_Data.viewportWidth, (float)m_Data.viewportHeight }; }
                 virtual void SetViewportImpl(int width, int height) override;
 
                 virtual void SetDrawModeImpl(Renderer::DrawMode mode) override;
@@ -57,6 +58,9 @@ namespace Enigma {
                 struct {
                     uint32_t clearMask;
                     uint32_t drawMode;
+
+                    int viewportWidth;
+                    int viewportHeight;
                 } m_Data;
             };
 
