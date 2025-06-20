@@ -26,6 +26,11 @@ project "Enigma"
         "Enigma/ECS/**.h",
         "Enigma/ECS/**.cpp",
         "Enigma/ECS/**.hpp",
+
+        "Enigma/Physics/**.c",
+        "Enigma/Physics/**.h",
+        "Enigma/Physics/**.cpp",
+        "Enigma/Physics/**.hpp",
         
         "Enigma/Platform/OpenGL/**.c",
         "Enigma/Platform/OpenGL/**.h",

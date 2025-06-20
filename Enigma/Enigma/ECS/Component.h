@@ -20,9 +20,9 @@ namespace Enigma {
 		static std::string StaticGetName() { return #type; }\
 		static Core::ID CreateID(type* value) { return s_IDHandler.Create(value); }\
 		static std::vector<type*>& GetList() { return s_IDHandler.GetData(); }\
-		static type* Get(Core::ID& id) { return s_IDHandler.Get(id); }\
-		static type* GetGlobal(Core::ID& id) { return (type*)s_GlobalIDHandler.Get(id); }\
-		static bool IsValid(Core::ID& id) { return s_IDHandler.IsValid(id); }\
+		static type* Get(Core::ID id) { return s_IDHandler.Get(id); }\
+		static type* GetGlobal(Core::ID id) { return (type*)s_GlobalIDHandler.Get(id); }\
+		static bool IsValid(Core::ID id) { return s_IDHandler.IsValid(id); }\
 		static Core::IDHandler<type>& GetHandler() { return s_IDHandler; } \
 		virtual void Delete() override { s_IDHandler.Delete(m_ID); s_GlobalIDHandler.Delete(m_GlobalID); m_ParentID = Core::ID::InvalidID(); } \
 private:\
