@@ -11,7 +11,7 @@
 
 #include "Renderer/Renderer.h"
 
-#include "ECS/EntityComponentSystem.h"
+//#include "ECS/EntityComponentSystem.h"
 
 #include <glm/glm.hpp>
 
@@ -38,7 +38,7 @@ namespace Enigma {
 
 			Core::ID GetWindowID() { return m_WindowID; }
 
-			ECS::ECS* GetECS() { return m_ECS; }
+			//ECS::ECS* GetECS() { return m_ECS; }
 
 			void SetID(Core::ID id) { m_ID = id; }
 
@@ -66,7 +66,7 @@ namespace Enigma {
 
 			Input* m_InputContext;
 
-			ECS::ECS* m_ECS;
+			//ECS::ECS* m_ECS;
 		};
 
 	}

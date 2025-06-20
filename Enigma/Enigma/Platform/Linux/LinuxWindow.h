@@ -1,13 +1,18 @@
 #pragma once
 #include "Core/Window.h"
 
+#include <vector>
+
 namespace Enigma {
 	namespace Platform {
 
 		class LinuxWindow : public Core::Window {
 		public:
-			LinuxWindow(const Core::WindowConfig& config, std::function<void(Core::Event&)> eventCallback);
+			LinuxWindow(const Core::WindowConfig& config);
 			~LinuxWindow();
+
+			virtual void AddEventCallback(std::function<void(Core::Event&)> callback) override;
+			virtual void MakeCurrent() override;
 
 			virtual int GetWidth() override;
 			virtual int GetHeight() override;
@@ -23,10 +28,10 @@ namespace Enigma {
 
 		private:
 			struct WindowData {
-				int width;
-				int height;
+				int width = NULL;
+				int height = NULL;
 
-				std::function<void(Core::Event&)> callback;
+				std::vector<std::function<void(Core::Event&)>> callbacks;
 			};
 			WindowData m_Data;
 			Core::WindowConfig m_Config;

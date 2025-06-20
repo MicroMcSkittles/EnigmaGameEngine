@@ -134,7 +134,7 @@ namespace Enigma {
 				switch (type)
 				{
 				case '%': formated << '%'; break;
-				case 'c': formated << va_arg(args, char); break;
+				case 'c': formated << va_arg(args, int); break;
 
 				case 'd':
 				case 'i': formated << va_arg(args, int); break;
@@ -144,7 +144,7 @@ namespace Enigma {
 				case 'x':
 				case 'X': formated << std::hex << va_arg(args, uint32_t); break;
 
-				case 'f': formated << va_arg(args, float); break;
+				case 'f': formated << va_arg(args, double); break;
 
 				case 's': formated << va_arg(args, const char*); break;
 				}

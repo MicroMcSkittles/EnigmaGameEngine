@@ -31,7 +31,8 @@ project "ExampleApp"
 
 -- Link libraries ===================
     links {
-        "Enigma"
+        "Enigma",
+        "ImGui"
     }
 
 -- Windows ==========================

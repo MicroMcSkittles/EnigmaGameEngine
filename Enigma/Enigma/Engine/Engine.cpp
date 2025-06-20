@@ -19,7 +19,7 @@ namespace Enigma {
 			m_InputContext = Input::Create(inputConfig);
 
 			// Create Entity Component System
-			m_ECS = new ECS::ECS();
+			//m_ECS = new ECS::ECS();
 
 			// Create Renderer
 			if (m_Surface.frame == nullptr) {
@@ -32,8 +32,8 @@ namespace Enigma {
 				Renderer::Render2DConfig render2DConfig = *(Renderer::Render2DConfig*)config.rendererConfig;
 				render2DConfig.surface = m_Surface;
 				m_RendererContext = new Renderer::Render2D(render2DConfig);
-				Render2DProc* proc = CreateSubProc<Render2DProc>();
-				proc->SetRenderContext((Renderer::Render2D*)m_RendererContext);
+				//Render2DProc* proc = CreateSubProc<Render2DProc>();
+				//proc->SetRenderContext((Renderer::Render2D*)m_RendererContext);
 				break;
 			}
 			default: LOG_ERROR("Renderer not supported");
@@ -61,7 +61,7 @@ namespace Enigma {
 		void Engine::Update(DeltaTime deltaTime)
 		{
 			Core::Application::GetWindow(m_WindowID)->MakeCurrent();
-			ECS::ECS::MakeCurrent(m_ECS);
+			//ECS::ECS::MakeCurrent(m_ECS);
 
 			m_SubProcStack.Update(deltaTime);
 

@@ -10,6 +10,17 @@ namespace Enigma {
 
     namespace Platform {
 
+        void LinuxSystem::InitImpl()
+        {
+            if (!glfwInit()) {
+                LOG_ERROR("Failed to initialize GLFW");
+            }
+        }
+        void LinuxSystem::ShutdownImpl()
+        {
+            glfwTerminate();
+        }
+
         Core::Time LinuxSystem::GetTimeImpl() {
             time_t timestamp;
             time(&timestamp);
@@ -39,12 +50,38 @@ namespace Enigma {
         }
         float LinuxSystem::GetTimeMSImpl() {
             float ms = glfwGetTime();
-            if (ms == 0) LOG_ERROR("GLFW failed to get the time from start of application");
+            // if (ms == 0) LOG_ERROR("GLFW failed to get the time from start of application");
             return glfwGetTime();
         }
 
         std::string LinuxSystem::GetOSNameImpl() {
             return "Linux";
+        }
+
+        std::string LinuxSystem::GetKeyNameImpl(int key)
+        {
+            std::string name = glfwGetKeyName(key, glfwGetKeyScancode(key));
+            return name;
+        }
+        std::string LinuxSystem::GetButtonNameImpl(int button)
+        {
+            std::string name = std::to_string(button);
+            if (button == GLFW_MOUSE_BUTTON_LEFT) name = "Left";
+            else if (button == GLFW_MOUSE_BUTTON_MIDDLE) name = "Middle";
+            else if (button == GLFW_MOUSE_BUTTON_RIGHT) name = "right";
+            return name;
+        }
+        std::string LinuxSystem::GetActionNameImpl(int action)
+        {
+            std::string name = std::to_string(action);
+            if (action == GLFW_PRESS) name = "Press";
+            else if (action == GLFW_REPEAT) name = "Repeat";
+            else if (action == GLFW_RELEASE) name = "Release";
+            return name;
+        }
+        std::string LinuxSystem::GetModsNameImpl(int action)
+        {
+            return std::string();
         }
 
     }
