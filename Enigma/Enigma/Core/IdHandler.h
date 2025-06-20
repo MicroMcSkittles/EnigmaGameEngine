@@ -19,9 +19,6 @@ namespace Enigma {
 				};
 			}
 
-			bool operator < (const ID& other) {
-				return index < other.index;
-			}
 			bool operator < (const ID other) const {
 				return index < other.index;
 			}
@@ -38,21 +35,31 @@ namespace Enigma {
 			std::vector<T*>& GetData() { return m_Data; }
 
 			bool IsValid(ID id) {
+				// Make sure id is registered in m_IDs
 				if (!m_IDs.count(id)) return false;
+				// Make sure id is in the same generation as the registered id
 				if (m_IDs[id].second != id.generation) return false;
+				// Make sure id has a valid index into m_Data
 				return (m_IDs[id].first != -1);
 			}
 			ID Create(T* value) {
+
+				// see if there are any open slots, then use the first open slot
 				if (!m_Slots.empty()) {
+					// Get first open slot
 					ID slot = m_Slots[0];
+					slot.generation += 1;
+
+					// Remove slot from m_Slots
 					m_Slots.erase(m_Slots.begin());
+
 					m_IDs[slot].first = (uint32_t)m_Data.size();
 					m_IDs[slot].second += 1;
 					m_Data.push_back(value);
-					slot.generation += 1;
 					return slot;
 				}
 
+				// Create new id then return
 				ID id = { (uint32_t)m_IDs.size(), 0 };
 				int dataId = m_Data.size();
 				m_Data.push_back(value);
@@ -60,29 +67,44 @@ namespace Enigma {
 				return id;
 			}
 			void Delete(ID id) {
+				// Make sure id is valid
 				if (!IsValid(id)) return;
-				m_Data.erase(m_Data.begin() + m_IDs[id].first);
+
+				// find where the id points to in m_Data then remove that index from m_Data
+				int index = m_IDs[id].first;
+				m_Data.erase(m_Data.begin() + index);
 				m_IDs[id].first = -1;
-				auto it = m_IDs.lower_bound(id);
-				it++;
-				for (; it != m_IDs.end(); ++it) {
-					it->second.first -= 1;
+				
+				// Find every id that points to some where in m_Data after the removed 
+				// index then update their pointer
+				for (auto& [id, dataEntry] : m_IDs) {
+					if (dataEntry.first >= index) {
+						dataEntry.first -= 1;
+					}
 				}
+
+				// Push id to m_Slots so id can be reused
 				m_Slots.push_back(id);
 			}
 
 			T* Get(ID id) {
+				// Make sure id is valid
 				if (!IsValid(id)) {
 					LOG_ERROR("Invalid ID ( " + std::to_string(id.index) + ", " + std::to_string(id.generation) + " )");
 				}
+
+				// Get id
 				return m_Data[m_IDs[id].first];
 			}
 
 			void Clear() {
+
+				// Delete every pointer
 				for (auto d : m_Data) {
 					delete d;
 				}
-					
+				
+				// Clear all lists
 				m_Data.clear();
 				m_IDs.clear();
 				m_Slots.clear();

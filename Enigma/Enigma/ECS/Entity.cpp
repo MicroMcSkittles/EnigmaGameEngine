@@ -11,11 +11,18 @@ namespace Enigma {
 		}
 		void Entity::Delete(Entity* entity)
 		{
+			for (auto& [type, id] : entity->m_Components) {
+				ECS::Component::GetGlobal(id)->Delete();
+			}
 			s_Entities.Delete(entity->GetID());
 		}
 		Entity* Entity::Get(Core::ID id)
 		{
 			return s_Entities.Get(id);
+		}
+		bool Entity::IsValid(Core::ID id)
+		{
+			return s_Entities.IsValid(id);
 		}
 	}
 }

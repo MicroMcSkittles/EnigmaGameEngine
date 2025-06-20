@@ -97,7 +97,6 @@ namespace Enigma {
 
 					m_Textures.push_back(frame->SeverColorAttachment(0)->GetID());
 
-					
 					for (auto& v : viewQuad) {
 						v.textureCoord.x += (float)(x + 1) / m_Size.x;
 						v.textureCoord.y += ((m_Size.y - (float)(y + 1)) / m_Size.y);

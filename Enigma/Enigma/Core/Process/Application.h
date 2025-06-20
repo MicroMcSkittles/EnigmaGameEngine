@@ -2,6 +2,7 @@
 #include "Core/Process/SubProcess.h"
 #include "Core/Process/RenderProc.h"
 #include "Core/Process/ScriptProc.h"
+#include "Physics/CollisionProc.h"
 #include "Core/Window.h"
 #include "Core/Event/Event.h"
 #include "Core/Event/WindowEvent.h"
@@ -64,6 +65,7 @@ namespace Enigma {
 
 			RenderProc* m_RenderProc;
 			ScriptProc* m_ScriptProc;
+			Physics::CollisionProc* m_CollisionProc;
 
 			Window* m_Window;
 

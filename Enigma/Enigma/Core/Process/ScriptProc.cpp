@@ -10,6 +10,7 @@ namespace Enigma {
 			auto& list = ECS::Script::GetList();
 			for (int i = 0; i < list.size(); ++i) {
 				auto script = list[i];
+				if (!ECS::Script::IsValid(script->GetID())) continue;
 				if (!script->Started()) {
 					script->Start();
 					script->Started() = true;

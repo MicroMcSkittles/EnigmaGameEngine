@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/IdHandler.h"
+#include "Core/Event/Event.h"
 
 #include <glm/glm.hpp>
 
@@ -10,7 +11,8 @@ namespace Enigma {
 			Transform,
 			Render2D,
 			Camera,
-			Script
+			Script,
+			Collider2D
 		};
 
 // Used to make creating new components easier
@@ -19,7 +21,10 @@ namespace Enigma {
 		static Core::ID CreateID(type* value) { return s_IDHandler.Create(value); }\
 		static std::vector<type*>& GetList() { return s_IDHandler.GetData(); }\
 		static type* Get(Core::ID& id) { return s_IDHandler.Get(id); }\
+		static type* GetGlobal(Core::ID& id) { return (type*)s_GlobalIDHandler.Get(id); }\
+		static bool IsValid(Core::ID& id) { return s_IDHandler.IsValid(id); }\
 		static Core::IDHandler<type>& GetHandler() { return s_IDHandler; } \
+		virtual void Delete() override { s_IDHandler.Delete(m_ID); s_GlobalIDHandler.Delete(m_GlobalID); m_ParentID = Core::ID::InvalidID(); } \
 private:\
 		inline static Core::IDHandler<type> s_IDHandler;\
 public:
@@ -28,17 +33,28 @@ public:
 		public:
 			Component() { 
 				m_ParentID = Core::ID::InvalidID();
+				m_GlobalID = s_GlobalIDHandler.Create(this);
 				m_ID = Core::ID::InvalidID();
 			}
+
+			static Component* GetGlobal(Core::ID id) {
+				return s_GlobalIDHandler.Get(id);
+			}
+			virtual void Delete() = 0;
 
 			void SetParentID(Core::ID id) { m_ParentID = id; }
 			Core::ID GetParentID() { return m_ParentID; }
 
 			Core::ID GetID() { return m_ID; }
+			Core::ID GetGlobalID() { return m_GlobalID; }
 
 		protected:
 			Core::ID m_ParentID;
+			Core::ID m_GlobalID; // Every component gets regestered in a list with every other component with m_GlobalID
 			Core::ID m_ID;
+
+		protected:
+			inline static Core::IDHandler<Component> s_GlobalIDHandler;
 		};
 
 		class Transform : public Component {
@@ -85,6 +101,8 @@ public:
 			virtual void Start() = 0;
 			virtual void Update(float deltaTime) = 0;
 			virtual void Shutdown() = 0;
+
+			virtual void OnEvent(Core::Event& e) { }
 
 			bool& Started() { return m_Started; }
 

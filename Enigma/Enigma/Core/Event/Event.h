@@ -9,7 +9,8 @@ namespace Enigma {
 			None = 0,
 			WindowClose, WindowResize,
 			MouseMoved, MouseButton, MouseScroll,
-			Keyboard
+			Keyboard,
+			Collision2D, Collision,
 		};
 
 		enum EventCategory {
@@ -18,10 +19,12 @@ namespace Enigma {
 			InputEvent = BIT(2),
 			MouseEvent = BIT(3),
 			KeyboardEvent = BIT(4),
+			Physics2DEvent = BIT(5),
+			PhysicsEvent = BIT(6)
 		};
 		
-#define EVENT_TYPE(type) virtual EventType GetType() override { return EventType::type; } \
-						static EventType StaticGetType() { return EventType::type; } \
+#define EVENT_TYPE(type) virtual Core::EventType GetType() override { return Core::EventType::type; } \
+						static Core::EventType StaticGetType() { return Core::EventType::type; } \
 						virtual std::string GetName() override { return #type; }
 
 #define EVENT_CATEGORY(category) virtual uint32_t GetCategory() { return category; }

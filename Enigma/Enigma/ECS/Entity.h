@@ -12,6 +12,7 @@ namespace Enigma {
 			static Entity* Create();
 			static void Delete(Entity* entity);
 			static Entity* Get(Core::ID id);
+			static bool IsValid(Core::ID id);
 			Core::ID GetID() { return m_ID; }
 
 			template<typename T>
@@ -21,13 +22,20 @@ namespace Enigma {
 					return;
 				}
 				component->SetParentID(m_ID);
-				m_Components.insert({ T::StaticGetType(), component->GetID() });
+				m_Components.insert({ T::StaticGetType(), component->GetGlobalID() });
 			}
 
 			template<typename T>
 			T* GetComponent() {
-				return T::Get(m_Components[T::StaticGetType()]);
+				return T::GetGlobal(m_Components[T::StaticGetType()]);
 			}
+
+			template<typename T>
+			bool HasComponent() {
+				return m_Components.count(T::StaticGetType());
+			}
+
+			std::string& GetTag() { return m_Tag; }
 
 		private:
 			Entity() { 
@@ -37,6 +45,7 @@ namespace Enigma {
 		private:
 			Core::ID m_ID;
 			std::map<ComponentType, Core::ID> m_Components;
+			std::string m_Tag;
 
 		private:
 			inline static Core::IDHandler<Entity> s_Entities;

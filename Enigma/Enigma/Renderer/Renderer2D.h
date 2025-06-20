@@ -42,22 +42,12 @@ namespace Enigma {
 				glm::vec2 textureCoord;
 			};
 
+			// TODO: make it not suck
 			struct DrawCall {
 				Camera* camera;
 				Texture* texture;
 				glm::mat4 model;
 				glm::vec3 tint;
-
-				static uint64_t hash(Camera* camera, Texture* texture) {
-					uint32_t v1 = camera->GetID().index;
-					uint32_t v2 = texture->GetID().index;
-					uint32_t t1 = v1 ^ camera->GetID().generation;
-					t1 << v2;
-					uint32_t t2 = v2 ^ texture->GetID().generation;
-					t2 << v1;
-					uint64_t rslt = (t1 << 31) | t2;
-					return rslt;
-				}
 			};
 			static void SubmitDrawCall(const DrawCall& call);
 
@@ -72,8 +62,7 @@ namespace Enigma {
 				
 				Texture* emptyTexture; // used for anything with no texture.
 
-				std::map<uint64_t, int> drawCallLookup; // used to order the draw calls
-				std::vector<std::vector<DrawCall>> drawCalls;
+				std::vector<DrawCall> drawCalls;
 			};
 
 		private:

@@ -76,30 +76,22 @@ namespace Enigma {
 			RenderAPI::Clear();
 
 			s_Data->mainShader->Bind();
-			for (auto it = s_Data->drawCallLookup.begin(); it != s_Data->drawCallLookup.end(); ++it) {
-				int location = (*it).second;
-				auto& calls = s_Data->drawCalls[location];
-				if (calls.size() == 0) {
-					s_Data->drawCallLookup.erase(it);
-					it--;
-					continue;
-				}
-				s_Data->mainShader->SetUniform("ViewProjection", (void*)&calls[0].camera->GetViewProjection());
-				calls[0].texture->Bind();
-				s_Data->mainShader->SetUniform("TextureMap", (void*)calls[0].texture);
 
-				for (auto& call : calls) {
-					s_Data->mainShader->SetUniform("Model", (void*)&call.model);
-					s_Data->mainShader->SetUniform("Tint", (void*)&call.tint);
+			for (auto& call : s_Data->drawCalls) {
+				call.texture->Bind();
+				s_Data->mainShader->SetUniform("TextureMap", (void*)call.texture);
+				s_Data->mainShader->SetUniform("Tint", (void*)&call.tint);
+				s_Data->mainShader->SetUniform("ViewProjection", (void*)&call.camera->GetViewProjection());
+				s_Data->mainShader->SetUniform("Model", (void*)&call.model);
 					
-					s_Quad->Bind();
-					RenderAPI::DrawIndexed(6, DataType::UnsignedInt, NULL);
-					s_Quad->Unbind();
-				}
-				calls[0].texture->Unbind();
+				s_Quad->Bind();
+				RenderAPI::DrawIndexed(6, DataType::UnsignedInt, NULL);
+				s_Quad->Unbind();
 
-				calls.clear();
+				call.texture->Unbind();
 			}
+			s_Data->drawCalls.clear();
+
 			s_Data->mainShader->Unbind();
 
 			s_Data->frameBuffer->Unbind();
@@ -138,14 +130,7 @@ namespace Enigma {
 
 		void Render2D::SubmitDrawCall(const DrawCall& call)
 		{
-			uint64_t hash = DrawCall::hash(call.camera, call.texture);
-			if (!s_Data->drawCallLookup.count(hash)) {
-				s_Data->drawCallLookup.insert({ hash, s_Data->drawCalls.size() });
-				s_Data->drawCalls.push_back({ call });
-				return;
-			}
-			int location = s_Data->drawCallLookup[hash];
-			s_Data->drawCalls[location].push_back(call);
+			s_Data->drawCalls.push_back(call);
 		}
 	}
 }

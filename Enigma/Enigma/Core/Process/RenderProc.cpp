@@ -5,6 +5,7 @@
 #include "ECS/RenderComponent.h"
 #include "ECS/Entity.h"
 
+#include <iostream>
 
 namespace Enigma {
 	namespace Core {
@@ -31,6 +32,7 @@ namespace Enigma {
 			return e.Handled();
 		}
 
+		bool found = false;
 		void RenderProc::Update(float deltaTime)
 		{
 			// Used to find the current active camera every 5 frames
@@ -41,7 +43,7 @@ namespace Enigma {
 			m_SearchCounter = 0;
 
 			// Find active camera
-			bool found = false;
+			if (found) return;
 			for (auto& camera : ECS::Camera::GetList()) {
 				if (!camera->GetIsActive()) continue;
 				if (camera->GetType() == ECS::Camera::Type::Perspective) {
