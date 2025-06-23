@@ -115,6 +115,10 @@ namespace Enigma {
 			return m_Data.height;
 		}
 
+		Renderer::API LinuxWindow::GetAPI() {
+			return m_Config.renderAPI;
+		}
+
 		bool LinuxWindow::ShouldClose()
 		{
 			return glfwWindowShouldClose((GLFWwindow*)m_Handle);

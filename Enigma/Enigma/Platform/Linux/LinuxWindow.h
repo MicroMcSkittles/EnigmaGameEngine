@@ -17,6 +17,8 @@ namespace Enigma {
 			virtual int GetWidth() override;
 			virtual int GetHeight() override;
 
+			virtual Renderer::API GetAPI() override;
+
 			virtual bool ShouldClose() override;
 			virtual void ShouldClose(bool shouldClose) override;
 
