@@ -73,7 +73,8 @@ namespace Enigma {
 			{
 				if (id < 0 || id > elements.size()) {
 					LOG_WARNING("Data tree node element ID out of bounds %i", id);
-					return DataTreeNode();
+					DataTreeNode nullNode;
+					return nullNode;
 				}
 				return elements.at(id);
 			}
@@ -82,7 +83,8 @@ namespace Enigma {
 			{
 				if (!children.count(name)) {
 					LOG_WARNING("Data tree node does not contain child node ( %s )", name.c_str());
-					return DataTreeNode();
+					DataTreeNode nullNode;
+					return nullNode;
 				}
 				return children.at(name);
 			}
@@ -90,7 +92,8 @@ namespace Enigma {
 			{
 				if (!children.count(name)) {
 					LOG_WARNING("Data tree node does not contain child node ( %s )", name.c_str());
-					return DataTreeNode();
+					DataTreeNode nullNode;
+					return nullNode;
 				}
 				return children.at(name);
 			}
