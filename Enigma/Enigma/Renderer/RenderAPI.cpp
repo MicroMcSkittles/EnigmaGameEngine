@@ -6,16 +6,21 @@
 namespace Enigma {
     namespace Renderer {
 
-        void RenderAPI::Init(API api) {
+        RenderAPI* RenderAPI::CreateContext(API api)
+        {
             switch (api)
             {
-            case API::OpenGL: 
-                s_Instance = new Platform::OpenGL::OpenGLRenderAPI();
-                break;
+            case API::OpenGL: return new Platform::OpenGL::OpenGLRenderAPI();
             case API::Vulkan: LOG_ERROR("Vulkan hasn't been impl yet!"); break;
             default:
                 LOG_ERROR("Unknown renderer API");
             }
+        }
+
+        void RenderAPI::MakeContextCurrent(RenderAPI* context)
+        {
+            if (s_CurrentContext == context) return;
+            s_CurrentContext = context;
         }
 
     }

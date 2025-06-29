@@ -1,10 +1,15 @@
 #pragma once
-#include "Core/Input.h"
+#include "Engine/Input.h"
+
+#include "Platform/Windows/WindowsWindow.h"
 
 namespace Enigma {
 	namespace Platform {
 
-		class WindowsInput : public Core::Input {
+		class WindowsInput : public Engine::Input {
+		public:
+			WindowsInput(const Engine::InputConfig& config);
+
 		protected:
 			virtual bool IsKeyPressedImpl(int key) override;
 			virtual bool IsMouseButtonPressedImpl(int button) override;
@@ -13,10 +18,9 @@ namespace Enigma {
 			virtual float GetMouseXImpl() override;
 			virtual float GetMouseYImpl() override;
 
-			virtual std::string GetKeyNameImpl(int key) override;
-			virtual std::string GetButtonNameImpl(int button) override;
-			virtual std::string GetActionNameImpl(int action) override;
-			virtual std::string GetModsNameImpl(int action) override;
+		private:
+			WindowsWindow* m_Window;
+			Engine::Surface* m_Surface;
 		};
 
 	}

@@ -1,90 +1,229 @@
 #include "Core/Process/Application.h"
 #include "Core/Core.h"
 #include "Core/System.h"
-#include "Renderer/RenderAPI.h"
+#include "Core/Utilities/Logger.h"
+#include "Core/ImGuiContext.h"
 
 namespace Enigma {
 	namespace Core {
-		void Application::Initialize(const ApplicationConfig& config)
+
+		Application::Application(int argc, char** argv)
 		{
+			// Call an error if an instance of application exists
 			if (s_Instance) {
 				LOG_SOFT_ERROR("Application Instance already exists");
 				return;
 			}
 			s_Instance = this;
+			s_Data = new Data();
 
-			INIT_LOGGER(config.loggerConfig);
+			System::Init();
 
-			m_Window = Window::Create(config.windowConfig, CLASS_BIND_ARGS_1(Application::OnEvent));
+			// Store all commandline arguments
+			s_Data->arguments = std::vector<std::string>(argv, argv + argc);
 
-			Renderer::RenderAPI::Init(config.rendererAPI);
+			// Initialize logger
+			Core::LoggerConfig loggerConfig;
+			loggerConfig.flags = Core::LoggerFile | Core::LoggerFunction | Core::LoggerPriority | Core::LoggerTime;
+			loggerConfig.priorityLevel = 5;
+			INIT_LOGGER(loggerConfig);
 
-			if (config.useRenderProc) m_RenderProc = CreateSubProc<RenderProc>();
-			else m_RenderProc = nullptr;
-
-			m_CollisionProc = CreateSubProc<Physics::CollisionProc>();
-			m_ScriptProc = CreateSubProc<ScriptProc>();
-
-			m_IsRunning = true;
-		}
-
-		Application::Application(const ApplicationConfig& config) {
-			Initialize(config);
-		}
-		Application::Application(const ApplicationConfig& config, int argc, char** argv)
-		{
-			m_Arguments = std::vector<std::string>(argv, argv + argc);
-
-			Initialize(config);
+			s_Data->isRunning = true;
 		}
 		Application::~Application()
 		{
-			// Destroy all processes
-			for (auto& proc : m_SubProcStack.GetData()) {
-				proc->ShutDown();
-			}
+			System::Shutdown();
 		}
 
-		const std::string& Application::GetArgument(int id) const
+		std::vector<std::string>& Application::GetArguments()
 		{
-			if (id < 0 || id >= m_Arguments.size()) {
+			return s_Data->arguments;
+		}
+		const std::string& Application::GetArgument(int id)
+		{
+			// Check if id is valid
+			if (id < 0 || id >= s_Data->arguments.size()) {
 				LOG_WARNING("Argument at index ( " + std::to_string(id) + " ) doesn't exist");
 				return "";
 			}
-			return m_Arguments[0];
+			// Return argument at id
+			return s_Data->arguments[0];
 		}
 
-		void Application::OnEvent(Event& e)
+		void Application::Close()
 		{
-			EventHandler handler(e);
-			handler.Dispatch<WindowClose>(CLASS_BIND_ARGS_1(Application::OnWindowClose));
-
-			m_SubProcStack.OnEvent(e);
-		}
-		bool Application::OnWindowClose(WindowClose& e)
-		{
-			m_IsRunning = false;
-			return false;
+			s_Data->isRunning = false;
 		}
 
-		void Application::run()
+		void Application::BindSubProcToWindow(SubProcess* proc, ID windowID)
 		{
-			m_LastMS = System::GetTimeMS();
-
-			while (m_IsRunning) {
-
-				float currentMS = System::GetTimeMS();
-				float deltaTime = currentMS - m_LastMS;
-				m_LastMS = currentMS;
-
-				m_SubProcStack.Update(deltaTime);
-
-				m_SubProcStack.Render();
-
-				m_SubProcStack.ImGui();
-
-				m_Window->Update();
+			if (!s_Data->windows.IsValid(windowID)) {
+				LOG_ERROR("Failed to create sub process. Window does not exist");
 			}
+			s_Data->windows.Get(windowID)->subProcesses.push_back(s_Data->subProcStack.GetProcessID(proc));
+		}
+
+		ID Application::CreateEngineInstance(const Engine::EngineConfig& config)
+		{
+			if (!s_Data->windows.IsValid(config.windowID)) {
+				LOG_WARNING("Failed to create a engine instance. Window does not exist.");
+				return ID::InvalidID();
+			}
+
+			Engine::Engine* instance = new Engine::Engine(config);
+			ID id = s_Data->engineInstances.Create(instance);
+			instance->SetID(id);
+			
+			s_Data->windows.Get(config.windowID)->engineInstances.push_back(id);
+
+			return id;
+		}
+		void Application::DeleteEngineInstance(Engine::Engine* instance)
+		{
+			ID id = s_Data->engineInstances.Get(instance);
+
+			// Remove instance ID from the windows instance list
+			std::vector<ID>& instances = s_Data->windows.Get(instance->GetWindowID())->engineInstances;
+			for (int i = 0; i < instances.size(); ++i) {
+				if (instances[i] == id) {
+					instances.erase(instances.begin() + i);
+					break;
+				}
+			}
+
+			s_Data->engineInstances.Delete(id);
+ 		}
+		Engine::Engine* Application::GetEngineInstance(ID id)
+		{
+			if (!s_Data->engineInstances.IsValid(id)) {
+				LOG_WARNING("Engine Instance does not exist");
+				return nullptr;
+			}
+			return s_Data->engineInstances.Get(id);
+		}
+		ID Application::GetEngineInstanceID(Engine::Engine* instance)
+		{
+			return s_Data->engineInstances.Get(instance);
+		}
+
+		ID Application::CreateWindow(const WindowConfig& config)
+		{
+			WindowHandler* handler = new WindowHandler();
+			handler->window = Window::Create(config);
+
+			if (!s_Data->renderAPIs.count(config.renderAPI)) {
+				Renderer::RenderAPI* api = Renderer::RenderAPI::CreateContext(config.renderAPI);
+				s_Data->renderAPIs.insert({ config.renderAPI, api });
+			}
+
+			handler->imgui = nullptr;
+			return s_Data->windows.Create(handler);
+		}
+		ID Application::CreateWindow(const WindowConfig& windowConfig, const ImGuiConfig& imguiConfig)
+		{
+			WindowHandler* handler = new WindowHandler();
+			handler->window = Window::Create(windowConfig);
+
+			if (!s_Data->renderAPIs.count(windowConfig.renderAPI)) {
+				Renderer::RenderAPI* api = Renderer::RenderAPI::CreateContext(windowConfig.renderAPI);
+				s_Data->renderAPIs.insert({ windowConfig.renderAPI, api });
+			}
+
+			ImGuiConfig altImGuiConfig = imguiConfig;
+			altImGuiConfig.window = handler->window;
+			altImGuiConfig.renderAPI = windowConfig.renderAPI;
+			handler->imgui = ImGuiHandler::Create(altImGuiConfig);
+
+			return s_Data->windows.Create(handler);
+		}
+		Window* Application::GetWindow(ID id)
+		{
+			if (!s_Data->windows.IsValid(id)) {
+				LOG_WARNING("Window with id " + (std::string)id + " doesn't exist");
+				return nullptr;
+			}
+
+			return s_Data->windows.Get(id)->window;
+		}
+		ImGuiHandler* Application::GetImGui(ID id)
+		{
+			if (!s_Data->windows.IsValid(id)) {
+				LOG_WARNING("ImGui context with id " + (std::string)id + " doesn't exist");
+				return nullptr;
+			}
+
+			ImGuiHandler* context = s_Data->windows.Get(id)->imgui;
+			if (context == nullptr) {
+				LOG_WARNING("ImGui context with id " + (std::string)id + " doesn't exist");
+			}
+
+			return context;
+		}
+
+		void Application::UseRenderAPI(Renderer::API api)
+		{
+			if (!s_Data->renderAPIs.count(api)) {
+				LOG_WARNING("Render API doesn't exist ( " + Renderer::ToString(api) + " )");
+				return;
+			}
+			Renderer::RenderAPI::MakeContextCurrent(s_Data->renderAPIs[api]);
+		}
+		Renderer::RenderAPI* Application::GetRenderAPI(Renderer::API api)
+		{
+			if (!s_Data->renderAPIs.count(api)) {
+				LOG_WARNING("Render API doesn't exist ( " + Renderer::ToString(api) + " )");
+				return nullptr;
+			}
+
+			return s_Data->renderAPIs[api];
+		}
+
+		void Application::Run()
+		{
+			while (s_Data->isRunning) {
+
+				s_Data->deltaTime.Calculate();
+
+				s_Data->subProcStack.Update(s_Data->deltaTime);
+
+				for (auto& instance : s_Data->engineInstances.GetData()) {
+					instance->Update(s_Data->deltaTime);
+				}
+
+				std::vector<WindowHandler*>& windows = s_Data->windows.GetData();
+				for (int i = 0; i < windows.size(); ++i) {
+					WindowHandler* windowHandler = windows[i];
+
+					windowHandler->window->MakeCurrent();
+					if (windowHandler->window->ShouldClose()) {
+						delete windowHandler->window;
+						if (windowHandler->imgui != nullptr) delete windowHandler->imgui;
+						s_Data->windows.Delete(s_Data->windows.Get(i));
+						i -= 1;
+						continue;
+					}
+
+					if (windowHandler->imgui != nullptr && (!windowHandler->engineInstances.empty() || !windowHandler->subProcesses.empty())) {
+						ImGuiHandler::MakeCurrent(windowHandler->imgui);
+						ImGuiHandler::StartFrame();
+
+						for (auto& instanceID : windowHandler->engineInstances) {
+							s_Data->engineInstances.Get(instanceID)->ImGui();
+						}
+						for (auto& processID : windowHandler->subProcesses) {
+							s_Data->subProcStack.GetProcess(processID)->ImGui();
+						}
+
+						ImGuiHandler::EndFrame();
+					}
+
+					windowHandler->window->Update();
+				}
+
+				if (s_Data->windows.GetData().empty()) s_Data->isRunning = false;
+			}
+
+			s_Data->subProcStack.ShutDown();
 		}
 	};
 };

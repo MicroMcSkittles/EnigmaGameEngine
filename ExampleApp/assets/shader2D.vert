@@ -9,5 +9,5 @@ uniform mat4 Model;
 
 void main() {
     TexCoord = aTexCoord;
-    gl_Position = ViewProjection* Model * vec4(aPos, 1.0);
+    gl_Position = ViewProjection * Model * vec4(aPos, 1.0);
 }

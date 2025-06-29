@@ -2,6 +2,7 @@
 #include <string>
 #include <functional>
 #include "Core/Event/Event.h"
+#include "Renderer/RenderEnum.h"
 
 namespace Enigma {
 	namespace Core {
@@ -15,17 +16,26 @@ namespace Enigma {
 			bool resizable = true;
 			bool vSync = true;
 
+			Renderer::API renderAPI = Renderer::API::OpenGL;
+
 			WindowConfig(const std::string& title = "Window", 
 				int width = 800, int height = 600, 
-				bool resizable = true, bool vSync = true)
+				bool resizable = true, bool vSync = true,
+				Renderer::API renderAPI = Renderer::API::OpenGL)
 				: title(title), width(width), height(height), 
-				 resizable(resizable), vSync(vSync) { }
+				 resizable(resizable), vSync(vSync),
+				renderAPI(renderAPI) { }
 		};
 
+		// TODO: add remove event callback function
 		class Window {
 		public:
-			static Window* Create(const WindowConfig& config, std::function<void(Event&)> eventCallback);
-			static Window* Get() { return s_Instance; }
+			static Window* Create(const WindowConfig& config);
+			virtual ~Window() { }
+
+			virtual void AddEventCallback(std::function<void(Event&)> callback) = 0;
+
+			virtual void MakeCurrent() = 0;
 
 			virtual int GetWidth() = 0;
 			virtual int GetHeight() = 0;
@@ -36,9 +46,6 @@ namespace Enigma {
 			virtual void Update() = 0;
 
 			virtual void SetVSync(bool vSync) = 0;
-
-		protected:
-			inline static Window* s_Instance;
 		};
 
 	}

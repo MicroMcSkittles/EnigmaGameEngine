@@ -1,8 +1,6 @@
 #pragma once
 #include "Renderer/RenderEnum.h"
 #include "Renderer/Texture.h"
-#include "Core/IdHandler.h"
-
 #include <vector>
 
 namespace Enigma {
@@ -11,7 +9,6 @@ namespace Enigma {
 		class VertexBuffer {
 		public:
 			static VertexBuffer* Create(const std::vector<DataType>& layout, Usage usage);
-			Core::ID GetID() { return m_ID; }
 
 			virtual void InitAttribs() = 0;
 
@@ -20,18 +17,11 @@ namespace Enigma {
 
 			virtual void Bind() = 0;
 			virtual void Unbind() = 0;
-
-		private:
-			Core::ID m_ID;
-
-		private:
-			inline static Core::IDHandler<VertexBuffer> s_IDHandler;
 		};
 
 		class IndexBuffer {
 		public:
 			static IndexBuffer* Create(DataType type, Usage usage);
-			Core::ID GetID() { return m_ID; }
 
 			virtual int GetIndexCount() = 0;
 			virtual DataType GetIndexType() = 0;
@@ -41,12 +31,6 @@ namespace Enigma {
 
 			virtual void Bind() = 0;
 			virtual void Unbind() = 0;
-
-		private:
-			Core::ID m_ID;
-
-		private:
-			inline static Core::IDHandler<IndexBuffer> s_IDHandler;
 		};
 
 		enum class AttachmentType {
@@ -56,6 +40,9 @@ namespace Enigma {
 		};
 		struct Attachment {
 			AttachmentType type;
+
+			Texture* output = nullptr; // If output is not nullptr, then it will be used as the attachment
+
 			// used when creating texture
 			TexFormat format = TexFormat::RGB;
 			// used when creating texture
@@ -74,7 +61,6 @@ namespace Enigma {
 		class FrameBuffer {
 		public:
 			static FrameBuffer* Create(const FrameBufferConfig & config);
-			Core::ID GetID() { return m_ID; }
 
 			virtual void Resize(int width, int height) = 0;
 
@@ -86,12 +72,6 @@ namespace Enigma {
 			// Returns the current color attachment at index then creates a new color attachment
 			virtual Texture* SeverColorAttachment(int index) = 0;
 			virtual Texture* GetDepthAttachment() = 0;
-
-		private:
-			Core::ID m_ID;
-
-		private:
-			inline static Core::IDHandler<FrameBuffer> s_IDHandler;
 		};
 	}
 }

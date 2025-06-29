@@ -1,6 +1,6 @@
 #pragma once
 #include "Core/Event/Event.h"
-#include "Core/Input.h"
+#include "Core/System.h"
 #include <sstream>
 
 namespace Enigma {
@@ -86,9 +86,9 @@ namespace Enigma {
 
 			virtual std::string ToString() override {
 				std::stringstream ss;
-				ss << "Keyboard, Key ( " << Input::GetKeyName(m_Key);
+				ss << "Keyboard, Key ( " << System::GetKeyName(m_Key);
 				ss << " ), Scancode ( " << m_Scancode;
-				ss << " ), Action ( " << Input::GetActionName(m_Action);
+				ss << " ), Action ( " << System::GetActionName(m_Action);
 				ss << " ), Mods ( " << m_Mods << " )";
 				return ss.str();
 			}

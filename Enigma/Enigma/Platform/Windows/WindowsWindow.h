@@ -6,8 +6,11 @@ namespace Enigma {
 
 		class WindowsWindow : public Core::Window {
 		public:
-			WindowsWindow(const Core::WindowConfig& config, std::function<void(Core::Event&)> eventCallback);
+			WindowsWindow(const Core::WindowConfig& config);
 			~WindowsWindow();
+
+			virtual void AddEventCallback(std::function<void(Core::Event&)> callback) override;
+			virtual void MakeCurrent() override;
 
 			virtual int GetWidth() override;
 			virtual int GetHeight() override;
@@ -23,10 +26,10 @@ namespace Enigma {
 
 		private:
 			struct WindowData {
-				int width;
-				int height;
+				int width = NULL;
+				int height = NULL;
 
-				std::function<void(Core::Event&)> callback;
+				std::vector<std::function<void(Core::Event&)>> callbacks;
 			};
 			WindowData m_Data;
 			Core::WindowConfig m_Config;

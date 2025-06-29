@@ -6,29 +6,21 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+// TODO: terminat GLFW someware
+
 namespace Enigma {
 
-	Core::Window* Core::Window::Create(const Core::WindowConfig& config, std::function<void(Core::Event&)> eventCallback) {
-		return new Platform::WindowsWindow(config, eventCallback);
+	Core::Window* Core::Window::Create(const Core::WindowConfig& config) {
+		return new Platform::WindowsWindow(config);
 	}
 
 	namespace Platform {
 
-		WindowsWindow::WindowsWindow(const Core::WindowConfig& config, std::function<void(Core::Event&)> eventCallback)
+		WindowsWindow::WindowsWindow(const Core::WindowConfig& config)
 		{
-			if (s_Instance) {
-				LOG_ERROR("Window instance already exists");
-			}
-			s_Instance = this;
-
 			m_Config = config;
 			m_Data.width = m_Config.width;
 			m_Data.height = m_Config.height;
-			m_Data.callback = eventCallback;
-
-			if (!glfwInit()) {
-				LOG_ERROR("Failed to initialize GLFW");
-			}
 
 			// Configure GLFW for OpenGL
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -55,41 +47,63 @@ namespace Enigma {
 			glfwSetWindowCloseCallback(window, [](GLFWwindow* window) {
 				auto data = (WindowData*)glfwGetWindowUserPointer(window);
 				Core::WindowClose e;
-				data->callback(e);
+				for (auto& callback : data->callbacks) {
+					callback(e);
+				}
 			});
 			glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
 				auto data = (WindowData*)glfwGetWindowUserPointer(window);
 				data->width = width;
 				data->height = height;
 				Core::WindowResize e(width, height);
-				data->callback(e);
+				for (auto& callback : data->callbacks) {
+					callback(e);
+				}
 			});
 
 			// Set input callback events
 			glfwSetCursorPosCallback(window, [](GLFWwindow* window, double x, double y) {
 				auto data = (WindowData*)glfwGetWindowUserPointer(window);
 				Core::MouseMoved e((float)x, (float)y);
-				data->callback(e);
+				for (auto& callback : data->callbacks) {
+					callback(e);
+				}
 			});
 			glfwSetScrollCallback(window, [](GLFWwindow* window, double x, double y) {
 				auto data = (WindowData*)glfwGetWindowUserPointer(window);
 				Core::MouseScroll e((float)x, (float)y);
-				data->callback(e);
+				for (auto& callback : data->callbacks) {
+					callback(e);
+				}
 			});
 			glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
 				auto data = (WindowData*)glfwGetWindowUserPointer(window);
 				Core::MouseButton e(button, action, mods);
-				data->callback(e);
+				for (auto& callback : data->callbacks) {
+					callback(e);
+				}
 			});
 			glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
 				auto data = (WindowData*)glfwGetWindowUserPointer(window);
 				Core::Keyboard e(key, scancode, action, mods);
-				data->callback(e);
+				for (auto& callback : data->callbacks) {
+					callback(e);
+				}
 			});
 		}
 		WindowsWindow::~WindowsWindow()
 		{
-			glfwTerminate();
+			glfwDestroyWindow((GLFWwindow*)m_Handle);
+		}
+
+		void WindowsWindow::AddEventCallback(std::function<void(Core::Event&)> callback)
+		{
+			m_Data.callbacks.push_back(callback);
+		}
+
+		void WindowsWindow::MakeCurrent()
+		{
+			glfwMakeContextCurrent((GLFWwindow*)m_Handle);
 		}
 
 		int WindowsWindow::GetWidth()
@@ -112,8 +126,8 @@ namespace Enigma {
 
 		void WindowsWindow::Update()
 		{
-			glfwPollEvents();
 			glfwSwapBuffers((GLFWwindow*)m_Handle);
+			glfwPollEvents();
 		}
 		void WindowsWindow::SetVSync(bool vSync)
 		{

@@ -21,6 +21,7 @@ project "ExampleApp"
         rootdir .. "Enigma",
         rootdir .. "Enigma/Enigma",
         rootdir .. "Vendor/GLM/GLM",
+        rootdir .. "Vendor/ImGui/ImGui",
     }
 
     defines {

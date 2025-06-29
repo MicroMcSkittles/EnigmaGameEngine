@@ -20,6 +20,9 @@ namespace Enigma {
 
         class System {
         public:
+            static void Init() { s_Instance->InitImpl(); }
+            static void Shutdown() { s_Instance->ShutdownImpl(); }
+
             // Reads a file to a string
             static std::string ReadFileStr(const std::string& filename);
 
@@ -31,12 +34,31 @@ namespace Enigma {
             // Returns the name of your os
             static std::string GetOSName() { return s_Instance->GetOSNameImpl(); }
 
+            // Returns the names of the codes in InputCodes.h
+            
+            // Returns the name of a key code
+            static std::string GetKeyName(int key) { return s_Instance->GetKeyNameImpl(key); }
+            // Returns the name of a mouse button code
+            static std::string GetButtonName(int button) { return s_Instance->GetButtonNameImpl(button); }
+            // Returns the name of a key action code
+            static std::string GetActionName(int action) { return s_Instance->GetActionNameImpl(action); }
+            // Returns the name of key/button mods
+            static std::string GetModsName(int mods) { return s_Instance->GetModsNameImpl(mods); }
+
             // Implementations
         protected:
+            virtual void InitImpl() = 0;
+            virtual void ShutdownImpl() = 0;
+
             virtual Time GetTimeImpl() = 0;
             virtual float GetTimeMSImpl() = 0;
 
             virtual std::string GetOSNameImpl() = 0;
+
+            virtual std::string GetKeyNameImpl(int key) = 0;
+            virtual std::string GetButtonNameImpl(int button) = 0;
+            virtual std::string GetActionNameImpl(int action) = 0;
+            virtual std::string GetModsNameImpl(int action) = 0;
 
         private:
             static System* s_Instance;

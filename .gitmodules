@@ -7,3 +7,7 @@
 [submodule "Vendor/stb/stb"]
 	path = Vendor/stb/stb
 	url = https://github.com/nothings/stb.git
+[submodule "Vendor/ImGui/ImGui"]
+	path = Vendor/ImGui/ImGui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking

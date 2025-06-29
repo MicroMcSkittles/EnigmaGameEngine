@@ -1,79 +1,87 @@
 #pragma once
-#include "Core/Process/SubProcess.h"
-#include "Core/Process/RenderProc.h"
-#include "Core/Process/ScriptProc.h"
-#include "Physics/CollisionProc.h"
+#include "Engine/Engine.h"
+#include "Engine/DeltaTime.h"
+#include "Core/IdHandler.h"
 #include "Core/Window.h"
-#include "Core/Event/Event.h"
-#include "Core/Event/WindowEvent.h"
-#include "Core/Logger.h"
-#include "Renderer/RenderEnum.h"
+#include "Core/ImGuiContext.h"
+#include "Core/Process/SubProcess.h"
+#include "Renderer/RenderAPI.h"
+
 #include <vector>
+#include <map>
 #include <string>
 
 namespace Enigma {
 	namespace Core {
 
-		struct ApplicationConfig {
-			Renderer::API rendererAPI;
-			WindowConfig windowConfig;
-			LoggerConfig loggerConfig; // only applies if ENABLE_LOGGER is defined
-			bool useRenderProc;
-		};
-
 		class Application {
 		public:
-			Application(const ApplicationConfig& config);
-			Application(const ApplicationConfig& config, int argc, char** argv);
+			Application(int argc, char** argv);
 			~Application();
 
 			static Application* Get() { return s_Instance; }
 			// Argument 0 should always be a path to the exe file
-			std::vector<std::string>& GetArguments() { return m_Arguments; }
+			static std::vector<std::string>& GetArguments();
 			// Argument 0 should always be a path to the exe file
-			const std::string& GetArgument(int id) const;
+			static const std::string& GetArgument(int id);
 
-			// Events trical down to sub processes from front to back
-			void OnEvent(Event& e);
-			bool OnWindowClose(WindowClose& e);
+			// Finishes the rest of the current frame then closes the application
+			static void Close();
 
 			// Creates a sub process and stores it to the sub process stack
 			// Returns a pointer to the process
 			// T must be a inherited class of the SubProcess class
 			template<typename T>
-			T* CreateSubProc() {
+			static T* CreateSubProc() {
 				T* proc = new T;
-				proc->StartUp();
-				m_SubProcStack.PushProcBack(proc);
+				ID id = s_Data->subProcStack.PushProcBack(proc);
 				return proc;
 			}
+			static void BindSubProcToWindow(SubProcess* proc, ID windowID);
 
-			void run();
+			static ID CreateEngineInstance(const Engine::EngineConfig& config);
+			static void DeleteEngineInstance(Engine::Engine* instance);
+			static Engine::Engine* GetEngineInstance(ID id);
+			static ID GetEngineInstanceID(Engine::Engine* instance);
+
+			static ID CreateWindow(const WindowConfig& config);
+			static ID CreateWindow(const WindowConfig& windowConfig, const ImGuiConfig& imguiConfig);
+			static Window* GetWindow(ID id);
+			static ImGuiHandler* GetImGui(ID id);
+
+			static void UseRenderAPI(Renderer::API api);
+			static Renderer::RenderAPI* GetRenderAPI(Renderer::API api);
+
+			static void Run();
 
 		private:
-			void Initialize(const ApplicationConfig& config);
+			struct WindowHandler {
+				Window* window;
+				ImGuiHandler* imgui;
+				std::vector<ID> engineInstances;
+				std::vector<ID> subProcesses;
+			};
 
-		private:
-			// All command line arguments the program received
-			std::vector<std::string> m_Arguments;
-			bool m_IsRunning;
+			struct Data {
+				// All command line arguments the program received
+				std::vector<std::string> arguments;
+				bool isRunning;
 
-			// Used to find delta time
-			float m_LastMS;
+				Engine::DeltaTime deltaTime;
 
-			SubProcStack m_SubProcStack;
+				SubProcStack subProcStack;
 
-			RenderProc* m_RenderProc;
-			ScriptProc* m_ScriptProc;
-			Physics::CollisionProc* m_CollisionProc;
-
-			Window* m_Window;
+				IDHandler<WindowHandler> windows;
+				IDHandler<Engine::Engine> engineInstances;
+				std::map<Renderer::API, Renderer::RenderAPI*> renderAPIs;
+			};
 
 		private:
 			inline static Application* s_Instance;
+			inline static Data* s_Data;
 		};
 
-		Application* CreateApplication(int argc, char** argv);
+		void ApplicationMain(Application* app);
 
 	};
 };

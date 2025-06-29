@@ -6,18 +6,20 @@
 namespace Enigma {
 	namespace Renderer {
 		glm::vec2 Camera::WorldToScreen(const glm::vec3& worldPoint) {
-			glm::vec2 screenPos = m_ViewProjection * glm::vec4(worldPoint, 1.0f);
+			/*glm::vec2 screenPos = m_ViewProjection * glm::vec4(worldPoint, 1.0f);
 			auto window = Core::Window::Get();
 			screenPos.x = (float)window->GetWidth() * ((screenPos.x + 1.0f) / 2.0f);
 			screenPos.y = (float)window->GetHeight() - ((float)window->GetHeight() * ((screenPos.y + 1.0f) / 2.0f));
-			return screenPos;
+			return screenPos;*/
+			return { 0,0 };
 		}
 		glm::vec3 Camera::ScreenToWorld(const glm::vec2& screenPoint) {
-			auto window = Core::Window::Get();
+			/*auto window = Core::Window::Get();
 			glm::vec2 projView;
 			projView.x = (screenPoint.x * 2) / window->GetWidth() - 1.0f;
 			projView.y = ((window->GetHeight() - screenPoint.y) * 2) / window->GetHeight() - 1.0f;
-			return glm::inverse(m_ViewProjection) * glm::vec4(projView, 0.0f, 1.0f);
+			return glm::inverse(m_ViewProjection) * glm::vec4(projView, 0.0f, 1.0f);*/
+			return { 0,0,0 };
 		}
 
 		Frustum Frustum::ScreenFrustum()
@@ -27,15 +29,14 @@ namespace Enigma {
 			frustum.near = 0.1f;
 			frustum.far = 1000.0f;
 
-			auto window = Core::Window::Get();
-			frustum.aspectRatio = (float)window->GetWidth() / (float)window->GetHeight();
+			//auto window = Core::Window::Get();
+			//frustum.aspectRatio = (float)window->GetWidth() / (float)window->GetHeight();
 			return frustum;
 		}
 
 		PerspectiveCamera::PerspectiveCamera(const Frustum& frustum, const glm::vec3& position, const glm::vec3& direction)
 			: Camera(position, direction), m_Frustum(frustum)
 		{
-			m_ID = s_IDHandler.Create(this);
 			m_Projection = glm::perspective(m_Frustum.fov, m_Frustum.aspectRatio, m_Frustum.near, m_Frustum.far);
 			CalculateView();
 		}
@@ -68,12 +69,11 @@ namespace Enigma {
 			return view;
 		}
 
-		ViewBox ViewBox::ScreenViewBox()
+		ViewBox ViewBox::SurfaceViewBox(Engine::Surface surface)
 		{
 			ViewBox view;
 
-			auto window = Core::Window::Get();
-			float aspectRatio = (float)window->GetWidth() / (float)window->GetHeight();
+			float aspectRatio = (float)surface.scale.x / (float)surface.scale.y;
 
 			view.left = -aspectRatio;
 			view.right = aspectRatio;
@@ -89,8 +89,6 @@ namespace Enigma {
 		OrthographicCamera::OrthographicCamera(const ViewBox& viewBox, float zoom, const glm::vec3& position, const glm::vec3& direction)
 			:Camera(position, direction)
 		{
-			m_ID = s_IDHandler.Create(this);
-
 			m_Zoom = zoom;
 			m_ViewBox = viewBox;
 			m_ZoomViewBox = viewBox.Zoom(m_Zoom);

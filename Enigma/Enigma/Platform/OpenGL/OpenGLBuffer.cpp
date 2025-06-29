@@ -14,8 +14,6 @@ namespace Enigma {
 				m_Layout = layout;
 				m_Usage = Conversions::Usage(usage);
 				glGenBuffers(1, &m_Handle);
-
-				
 			}
 			OpenGLVertexBuffer::~OpenGLVertexBuffer()
 			{
@@ -127,7 +125,9 @@ namespace Enigma {
 						depthFlag = true;
 
 						textureConfig.dataType = Renderer::DataType::UnsignedInt_24_8;
-						Renderer::Texture* depthTexture = Renderer::Texture::Create(textureConfig);
+						Renderer::Texture* depthTexture;
+						if (attachment.output != nullptr) depthTexture = attachment.output;
+						else depthTexture = Renderer::Texture::Create(textureConfig);
 						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, ((OpenGLTexture*)depthTexture)->GetHandle(), 0);
 						m_DepthAttachmentID = i;
 						m_Attachments.push_back(depthTexture);
@@ -135,7 +135,9 @@ namespace Enigma {
 					}
 
 					if (attachment.type == Renderer::AttachmentType::ColorAttachment) {
-						Renderer::Texture* colorTexture = Renderer::Texture::Create(textureConfig);
+						Renderer::Texture* colorTexture;
+						if (attachment.output != nullptr) colorTexture = attachment.output;
+						else colorTexture = Renderer::Texture::Create(textureConfig);
 						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + m_ColorAttachmentCount, GL_TEXTURE_2D, ((OpenGLTexture*)colorTexture)->GetHandle(), 0);
 						m_Attachments.push_back(colorTexture);
 						m_ColorAttachmentCount += 1;

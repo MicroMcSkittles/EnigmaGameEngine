@@ -51,6 +51,9 @@ namespace Enigma {
 			EventHandler(Event& event) 
 				: m_Event(event) { }
 
+			// To bind a function I recommend using a lamda in the following format
+			// [&](Event& e)  { return func(e); }
+			// you could use std::bind but it allocates extra memory for some reason
 			template<typename T>
 			void Dispatch(std::function<bool(T&)> func) {
 				if (T::StaticGetType() == m_Event.GetType()) {

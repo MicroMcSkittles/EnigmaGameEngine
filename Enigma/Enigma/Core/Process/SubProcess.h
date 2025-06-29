@@ -1,12 +1,19 @@
 #pragma once
 #include "Core/Event/Event.h"
+#include "Core/IdHandler.h"
+#include "Engine/DeltaTime.h"
 #include <vector>
 
 namespace Enigma {
+	namespace Engine {
+		class Engine;
+	}
 	namespace Core {
+		class SubProcStack;
+
 		class SubProcess {
 		public:
-			SubProcess() { }
+			SubProcess() : m_Started(false), m_EngineID(nullptr) { }
 
 			// Called when sub process is created
 			virtual void StartUp() {}
@@ -14,13 +21,23 @@ namespace Enigma {
 			virtual void ShutDown() {}
 			// Called every time a event occures
 			// Events trical down to sub processes from front to back
-			virtual bool OnEvent(Event& e) { return false; }
+			virtual bool OnEvent(Core::Event& e) { return false; }
 			// Called every frame
-			virtual void Update(float deltaTime) {}
+			virtual void Update(Engine::DeltaTime deltaTime) {}
 			// Called when the engine is rendering every thing
 			virtual void Render() {}
 			// Called when the engine is showing ImGui
 			virtual void ImGui() {}
+
+			Engine::Engine* GetEngine();
+
+		private:
+			bool m_Started;
+			Core::ID* m_EngineID;
+
+		private:
+			friend SubProcStack;
+			friend Engine::Engine;
 		};
 
 		class SubProcStack {
@@ -28,24 +45,27 @@ namespace Enigma {
 			SubProcStack();
 			~SubProcStack();
 
-			void PushProcBack(SubProcess* subProc);
-			void PushProcFront(SubProcess* subProc);
+			ID PushProcBack(SubProcess* subProc);
 
-			void RemoveProc(SubProcess* subProc);
+			void RemoveProc(ID id);
 
+			SubProcess* GetProcess(ID id);
+			ID GetProcessID(SubProcess* proc);
 			std::vector<SubProcess*>& GetData();
 
 			// Calls the OnEvent function for every sub process, goes through list form front to back
-			void OnEvent(Event& e);
+			void OnEvent(Core::Event& e);
 			// Calls the Update function for every sub process
-			void Update(float deltaTime);
+			void Update(Engine::DeltaTime deltaTime);
 			// Calls the Render function for every sub process
 			void Render();
 			// Calls the ImGui function for every sub process
 			void ImGui();
+			// Calls the Shutdown function for every sub process, then deletes every sub process
+			void ShutDown();
 
 		private:
-			std::vector<SubProcess*> m_SubProcesses;
+			Core::IDHandler<SubProcess> m_SubProcesses;
 		};
 	}
 }

@@ -1,7 +1,6 @@
 #pragma once
 #include "Renderer/RenderEnum.h"
 #include "Renderer/Shader.h"
-#include "Core/IdHandler.h"
 
 #include <glm/glm.hpp>
 
@@ -33,9 +32,6 @@ namespace Enigma {
 		public:
 			static Texture* Create(const std::string& path, const TextureConfig& config = {});
 			static Texture* Create(const TextureConfig& config = {});
-			static Texture* Get(Core::ID id) { return s_IdHandler.Get(id); }
-			static void Delete(Core::ID id) { s_IdHandler.Delete(id); }
-			static void Delete(Texture* texture) { s_IdHandler.Delete(texture->m_ID); }
 
 			virtual void Resize(int width, int height, void* data = (void*)NULL) = 0;
 
@@ -44,15 +40,6 @@ namespace Enigma {
 
 			virtual int GetWidth() = 0;
 			virtual int GetHeight() = 0;
-
-		public:
-			Core::ID GetID() { return m_ID; }
-
-		private:
-			Core::ID m_ID;
-
-		private:
-			inline static Core::IDHandler<Texture> s_IdHandler;
 		};
 
 		// TODO: make this better, it sucks rn
@@ -63,14 +50,13 @@ namespace Enigma {
 
 			Texture* GetTexture(const glm::vec2& id);
 
-			std::vector<Core::ID>& GetTextures() { return m_Textures; }
+			std::vector<Texture*>& GetTextures() { return m_Textures; }
 
 		private:
-			Core::ID m_ID;
 			TextureConfig m_Config;
 			glm::vec2 m_Size;
 
-			std::vector<Core::ID> m_Textures;
+			std::vector<Texture*> m_Textures;
 
 		private:
 			struct Vertex {
@@ -91,9 +77,6 @@ namespace Enigma {
 				0,1,3,
 				1,2,3
 			};
-
-		private:
-			inline static Core::IDHandler<TextureAtlas> s_IdHandler;
 		};
 	}
 }

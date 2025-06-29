@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/IdHandler.h"
+#include "Engine/Surface.h"
 #include <glm/glm.hpp>
 
 namespace Enigma {
@@ -8,7 +8,6 @@ namespace Enigma {
 		public:
 			Camera(const glm::vec3& position, const glm::vec3& direction)
 				: m_Position(position), m_Direction(direction) { }
-			~Camera() { s_IDHandler.Delete(m_ID); }
 
 			virtual void Resize(uint32_t width, uint32_t height) = 0;
 
@@ -28,9 +27,6 @@ namespace Enigma {
 			glm::vec2 WorldToScreen(const glm::vec3& worldPoint);
 			glm::vec3 ScreenToWorld(const glm::vec2& screenPoint);
 
-		public:
-			Core::ID GetID() { return m_ID; }
-
 		protected:
 			glm::vec3 m_Position;
 			glm::vec3 m_Direction;
@@ -38,11 +34,6 @@ namespace Enigma {
 			glm::mat4 m_View;
 			glm::mat4 m_Projection;
 			glm::mat4 m_ViewProjection;
-			
-			Core::ID m_ID;
-
-		protected:
-			inline static Core::IDHandler<Camera> s_IDHandler;
 		};
 
 		struct Frustum {
@@ -79,7 +70,7 @@ namespace Enigma {
 
 			ViewBox Zoom(float zoom) const;
 
-			static ViewBox ScreenViewBox();
+			static ViewBox SurfaceViewBox(Engine::Surface surface);
 		};
 
 		class OrthographicCamera : public Camera {

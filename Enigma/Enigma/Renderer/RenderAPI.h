@@ -8,23 +8,25 @@ namespace Enigma {
 
         class RenderAPI {
         public:
-            static void Init(API api);
-            static API GetAPI() { return s_Instance->GetAPImpl(); }
+            static RenderAPI* CreateContext(API api);
+            static void MakeContextCurrent(RenderAPI* context);
 
-            static void SetClearColor(const glm::vec4& color) { s_Instance->SetClearColorImpl(color); }
+            static API GetAPI() { return s_CurrentContext->GetAPIImpl(); }
 
-            static void SetClearMask(uint32_t mask) { s_Instance->SetClearMaskImpl(mask); }
-            static void Clear() { s_Instance->ClearImpl(); }
+            static void SetClearColor(const glm::vec4& color) { s_CurrentContext->SetClearColorImpl(color); }
 
-            static glm::vec2 GetViewportSize() { return s_Instance->GetViewportSizeImpl(); }
-            static void SetViewport(int width, int height) { s_Instance->SetViewportImpl(width, height); }
+            static void SetClearMask(uint32_t mask) { s_CurrentContext->SetClearMaskImpl(mask); }
+            static void Clear() { s_CurrentContext->ClearImpl(); }
 
-            static void SetDrawMode(DrawMode mode) { s_Instance->SetDrawModeImpl(mode); }
-            static void DrawIndexed(int count, DataType type, void* data) { s_Instance->DrawIndexedImpl(count, type, data); }
-            static void DrawArrays(int first, int count) { s_Instance->DrawArraysImpl(first, count); }
+            static glm::vec2 GetViewportSize() { return s_CurrentContext->GetViewportSizeImpl(); }
+            static void SetViewport(int width, int height) { s_CurrentContext->SetViewportImpl(width, height); }
+
+            static void SetDrawMode(DrawMode mode) { s_CurrentContext->SetDrawModeImpl(mode); }
+            static void DrawIndexed(int count, DataType type, void* data) { s_CurrentContext->DrawIndexedImpl(count, type, data); }
+            static void DrawArrays(int first, int count) { s_CurrentContext->DrawArraysImpl(first, count); }
 
         protected:
-            virtual API GetAPImpl() = 0;
+            virtual API GetAPIImpl() = 0;
 
             virtual void SetClearColorImpl(const glm::vec4& color) = 0;
 
@@ -39,7 +41,7 @@ namespace Enigma {
             virtual void DrawArraysImpl(int first, int count) = 0;
 
         private:
-            inline static RenderAPI* s_Instance;
+            inline static RenderAPI* s_CurrentContext;
         };
 
     }

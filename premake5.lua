@@ -16,6 +16,7 @@ include "Vendor/GLAD"
 include "Vendor/GLFW"
 include "Vendor/GLM"
 include "Vendor/stb"
+include "Vendor/ImGui"
 include "Enigma"
 
 include "ExampleApp" -- Example project

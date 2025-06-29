@@ -1,5 +1,4 @@
 #include "Platform/Windows/WindowsSystem.h"
-#include "Core/Process/Application.h"
 #include "Core/Core.h"
 
 #include <GLFW/glfw3.h>
@@ -10,6 +9,16 @@ namespace Enigma {
     Core::System* Core::System::s_Instance = new Platform::WindowsSystem();
 
     namespace Platform {
+        void WindowsSystem::InitImpl()
+        {
+            if (!glfwInit()) {
+                LOG_ERROR("Failed to initialize GLFW");
+            }
+        }
+        void WindowsSystem::ShutdownImpl()
+        {
+            glfwTerminate();
+        }
 
         Core::Time WindowsSystem::GetTimeImpl() {
             time_t timestamp;
@@ -40,12 +49,38 @@ namespace Enigma {
         }
         float WindowsSystem::GetTimeMSImpl() {
             float ms = glfwGetTime();
-            if (ms == 0) LOG_ERROR("GLFW failed to get the time from start of application");
+            //if (ms == 0) LOG_ERROR("GLFW failed to get the time from start of application");
             return glfwGetTime();
         }
 
         std::string WindowsSystem::GetOSNameImpl() {
             return "Windows";
+        }
+
+        std::string WindowsSystem::GetKeyNameImpl(int key)
+        {
+            std::string name = glfwGetKeyName(key, glfwGetKeyScancode(key));
+            return name;
+        }
+        std::string WindowsSystem::GetButtonNameImpl(int button)
+        {
+            std::string name = std::to_string(button);
+            if (button == GLFW_MOUSE_BUTTON_LEFT) name = "Left";
+            else if (button == GLFW_MOUSE_BUTTON_MIDDLE) name = "Middle";
+            else if (button == GLFW_MOUSE_BUTTON_RIGHT) name = "right";
+            return name;
+        }
+        std::string WindowsSystem::GetActionNameImpl(int action)
+        {
+            std::string name = std::to_string(action);
+            if (action == GLFW_PRESS) name = "Press";
+            else if (action == GLFW_REPEAT) name = "Repeat";
+            else if (action == GLFW_RELEASE) name = "Release";
+            return name;
+        }
+        std::string WindowsSystem::GetModsNameImpl(int action)
+        {
+            return std::string();
         }
     }
 }

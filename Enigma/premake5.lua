@@ -17,20 +17,15 @@ project "Enigma"
         "Enigma/Core/**.cpp",
         "Enigma/Core/**.hpp",
 
+        "Enigma/Engine/**.c",
+        "Enigma/Engine/**.h",
+        "Enigma/Engine/**.cpp",
+        "Enigma/Engine/**.hpp",
+
         "Enigma/Renderer/**.c",
         "Enigma/Renderer/**.h",
         "Enigma/Renderer/**.cpp",
         "Enigma/Renderer/**.hpp",
-
-        "Enigma/ECS/**.c",
-        "Enigma/ECS/**.h",
-        "Enigma/ECS/**.cpp",
-        "Enigma/ECS/**.hpp",
-
-        "Enigma/Physics/**.c",
-        "Enigma/Physics/**.h",
-        "Enigma/Physics/**.cpp",
-        "Enigma/Physics/**.hpp",
         
         "Enigma/Platform/OpenGL/**.c",
         "Enigma/Platform/OpenGL/**.h",
@@ -44,6 +39,7 @@ project "Enigma"
         rootdir .. "Vendor/GLFW/GLFW/include",
         rootdir .. "Vendor/GLAD/GLAD/include",
         rootdir .. "Vendor/GLM/GLM",
+        rootdir .. "Vendor/ImGui/ImGui",
         rootdir .. "Vendor/stb",
     }
 
@@ -56,7 +52,8 @@ project "Enigma"
 
     links {
         "GLAD",
-        "GLFW"
+        "GLFW",
+        "ImGui"
     }
 
 -- Windows ==========================

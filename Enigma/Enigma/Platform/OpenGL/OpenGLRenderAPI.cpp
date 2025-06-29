@@ -180,12 +180,7 @@ namespace Enigma {
                     return;
                 }
 
-                auto window = Core::Window::Get();
-                glViewport(0, 0, window->GetWidth(), window->GetHeight());
-				m_Data.viewportWidth = window->GetWidth();
-				m_Data.viewportHeight = window->GetHeight();
-
-				glEnable(GL_DEPTH_TEST);
+				glEnable(GL_DEPTH_TEST); // TODO: add an enable function to RenderAPI
 
                 LOG_MESSAGE("Initialized OpenGL!!", 2);
             }

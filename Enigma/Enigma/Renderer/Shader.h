@@ -1,6 +1,5 @@
 #pragma once
 #include "Renderer/RenderEnum.h"
-#include "Core/IdHandler.h"
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -32,7 +31,6 @@ namespace Enigma {
 		class Shader {
 		public:
 			static Shader* Create(const ShaderConfig& config);
-			Core::ID GetID() { return m_ID; }
 
 			virtual const std::vector<Uniform>& GetActiveUniforms() = 0;
 			virtual Uniform& GetUniform(const std::string& name) = 0;
@@ -42,12 +40,6 @@ namespace Enigma {
 
 			virtual void Bind() = 0;
 			virtual void Unbind() = 0;
-
-		private:
-			Core::ID m_ID;
-
-		private:
-			inline static Core::IDHandler<Shader> s_IDHandler;
 		};
 
 	}

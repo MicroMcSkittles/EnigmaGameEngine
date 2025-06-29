@@ -22,6 +22,9 @@ namespace Enigma {
 			bool operator < (const ID other) const {
 				return index < other.index;
 			}
+			bool operator == (const ID other) const {
+				return (index == other.index) && (generation == other.generation);
+			}
 			operator std::string() const {
 				return "( " + std::to_string(index) + ", " + std::to_string(generation) + " )";
 			}
@@ -87,6 +90,7 @@ namespace Enigma {
 				m_Slots.push_back(id);
 			}
 
+			// Returns the value at id
 			T* Get(ID id) {
 				// Make sure id is valid
 				if (!IsValid(id)) {
@@ -95,6 +99,44 @@ namespace Enigma {
 
 				// Get id
 				return m_Data[m_IDs[id].first];
+			}
+
+			// Gets the id to a position in m_Data
+			// This is fairly slow, so beware
+			ID Get(int index) {
+				// Make sure index is in bounds
+				if (index < 0 || index >= m_Data.size()) {
+					LOG_ERROR("Index ( " + std::to_string(index) + " ) is out of bounds");
+				}
+
+				// Find id, this is the slow part ( it's not even that slow )
+				for (auto& [id, dataIndex] : m_IDs) {
+					if (index == dataIndex.first) {
+						return id;
+					}
+				}
+
+				return ID::InvalidID();
+			}
+			// Returns the id of a value if it's registered
+			ID Get(T* value) {
+
+				// find the location of value in m_Data
+				int location = -1;
+				for (int i = 0; i < m_Data.size(); ++i) {
+					if (value == m_Data[i]) {
+						location = i;
+						break;
+					}
+				}
+
+				// make sure value is in m_Data
+				if (location == -1) {
+					LOG_WARNING("Value does not exist");
+					return ID::InvalidID();
+				}
+
+				return Get(location);
 			}
 
 			void Clear() {

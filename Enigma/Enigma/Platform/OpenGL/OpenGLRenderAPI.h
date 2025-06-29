@@ -40,7 +40,7 @@ namespace Enigma {
                 OpenGLRenderAPI();
 
             protected:
-                virtual Renderer::API GetAPImpl() override { return Renderer::API::OpenGL; }
+                virtual Renderer::API GetAPIImpl() override { return Renderer::API::OpenGL; }
 
                 virtual void SetClearColorImpl(const glm::vec4& color) override;
 
@@ -56,11 +56,11 @@ namespace Enigma {
 
             private:
                 struct {
-                    uint32_t clearMask;
-                    uint32_t drawMode;
+                    uint32_t clearMask = NULL;
+                    uint32_t drawMode  = NULL;
 
-                    int viewportWidth;
-                    int viewportHeight;
+                    int viewportWidth  = NULL;
+                    int viewportHeight = NULL;
                 } m_Data;
             };
 
