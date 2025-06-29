@@ -1,5 +1,9 @@
 # Enigma Game Engine
-A simple game engine
+A simple game engine. I've wanted to make a game engine for awhile but I haven't had the skills to until resently. Sometimes I thing I still don't have the right skill set.
+Big thanks to [The Cherno](https://www.youtube.com/@TheCherno) this project most likely wouldn't exist without him.
+
+## Version / Notes
+In the [Enigma.h](Enigma/Enigma/Enigma.h) there should be the current version and a note about what's going on. I'll try to remember that it exists. I'll update it for big commits
 
 ## Example Game
 To test out the engine I made this simple top down shooter
