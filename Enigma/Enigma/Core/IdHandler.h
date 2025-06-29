@@ -94,7 +94,7 @@ namespace Enigma {
 			T* Get(ID id) {
 				// Make sure id is valid
 				if (!IsValid(id)) {
-					LOG_ERROR("Invalid ID ( " + std::to_string(id.index) + ", " + std::to_string(id.generation) + " )");
+					LOG_ERROR("Invalid ID %s", ((std::string)id).c_str());
 				}
 
 				// Get id
@@ -106,7 +106,7 @@ namespace Enigma {
 			ID Get(int index) {
 				// Make sure index is in bounds
 				if (index < 0 || index >= m_Data.size()) {
-					LOG_ERROR("Index ( " + std::to_string(index) + " ) is out of bounds");
+					LOG_ERROR("Index ( %i ) is out of bounds", index);
 				}
 
 				// Find id, this is the slow part ( it's not even that slow )

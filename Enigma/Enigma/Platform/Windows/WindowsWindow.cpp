@@ -34,7 +34,7 @@ namespace Enigma {
 			GLFWwindow* window = glfwCreateWindow(m_Data.width, m_Data.height, m_Config.title.c_str(), NULL, NULL);
 			if (window == NULL) {
 				glfwTerminate();
-				LOG_ERROR("Failed to initalize window ( " + m_Config.title + " )");
+				LOG_ERROR("Failed to initalize window ( %s )", m_Config.title.c_str());
 			}
 			glfwMakeContextCurrent(window);
 			m_Handle = (void*)window;

@@ -28,7 +28,7 @@ namespace Enigma {
 					case GL_GEOMETRY_SHADER: shaderType = "Geometry"; break;
 					case GL_COMPUTE_SHADER: shaderType = "Compute"; break;
 					}
-					LOG_WARNING("Failed to compile " + shaderType + " shader.\n" + infoLog);
+					LOG_WARNING("Failed to compile %s shader.\n%s", shaderType.c_str(), infoLog.c_str());
 					return false;
 #endif
 				}
@@ -94,7 +94,7 @@ namespace Enigma {
 				if (!success) {
 					glGetProgramInfoLog(m_Handle, 512, NULL, info);
 					std::string infoLog = info;
-					LOG_ERROR("Failed to link shader program.\n" + infoLog);
+					LOG_ERROR("Failed to link shader program.\n%s", infoLog.c_str());
 				}
 
 				FindUniforms();

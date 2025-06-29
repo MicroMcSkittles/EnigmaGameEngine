@@ -24,8 +24,8 @@ namespace Enigma {
 
 			// Initialize logger
 			Core::LoggerConfig loggerConfig;
-			loggerConfig.flags = Core::LoggerFile | Core::LoggerFunction | Core::LoggerPriority | Core::LoggerTime;
-			loggerConfig.priorityLevel = 5;
+			loggerConfig.flags = Core::LoggerFunction | Core::LoggerTime | Core::LoggerShort;
+			loggerConfig.priorityLevel = 6;
 			INIT_LOGGER(loggerConfig);
 
 			s_Data->isRunning = true;
@@ -43,7 +43,7 @@ namespace Enigma {
 		{
 			// Check if id is valid
 			if (id < 0 || id >= s_Data->arguments.size()) {
-				LOG_WARNING("Argument at index ( " + std::to_string(id) + " ) doesn't exist");
+				LOG_WARNING("Argument at index ( %s ) doesn't exist", std::to_string(id).c_str());
 				return "";
 			}
 			// Return argument at id
@@ -139,7 +139,7 @@ namespace Enigma {
 		Window* Application::GetWindow(ID id)
 		{
 			if (!s_Data->windows.IsValid(id)) {
-				LOG_WARNING("Window with id " + (std::string)id + " doesn't exist");
+				LOG_WARNING("Window with id %s doesn't exist", ((std::string)id).c_str());
 				return nullptr;
 			}
 
@@ -148,13 +148,13 @@ namespace Enigma {
 		ImGuiHandler* Application::GetImGui(ID id)
 		{
 			if (!s_Data->windows.IsValid(id)) {
-				LOG_WARNING("ImGui context with id " + (std::string)id + " doesn't exist");
+				LOG_WARNING("ImGui context with id %s doesn't exist", ((std::string)id).c_str());
 				return nullptr;
 			}
 
 			ImGuiHandler* context = s_Data->windows.Get(id)->imgui;
 			if (context == nullptr) {
-				LOG_WARNING("ImGui context with id " + (std::string)id + " doesn't exist");
+				LOG_WARNING("ImGui context with id %s doesn't exist", ((std::string)id).c_str());
 			}
 
 			return context;
@@ -163,7 +163,7 @@ namespace Enigma {
 		void Application::UseRenderAPI(Renderer::API api)
 		{
 			if (!s_Data->renderAPIs.count(api)) {
-				LOG_WARNING("Render API doesn't exist ( " + Renderer::ToString(api) + " )");
+				LOG_WARNING("Render API doesn't exist ( %s )", Renderer::ToString(api).c_str());
 				return;
 			}
 			Renderer::RenderAPI::MakeContextCurrent(s_Data->renderAPIs[api]);
@@ -171,7 +171,7 @@ namespace Enigma {
 		Renderer::RenderAPI* Application::GetRenderAPI(Renderer::API api)
 		{
 			if (!s_Data->renderAPIs.count(api)) {
-				LOG_WARNING("Render API doesn't exist ( " + Renderer::ToString(api) + " )");
+				LOG_WARNING("Render API doesn't exist ( %s )", Renderer::ToString(api).c_str());
 				return nullptr;
 			}
 

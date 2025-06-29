@@ -48,7 +48,7 @@ namespace Enigma {
 
 				template<typename T>
 				T* GetComponentImpl(Core::ID id) {
-					LOG_ASSERT(!m_Components[T::GetStaticType()]->Exists(id), T::GetStaticName() + " at " + ((std::string)id) + "doesn't exist.");
+					LOG_ASSERT(!m_Components[T::GetStaticType()]->Exists(id), "%s at %s doesn't exist.", T::GetStaticName().c_str(), ((std::string)id).c_str());
 					return (T*)m_Components[T::GetStaticType()]->Get(id);
 				}
 
@@ -77,7 +77,7 @@ namespace Enigma {
 
 				template<typename T>
 				void AddComponent(T* component) {
-					LOG_ASSERT(m_Components.count(T::GetStaticType()), "Entity already has a " + T::GetStaticName());
+					LOG_ASSERT(m_Components.count(T::GetStaticType()), "Entity already has a %s", T::GetStaticName().c_str());
 					component->SetParentEntityID(m_ID);
 					Core::ID id = ECS::AddComponent<T>(component);
 					m_Components.insert({ T::GetStaticType(), id });
@@ -85,7 +85,7 @@ namespace Enigma {
 
 				template<typename T>
 				T* GetComponent() {
-					LOG_ASSERT(!m_Components.count(T::GetStaticType()), "Entity doesn't have a " + T::GetStaticName() + " Component");
+					LOG_ASSERT(!m_Components.count(T::GetStaticType()), "Entity doesn't have a %s Component", T::GetStaticName().c_str());
 					return ECS::GetComponent<T>(m_Components[T::GetStaticType()]);
 				}
 

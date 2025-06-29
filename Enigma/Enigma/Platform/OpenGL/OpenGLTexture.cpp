@@ -16,7 +16,7 @@ namespace Enigma {
 				unsigned char* data = stbi_load(path.c_str(), &m_Width, &m_Height, &nrChannels, 0);
 
 				if (!data) {
-					LOG_SOFT_ERROR("Failed to load texture ( " + path + " )");
+					LOG_SOFT_ERROR("Failed to load texture ( %s )", path.c_str());
 					return;
 				}
 
@@ -24,11 +24,11 @@ namespace Enigma {
 				glBindTexture(GL_TEXTURE_2D, m_Handle);
 
 				if (m_Config.sWrapMode == Renderer::TexWrapMode::None || m_Config.tWrapMode == Renderer::TexWrapMode::None) {
-					LOG_SOFT_ERROR("Failed to load texture ( " + path + " ) because it's wrap mode can't equal None");
+					LOG_SOFT_ERROR("Failed to load texture ( %s ) because it's wrap mode can't equal None", path.c_str());
 					return;
 				}
 				if (m_Config.minFilter == Renderer::TexFilterMode::None || m_Config.magFilter == Renderer::TexFilterMode::None) {
-					LOG_SOFT_ERROR("Failed to load texture ( " + path + " ) because it's filter mode can't equal None");
+					LOG_SOFT_ERROR("Failed to load texture ( %s ) because it's filter mode can't equal None", path.c_str());
 					return;
 				}
 
@@ -41,7 +41,7 @@ namespace Enigma {
 				if (nrChannels == 3) format = GL_RGB;
 				else if (nrChannels == 4) format = GL_RGBA;
 				else {
-					LOG_SOFT_ERROR("Failed to load texture ( " + path + " ) because it's a unknown image format");
+					LOG_SOFT_ERROR("Failed to load texture ( %s ) because it's a unknown image format", path.c_str());
 					return;
 				}
 
@@ -118,7 +118,7 @@ namespace Enigma {
 				int maxSlots;
 				glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxSlots);
 				if (s_OccupiedSlotCount >= maxSlots) {
-					LOG_SOFT_ERROR("To many textures binded at once, the max is ( " + std::to_string(maxSlots) + " )");
+					LOG_SOFT_ERROR("To many textures binded at once, the max is ( %i )", maxSlots);
 					return;
 				}
 				m_CurrentSlot = s_OccupiedSlotCount;

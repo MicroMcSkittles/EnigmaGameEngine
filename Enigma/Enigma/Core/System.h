@@ -16,6 +16,10 @@ namespace Enigma {
             int day; // The day in range 
             std::string dayName; // The name of the day
             int year; // The year represented as the number of years sence 1900
+        
+            // returns the time as a string in the format
+            // HH : MM : SS AM/PM, ex. 9 : 59 : 29 AM
+            std::string ToString(bool includeSeconds = false);
         };
 
         class System {

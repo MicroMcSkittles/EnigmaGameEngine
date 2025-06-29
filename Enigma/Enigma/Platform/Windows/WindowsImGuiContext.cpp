@@ -48,7 +48,7 @@ namespace Enigma {
 			{
 			case Enigma::Renderer::API::OpenGL: InitOpenGL(); break;
 			default:
-				LOG_ERROR("ImGui doesn't support " + Renderer::ToString(m_RenderAPI));
+				LOG_ERROR("ImGui doesn't support %s", Renderer::ToString(m_RenderAPI).c_str());
 			}
 		}
 

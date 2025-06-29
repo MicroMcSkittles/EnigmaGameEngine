@@ -27,12 +27,12 @@
 #define INIT_LOGGER(config) Enigma::Core::Logger::Init(config)
 
 
-#define LOG_ERROR(msg) Enigma::Core::Logger::Log(msg, 0, Enigma::Core::LogType::Error, { __FILE__, __func__, __LINE__  })
-#define LOG_SOFT_ERROR(msg) Enigma::Core::Logger::Log(msg, 0, Enigma::Core::LogType::SoftError, { __FILE__, __func__, __LINE__  })
-#define LOG_WARNING(msg) Enigma::Core::Logger::Log(msg, 1, Enigma::Core::LogType::Warning, { __FILE__, __func__, __LINE__  })
-#define LOG_MESSAGE(msg, priority) Enigma::Core::Logger::Log(msg, priority, Enigma::Core::LogType::Message, { __FILE__, __func__, __LINE__  })
+#define LOG_ERROR(msg, ...) Enigma::Core::Logger::Log(msg, { Enigma::Core::LogType::Error, 0, __FILE__, __func__, __LINE__  }, __VA_ARGS__)
+#define LOG_SOFT_ERROR(msg, ...) Enigma::Core::Logger::Log(msg, { Enigma::Core::LogType::SoftError, 0, __FILE__, __func__, __LINE__  }, __VA_ARGS__)
+#define LOG_WARNING(msg, ...) Enigma::Core::Logger::Log(msg, { Enigma::Core::LogType::Warning, 1, __FILE__, __func__, __LINE__  }, __VA_ARGS__)
+#define LOG_MESSAGE(msg, priority, ...) Enigma::Core::Logger::Log(msg, { Enigma::Core::LogType::Message, priority, __FILE__, __func__, __LINE__  }, __VA_ARGS__)
 
-#define LOG_ASSERT(condition, msg) if(condition) LOG_ERROR(msg);
+#define LOG_ASSERT(condition, msg, ...) if(condition) LOG_ERROR(msg, __VA_ARGS__);
 
 #else
 

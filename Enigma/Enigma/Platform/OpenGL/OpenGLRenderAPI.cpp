@@ -80,7 +80,7 @@ namespace Enigma {
 					case GL_FLOAT_MAT4:     return Renderer::DataType::Matrix4;
 					case GL_SAMPLER_2D:     return Renderer::DataType::Texture2D;
 					default:
-						LOG_WARNING("OpenGL data type not supported ( " + std::to_string(type) + " )");
+						LOG_WARNING("OpenGL data type not supported ( %u )", type);
 						return Renderer::DataType::None;
 					}
 				}
@@ -187,12 +187,12 @@ namespace Enigma {
 
             void OpenGLRenderAPI::SetClearColorImpl(const glm::vec4& color) {
                 glClearColor(color.r, color.g, color.b, color.a);
-                LOG_MESSAGE("OpenGL clear color set to ( " + std::to_string(color.r) + ", " + std::to_string(color.g) + ", " + std::to_string(color.b) + ", " + std::to_string(color.a) + " ).", 6);
+                LOG_MESSAGE("OpenGL clear color set to ( %f, %f, %f, %f ).", 6, color.r, color.g, color.b, color.a);
             }
 
             void OpenGLRenderAPI::SetClearMaskImpl(uint32_t mask) {
 				m_Data.clearMask = Conversions::ClearMask(mask);
-				LOG_MESSAGE("OpenGL clear mask set to ( " + Renderer::ToString((Renderer::ClearMask)mask) + " )", 6);
+				LOG_MESSAGE("OpenGL clear mask set to ( %s )", 6, Renderer::ToString((Renderer::ClearMask)mask).c_str());
             }
             void OpenGLRenderAPI::ClearImpl() {
                 glClear(m_Data.clearMask);
@@ -202,12 +202,12 @@ namespace Enigma {
                 glViewport(0, 0, width, height);
 				m_Data.viewportWidth = width;
 				m_Data.viewportHeight = height;
-                LOG_MESSAGE("OpenGL viewport set to ( " + std::to_string(width) + ", " + std::to_string(height) + " )", 6);
+                LOG_MESSAGE("OpenGL viewport set to ( %i, %i )", 6, width, height);
             }
 
             void OpenGLRenderAPI::SetDrawModeImpl(Renderer::DrawMode mode) {
 				m_Data.drawMode = Conversions::DrawMode(mode);
-				LOG_MESSAGE("OpenGL draw mode set to ( " + Renderer::ToString(mode) + " )", 6);
+				LOG_MESSAGE("OpenGL draw mode set to ( %s )", 6, Renderer::ToString(mode).c_str());
             }
             void OpenGLRenderAPI::DrawIndexedImpl(int count, Renderer::DataType type, void* data) {
 				glDrawElements(m_Data.drawMode, count, Conversions::DataType(type), data);
