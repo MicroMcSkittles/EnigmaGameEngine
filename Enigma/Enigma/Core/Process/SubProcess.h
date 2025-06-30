@@ -21,7 +21,7 @@ namespace Enigma {
 			virtual void ShutDown() {}
 			// Called every time a event occures
 			// Events trical down to sub processes from front to back
-			virtual bool OnEvent(Core::Event& e) { return false; }
+			virtual bool OnEvent(Event& e) { return false; }
 			// Called every frame
 			virtual void Update(Engine::DeltaTime deltaTime) {}
 			// Called when the engine is rendering every thing
@@ -54,7 +54,7 @@ namespace Enigma {
 			std::vector<SubProcess*>& GetData();
 
 			// Calls the OnEvent function for every sub process, goes through list form front to back
-			void OnEvent(Core::Event& e);
+			void OnEvent(Event& e);
 			// Calls the Update function for every sub process
 			void Update(Engine::DeltaTime deltaTime);
 			// Calls the Render function for every sub process
@@ -65,7 +65,7 @@ namespace Enigma {
 			void ShutDown();
 
 		private:
-			Core::IDHandler<SubProcess> m_SubProcesses;
+			IDHandler<SubProcess> m_SubProcesses;
 		};
 	}
 }

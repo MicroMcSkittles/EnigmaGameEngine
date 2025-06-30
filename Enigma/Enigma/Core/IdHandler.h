@@ -4,6 +4,8 @@
 #include <vector>
 #include <map>
 
+// TODO: make the better version of this that's described in the docs
+
 namespace Enigma {
 	namespace Core {
 
