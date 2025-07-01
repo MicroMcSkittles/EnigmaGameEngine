@@ -2,6 +2,7 @@
 #include "Engine/DeltaTime.h"
 #include "Engine/Surface.h"
 #include "Engine/Input.h"
+#include "Engine/ECS/EntityComponentSystem.h"
 
 #include "Core/Process/SubProcess.h"
 #include "Core/Window.h"
@@ -10,8 +11,6 @@
 #include "Core/Event/WindowEvent.h"
 
 #include "Renderer/Renderer.h"
-
-//#include "ECS/EntityComponentSystem.h"
 
 #include <glm/glm.hpp>
 
@@ -38,7 +37,7 @@ namespace Enigma {
 
 			Core::ID GetWindowID() { return m_WindowID; }
 
-			//ECS::ECS* GetECS() { return m_ECS; }
+			ECS::ECS* GetECS() { return m_ECS; }
 
 			void SetID(Core::ID id) { m_ID = id; }
 
@@ -66,7 +65,7 @@ namespace Enigma {
 
 			Input* m_InputContext;
 
-			//ECS::ECS* m_ECS;
+			ECS::ECS* m_ECS;
 		};
 
 	}

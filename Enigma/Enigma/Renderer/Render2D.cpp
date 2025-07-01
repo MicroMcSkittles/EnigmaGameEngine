@@ -70,9 +70,9 @@ namespace Enigma {
 
 			Core::Application::UseRenderAPI(m_RenderAPI);
 
-			RenderAPI::Clear();
+			//RenderAPI::Clear();
 
-			m_FrameBuffer->Bind();
+			//m_FrameBuffer->Bind();
 
 			RenderAPI::Clear();
 		}
@@ -97,9 +97,9 @@ namespace Enigma {
 
 			m_MainShader->Unbind();
 
-			m_FrameBuffer->Unbind();
+			//m_FrameBuffer->Unbind();
 
-			if (m_OutputBuffer != nullptr) {
+			/*if (m_OutputBuffer != nullptr) {
 				m_OutputBuffer->Bind();
 				RenderAPI::Clear();
 			}
@@ -116,7 +116,7 @@ namespace Enigma {
 			frame->Unbind();
 			m_PostProcShader->Unbind();
 
-			if (m_OutputBuffer != nullptr) m_OutputBuffer->Unbind();
+			if (m_OutputBuffer != nullptr) m_OutputBuffer->Unbind();*/
 		}
 
 		void Render2D::DrawQuadImpl(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, const glm::vec4& tint)

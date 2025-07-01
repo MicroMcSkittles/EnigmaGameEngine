@@ -5,7 +5,7 @@ namespace Enigma {
 		namespace ECS {
 			Core::ID ECS::CreateEntity()
 			{
-				Core::ID id = m_Entities.Create(Entity());
+				Core::ID id = s_CurrentInstance->m_Entities.Create(Entity());
 				AddComponent<Transform>(id);
 				return id;
 			}

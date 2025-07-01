@@ -9,17 +9,23 @@ namespace Enigma {
 			enum class ComponentType {
 				None = 0,
 				Tag,
-				Transform
+				Transform,
+				Render2D,
+				Camera
 			};
 
-			class IComponentPool {
+			class ComponentPoolInterface {
 			public:
-				virtual ~IComponentPool() { }
+				virtual ~ComponentPoolInterface() { }
 			};
 
 			template<typename T>
-			class ComponentPool : public IComponentPool {
+			class ComponentPool : public ComponentPoolInterface {
 			public:
+				~ComponentPool() {
+					m_Data.Clear();
+				}
+
 				T& Get(Core::ID id) { return m_Data.Get(id); }
 				Core::ID Add(T comp) { return m_Data.Create(comp); }
 				void Remove(Core::ID id) { return m_Data.Delete(id); }
@@ -43,11 +49,11 @@ namespace Enigma {
 			struct Transform {
 				COMP_DEF(Transform);
 
-				glm::vec3 position;
-				glm::vec3 rotation;
+				glm::vec3 position = glm::vec3(0);
+				glm::vec3 rotation = glm::vec3(0);
 				glm::vec3 scale = glm::vec3(1);
 
-				Core::ID parentTransform;
+				Core::ID parentTransform = Core::ID::InvalidID();
 			};
 		}
 	}
