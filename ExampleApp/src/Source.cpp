@@ -4,6 +4,9 @@
 
 #include <Enigma/Renderer/RenderAPI.h>
 
+#include <Enigma/Engine/ECS/Component.h>
+#include <Enigma/Engine/ECS/EntityComponentSystem.h>
+
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
@@ -31,6 +34,25 @@ public:
 		Core::Application::UseRenderAPI(Renderer::API::OpenGL);
 		Renderer::RenderAPI::SetClearColor({ 0,0,0,1 });
 		Renderer::RenderAPI::SetClearMask(Renderer::ColorBufferBit);
+
+		using namespace Engine::ECS;
+		ECS ECS;
+		{
+			Core::ID entity = ECS.CreateEntity();
+			ECS.AddComponent<Tag>(entity);
+			Tag& tag = ECS.GetComponent<Tag>(entity);
+			tag.tag = "Entity 1";
+		}
+		{
+			Core::ID entity = ECS.CreateEntity();
+			ECS.AddComponent<Tag>(entity);
+			Tag& tag = ECS.GetComponent<Tag>(entity);
+			tag.tag = "Entity 2";
+		}
+		
+		for (auto& tag : ECS.GetPool<Engine::ECS::Tag>()->GetData()) {
+			LOG_WARNING(tag.tag);
+		}
 
 		LOG_MESSAGE("YIPPY", 4);
 	}

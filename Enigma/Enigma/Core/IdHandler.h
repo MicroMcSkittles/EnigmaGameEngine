@@ -4,14 +4,15 @@
 #include <vector>
 #include <map>
 
+// TODO: update docs
 // TODO: make the better version of this that's described in the docs
 
 namespace Enigma {
 	namespace Core {
 
 		struct ID {
-			uint32_t index;
-			uint32_t generation;
+			uint32_t index = -1;
+			uint32_t generation = -1;
 
 			// Creates an invalid id
 			static ID InvalidID() {
@@ -37,7 +38,7 @@ namespace Enigma {
 		public:
 			IDHandler() = default;
 
-			std::vector<T*>& GetData() { return m_Data; }
+			std::vector<T>& GetData() { return m_Data; }
 
 			bool IsValid(ID id) {
 				// Make sure id is registered in m_IDs
@@ -47,7 +48,7 @@ namespace Enigma {
 				// Make sure id has a valid index into m_Data
 				return (m_IDs[id].first != -1);
 			}
-			ID Create(T* value) {
+			ID Create(T value) {
 
 				// see if there are any open slots, then use the first open slot
 				if (!m_Slots.empty()) {
@@ -93,7 +94,7 @@ namespace Enigma {
 			}
 
 			// Returns the value at id
-			T* Get(ID id) {
+			T& Get(ID id) {
 				// Make sure id is valid
 				if (!IsValid(id)) {
 					LOG_ERROR("Invalid ID %s", ((std::string)id).c_str());
@@ -121,7 +122,7 @@ namespace Enigma {
 				return ID::InvalidID();
 			}
 			// Returns the id of a value if it's registered
-			ID Get(T* value) {
+			ID Get(T value) {
 
 				// find the location of value in m_Data
 				int location = -1;
@@ -144,9 +145,9 @@ namespace Enigma {
 			void Clear() {
 
 				// Delete every pointer
-				for (auto d : m_Data) {
+				/*for (auto d : m_Data) {
 					delete d;
-				}
+				}*/
 				
 				// Clear all lists
 				m_Data.clear();
@@ -155,7 +156,7 @@ namespace Enigma {
 			}
 
 		private:
-			std::vector<T*> m_Data;
+			std::vector<T> m_Data;
 			std::map<ID, std::pair<int, uint32_t>> m_IDs;
 			std::vector<ID> m_Slots;
 		};

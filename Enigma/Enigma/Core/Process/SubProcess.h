@@ -65,7 +65,7 @@ namespace Enigma {
 			void ShutDown();
 
 		private:
-			IDHandler<SubProcess> m_SubProcesses;
+			IDHandler<SubProcess*> m_SubProcesses;
 		};
 	}
 }

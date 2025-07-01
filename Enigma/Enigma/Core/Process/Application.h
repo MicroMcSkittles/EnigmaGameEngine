@@ -71,8 +71,8 @@ namespace Enigma {
 
 				SubProcStack subProcStack;
 
-				IDHandler<WindowHandler> windows;
-				IDHandler<Engine::Engine> engineInstances;
+				IDHandler<WindowHandler*> windows;
+				IDHandler<Engine::Engine*> engineInstances;
 				std::map<Renderer::API, Renderer::RenderAPI*> renderAPIs;
 			};
 
