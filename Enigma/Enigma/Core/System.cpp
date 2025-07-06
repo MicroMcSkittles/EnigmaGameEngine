@@ -10,7 +10,7 @@ namespace Enigma {
         std::string Time::ToString(bool includeSeconds)
         {
             std::stringstream ss;
-            ss << (hours - ((hours > 12) ? 12 : 0));
+            ss << (hours - ((hours > 12) ? 12 : 0) + ((hours == 0) ? 12 : 0));
             ss << " : ";
             ss << std::setw(2) << std::setfill('0') << std::right << minutes;
             

@@ -8,31 +8,9 @@
 
 namespace Enigma {
 	namespace Editor {
-		void Editor::StartUp()
+
+		void Editor::CreateWindowID()
 		{
-			m_LoggerPanel = new LoggerPanel();
-			SET_LOG_CALLBACK([&](const std::string& message, const Core::LogInfo& info) {
-				m_LoggerPanel->Log(message, info);
-			});
-
-			using namespace Engine::ECS;
-			m_Scene = new Scene();
-			ECS::MakeCurrent(m_Scene->GetECS());
-			Core::ID player = m_Scene->CreateEntity("Player");
-			ECS::AddComponent<Render2D>(m_Scene->GetEntity(player)->entityID);
-			m_Scene->CreateEntity("GunIDK", player);
-
-			Core::ID enemy = m_Scene->CreateEntity("Enemy");
-			ECS::AddComponent<Render2D>(m_Scene->GetEntity(enemy)->entityID);
-			m_Scene->CreateEntity("BadGuy.MP4", enemy);
-
-
-			m_InspectorPanel = new InspectorPanel();
-			m_HierarchyPanel = new HierarchyPanel([&](Entity* entity) {
-				m_InspectorPanel->SetContext(new EntityInspectorContext(entity));
-			});
-			m_HierarchyPanel->SetContext(m_Scene);
-
 			Core::WindowConfig windowConfig;
 			windowConfig.width = 1024;
 			windowConfig.height = 720;
@@ -43,9 +21,30 @@ namespace Enigma {
 			imguiConfig.docking = true;
 
 			m_WindowID = Core::Application::CreateWindow(windowConfig, imguiConfig);
+		}
+		void Editor::StartUp()
+		{
+			// Setup Logger
+			m_LoggerPanel = new LoggerPanel();
+			SET_LOG_CALLBACK([&](const std::string& message, const Core::LogInfo& info) {
+				m_LoggerPanel->Log(message, info);
+			});
+
+			// Setup Scene stuff
+			m_Scene = new Scene();
+			m_InspectorPanel = new InspectorPanel();
+			m_HierarchyPanel = new HierarchyPanel([&](Entity* entity) {
+				m_InspectorPanel->SetContext(new EntityInspectorContext(entity));
+			});
+			m_HierarchyPanel->SetContext(m_Scene);
+			
+			// Create Window
+			CreateWindowID();
+
 			Core::Application::BindSubProcToWindow(this, m_WindowID);
 			Core::Application::GetWindow(m_WindowID)->AddEventCallback([&](Core::Event& e) {OnEvent(e); });
 
+			// Setup scene view
 			m_SceneView = Core::Application::CreateSubProc<SceneView2D>();
 			Core::Application::BindSubProcToWindow(m_SceneView, m_WindowID);
 			m_SceneView->SetWindowContext(Core::Application::GetWindow(m_WindowID));
@@ -84,5 +83,6 @@ namespace Enigma {
 			m_InspectorPanel->ImGui();
 			m_SceneViewPanel->ImGui();
 		}
+		
 	}
 }

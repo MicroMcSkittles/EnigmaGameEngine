@@ -37,15 +37,16 @@ namespace Enigma {
 
 		void SceneView2D::Render()
 		{
-			Renderer::Renderer::MakeCurrent(m_RendererContext);
-			Renderer::Render2D::StartFrame(m_Camera);
-
 			using namespace Engine::ECS;
 			ECS::MakeCurrent(m_SceneContext->GetECS());
 			ComponentPool<Engine::ECS::Render2D>* pool = ECS::GetPool<Render2D>();
-			
+			if (pool == nullptr) return;
+
+			Renderer::Renderer::MakeCurrent(m_RendererContext);
+			Renderer::Render2D::StartFrame(m_Camera);
+
 			for (Render2D& renderComp : pool->GetData()) {
-				Transform& transform = ECS::GetComponent<Transform>(renderComp.parentEntity);
+				Transform transform = ECS::GetComponent<Transform>(renderComp.parentEntity).ApplyParent();
 
 				if (renderComp.texture == nullptr) {
 					Renderer::Render2D::DrawQuad(

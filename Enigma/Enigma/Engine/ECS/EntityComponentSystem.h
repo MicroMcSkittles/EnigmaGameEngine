@@ -40,7 +40,7 @@ namespace Enigma {
 				template<typename T>
 				static ComponentPool<T>* GetPool() {
 					// Make sure a Component Pool of T type exists
-					LOG_ASSERT(!s_CurrentInstance->m_Pools.count(T::GetType()), "No component pool of type %s exists", T::GetName());
+					if (!s_CurrentInstance->m_Pools.count(T::GetType())) return nullptr;
 					// Return the pool
 					return (ComponentPool<T>*)s_CurrentInstance->m_Pools[T::GetType()];
 				}

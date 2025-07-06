@@ -24,6 +24,9 @@ namespace Enigma {
 
 			virtual void ImGui() override;
 		private:
+			void CreateWindowID();
+
+		private:
 			Core::ID m_WindowID;
 
 			HierarchyPanel* m_HierarchyPanel;

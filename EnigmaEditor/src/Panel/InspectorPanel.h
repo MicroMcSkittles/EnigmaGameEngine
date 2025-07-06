@@ -9,9 +9,14 @@ namespace Enigma {
 			virtual void ImGui() = 0;
 		};
 
+		class NullInspectorContext : public InspectorContext {
+		public:
+			virtual void ImGui() override;
+		};
+
 		class InspectorPanel {
 		public:
-			InspectorPanel() : m_Context(nullptr) { }
+			InspectorPanel();
 
 			void SetContext(InspectorContext* context) {
 				if (m_Context) delete m_Context;

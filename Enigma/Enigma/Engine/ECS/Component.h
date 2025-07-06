@@ -55,6 +55,9 @@ namespace Enigma {
 				glm::vec3 scale = glm::vec3(1);
 
 				Core::ID parentTransform = Core::ID::InvalidID();
+
+				// Transforms the transform based on the parent transform
+				Transform ApplyParent();
 			};
 		}
 	}

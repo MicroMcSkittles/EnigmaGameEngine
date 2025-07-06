@@ -123,8 +123,8 @@ namespace Enigma {
 		{
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth -1.0f });
-			transform = glm::scale(transform, { scale, 1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
+			transform = glm::scale(transform, { scale, 1.0f });
 
 			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, transform, tint });
 		}

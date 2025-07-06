@@ -6,6 +6,11 @@
 namespace Enigma {
 	namespace Editor {
 
+		InspectorPanel::InspectorPanel()
+		{
+			m_Context = new NullInspectorContext();
+		}
+
 		void InspectorPanel::ImGui()
 		{
 			if (m_Context == nullptr) return;
@@ -17,6 +22,11 @@ namespace Enigma {
 			ImGui::PopID();
 
 			ImGui::End();
+		}
+
+		void NullInspectorContext::ImGui()
+		{
+			ImGui::TextWrapped("Right click the hierarchy panel to get started");
 		}
 
 	}

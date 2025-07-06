@@ -33,6 +33,7 @@
 #ifdef DEBUG
 #    define ENABLE_LOGGER
 #endif
+#define ENABLE_LOGGER
 
 #ifdef ENABLE_LOGGER
 
