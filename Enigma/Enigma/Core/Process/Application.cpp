@@ -25,7 +25,7 @@ namespace Enigma {
 			// Initialize logger
 			Core::LoggerConfig loggerConfig;
 			loggerConfig.flags = Core::LoggerFunction | Core::LoggerTime | Core::LoggerShort;
-			loggerConfig.priorityLevel = 6;
+			loggerConfig.priorityLevel = 5;
 			INIT_LOGGER(loggerConfig);
 
 			s_Data->isRunning = true;
@@ -185,6 +185,7 @@ namespace Enigma {
 				s_Data->deltaTime.Calculate();
 
 				s_Data->subProcStack.Update(s_Data->deltaTime);
+				s_Data->subProcStack.Render();
 
 				for (auto& instance : s_Data->engineInstances.GetData()) {
 					instance->Update(s_Data->deltaTime);
@@ -220,7 +221,7 @@ namespace Enigma {
 					windowHandler->window->Update();
 				}
 
-				if (s_Data->windows.GetData().empty()) s_Data->isRunning = false;
+				if (s_Data->windows.GetData().empty() && s_Data->subProcStack.GetData().empty()) s_Data->isRunning = false;
 			}
 
 			s_Data->subProcStack.ShutDown();

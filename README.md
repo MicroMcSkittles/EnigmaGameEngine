@@ -10,10 +10,13 @@ The `Docs` folder explains everything.
 ## Version / Notes
 In the [Enigma.h](Enigma/Enigma/Enigma.h) there should be the current version and a note about what's going on. I'll try to remember that it exists. I'll update it for big commits
 
+## Editor
+The Enigma Editor is in it's very early stages right now
+![Editor ScreenShot](Docs/Pictures/EditorScreenShot.png)
 ## Example Game
 To test out the engine I made this simple top down shooter
 
-![image](ExampleScreenShot.png)
+![Example Game Screen Shot](Docs/Pictures/ExampleScreenShot.png)
 
 ---
 # Setup

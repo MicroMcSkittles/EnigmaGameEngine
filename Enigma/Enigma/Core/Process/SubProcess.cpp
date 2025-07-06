@@ -54,7 +54,8 @@ namespace Enigma {
 
 		void SubProcStack::Update(Engine::DeltaTime deltaTime)
 		{
-			for (auto& proc : m_SubProcesses.GetData()) {
+			for (int i = 0; i < m_SubProcesses.GetData().size(); ++i) {
+				SubProcess* proc = m_SubProcesses.GetData()[i];
 				if (!proc->m_Started) {
 					proc->StartUp();
 					proc->m_Started = true;

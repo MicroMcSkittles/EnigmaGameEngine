@@ -1,0 +1,88 @@
+#include "Editor.h"
+
+#include <Enigma/Core/Core.h>
+#include <Enigma/Core/Window.h>
+#include <Enigma/Core/Process/Application.h>
+
+#include <Enigma/Engine/ECS/RenderComponent.h>
+
+namespace Enigma {
+	namespace Editor {
+		void Editor::StartUp()
+		{
+			m_LoggerPanel = new LoggerPanel();
+			SET_LOG_CALLBACK([&](const std::string& message, const Core::LogInfo& info) {
+				m_LoggerPanel->Log(message, info);
+			});
+
+			using namespace Engine::ECS;
+			m_Scene = new Scene();
+			ECS::MakeCurrent(m_Scene->GetECS());
+			Core::ID player = m_Scene->CreateEntity("Player");
+			ECS::AddComponent<Render2D>(m_Scene->GetEntity(player)->entityID);
+			m_Scene->CreateEntity("GunIDK", player);
+
+			Core::ID enemy = m_Scene->CreateEntity("Enemy");
+			ECS::AddComponent<Render2D>(m_Scene->GetEntity(enemy)->entityID);
+			m_Scene->CreateEntity("BadGuy.MP4", enemy);
+
+
+			m_InspectorPanel = new InspectorPanel();
+			m_HierarchyPanel = new HierarchyPanel([&](Entity* entity) {
+				m_InspectorPanel->SetContext(new EntityInspectorContext(entity));
+			});
+			m_HierarchyPanel->SetContext(m_Scene);
+
+			Core::WindowConfig windowConfig;
+			windowConfig.width = 1024;
+			windowConfig.height = 720;
+			windowConfig.renderAPI = Renderer::API::OpenGL;
+			windowConfig.title = "Enigma Editor";
+
+			Core::ImGuiConfig imguiConfig;
+			imguiConfig.docking = true;
+
+			m_WindowID = Core::Application::CreateWindow(windowConfig, imguiConfig);
+			Core::Application::BindSubProcToWindow(this, m_WindowID);
+			Core::Application::GetWindow(m_WindowID)->AddEventCallback([&](Core::Event& e) {OnEvent(e); });
+
+			m_SceneView = Core::Application::CreateSubProc<SceneView2D>();
+			Core::Application::BindSubProcToWindow(m_SceneView, m_WindowID);
+			m_SceneView->SetWindowContext(Core::Application::GetWindow(m_WindowID));
+			m_SceneView->SetSceneContext(m_Scene);
+
+			m_SceneViewPanel = new SceneViewPanel(m_SceneView);
+
+			LOG_WARNING("Starting Editor");
+			LOG_SOFT_ERROR("Test Error");
+		}
+		void Editor::ShutDown()
+		{
+			LOG_WARNING("Shutting Down Editor");
+		}
+
+		bool Editor::OnWindowClose(Core::WindowClose& e)
+		{
+			Core::Application::Close();
+			return false;
+		}
+		bool Editor::OnEvent(Core::Event& e)
+		{
+			Core::EventHandler handler(e);
+			handler.Dispatch<Core::WindowClose>([&](Core::WindowClose& e) {return OnWindowClose(e); });
+			return false;
+		}
+
+		void Editor::ImGui()
+		{
+			Core::Application::UseRenderAPI(Renderer::API::OpenGL);
+			//Renderer::RenderAPI::SetClearMask(Renderer::ColorBufferBit);
+			Renderer::RenderAPI::Clear();
+			
+			m_LoggerPanel->ImGui();
+			m_HierarchyPanel->ImGui();
+			m_InspectorPanel->ImGui();
+			m_SceneViewPanel->ImGui();
+		}
+	}
+}

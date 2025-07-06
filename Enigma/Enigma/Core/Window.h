@@ -40,6 +40,8 @@ namespace Enigma {
 			virtual int GetWidth() = 0;
 			virtual int GetHeight() = 0;
 
+			virtual Renderer::API GetAPI() = 0;
+
 			virtual bool ShouldClose() = 0;
 			virtual void ShouldClose(bool shouldClose) = 0;
 

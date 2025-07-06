@@ -17,6 +17,7 @@ namespace Enigma {
 			class ComponentPoolInterface {
 			public:
 				virtual ~ComponentPoolInterface() { }
+				virtual void Remove(Core::ID id) = 0;
 			};
 
 			template<typename T>
@@ -28,8 +29,8 @@ namespace Enigma {
 
 				T& Get(Core::ID id) { return m_Data.Get(id); }
 				Core::ID Add(T comp) { return m_Data.Create(comp); }
-				void Remove(Core::ID id) { return m_Data.Delete(id); }
 				std::vector<T>& GetData() { return m_Data.GetData(); }
+				virtual void Remove(Core::ID id) override { m_Data.Delete(id); }
 
 			private:
 				Core::IDHandler<T> m_Data;

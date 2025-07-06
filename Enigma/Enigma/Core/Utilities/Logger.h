@@ -1,6 +1,8 @@
 #pragma once
 #include <stdint.h>
 #include <string>
+#include <functional>
+#include <iostream>
 
 namespace Enigma {
 	namespace Core {
@@ -28,6 +30,14 @@ namespace Enigma {
 			Message
 		};
 
+		struct LogInfo {
+			LogType type;
+			uint8_t priority;
+			std::string file;
+			std::string function;
+			long line;
+		};
+
 		struct LoggerConfig {
 			uint32_t flags;
 			uint32_t priorityLevel = 5; // Tells the logger what to keep and ignore, the higher the number the lower the priority
@@ -36,18 +46,15 @@ namespace Enigma {
 			bool saveToFile = false; // Tells the logger to save logs to a file.
 			std::string path = "";
 
-			LoggerConfig(uint32_t flags = LoggerFile | LoggerFunction | LoggerPriority,
-				uint32_t priorityLevel = 5, bool saveToFile = false, 
-				const std::string& path = "")
-				: flags(flags), priorityLevel(priorityLevel), saveToFile(saveToFile), path(path) { }
-		};
-
-		struct LogInfo {
-			LogType type;
-			uint8_t priority;
-			std::string file;
-			std::string function;
-			long line;
+			std::function<void(const std::string&, const LogInfo&)> logCallback = [](const std::string& message, const LogInfo& info) {
+				if (info.type == LogType::Error) std::cout << "\033[31m";
+				else if (info.type == LogType::SoftError) std::cout << "\033[31m";
+				else if (info.type == LogType::Warning) std::cout << "\033[33m";
+				else if (info.type == LogType::Message) std::cout << "\033[32m";
+				std::cout << message << std::endl;
+				std::cout << "\033[0m";
+				if (info.type == LogType::Error) exit(-1);
+			};
 		};
 
 		class Logger {

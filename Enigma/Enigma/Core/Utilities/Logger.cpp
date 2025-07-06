@@ -30,14 +30,7 @@ namespace Enigma {
 			if (s_Config->flags & LoggerTall) log = TallLog(msg, info);
 			else if (s_Config->flags & LoggerShort) log = ShortLog(msg, info);
 
-			if (info.type == LogType::Error) std::cout << "\033[31m";
-			else if (info.type == LogType::SoftError) std::cout << "\033[31m";
-			else if (info.type == LogType::Warning) std::cout << "\033[33m";
-			else if (info.type == LogType::Message) std::cout << "\033[32m";
-			std::cout << log << std::endl;
-			std::cout << "\033[0m";
-
-			if (info.type == LogType::Error) exit(-1);
+			s_Config->logCallback(log, info);
 		}
 
 		std::string Logger::TallLog(const std::string& message, const LogInfo& info)

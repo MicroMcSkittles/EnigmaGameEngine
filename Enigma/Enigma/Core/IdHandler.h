@@ -28,6 +28,9 @@ namespace Enigma {
 			bool operator == (const ID other) const {
 				return (index == other.index) && (generation == other.generation);
 			}
+			bool operator != (const ID other) const {
+				return !(*this == other);
+			}
 			operator std::string() const {
 				return "( " + std::to_string(index) + ", " + std::to_string(generation) + " )";
 			}

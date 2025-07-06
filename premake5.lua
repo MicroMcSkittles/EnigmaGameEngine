@@ -6,7 +6,7 @@ workspace "EnigmaGameEngine"
         "Release"
     }
 
-    startproject "ExampleApp"
+    startproject "EnigmaEditor"
 
 -- Directory final files will be placed into
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
@@ -19,4 +19,5 @@ include "Vendor/stb"
 include "Vendor/ImGui"
 include "Enigma"
 
-include "ExampleApp" -- Example project
+include "ExampleApp" -- Example Project
+include "EnigmaEditor" -- Enigma Editor Project
