@@ -23,6 +23,7 @@ namespace Enigma {
 			virtual bool OnEvent(Core::Event& e) override;
 
 			virtual void ImGui() override;
+
 		private:
 			void CreateWindowID();
 

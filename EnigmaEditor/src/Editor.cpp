@@ -6,6 +6,8 @@
 
 #include <Enigma/Engine/ECS/RenderComponent.h>
 
+#include "Serialization/JSON.h"
+
 namespace Enigma {
 	namespace Editor {
 
@@ -51,6 +53,15 @@ namespace Enigma {
 			m_SceneView->SetSceneContext(m_Scene);
 
 			m_SceneViewPanel = new SceneViewPanel(m_SceneView);
+
+			JSON::DataTreeNode data;
+			if (!JSON::JSON::LoadFile("ExampleProject/.Enigma/proj.json", &data)) {
+				LOG_SOFT_ERROR("Failed to load project file");
+			}
+
+			if (!JSON::JSON::Serialize("ExampleProject/TEST.json", &data)) {
+				LOG_SOFT_ERROR("Failed to serialize data");
+			}
 
 			LOG_WARNING("Starting Editor");
 			LOG_SOFT_ERROR("Test Error");
