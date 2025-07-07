@@ -55,6 +55,8 @@ namespace Enigma {
 			{
 				m_Width = width;
 				m_Height = height;
+				
+				if(m_Config.data != nullptr) free(m_Config.data);
 				m_Config.data = data;
 
 				unsigned char* image_data = (unsigned char*)m_Config.data;

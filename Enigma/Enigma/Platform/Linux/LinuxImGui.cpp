@@ -1,35 +1,11 @@
-#include "Platform/Linux/LinuxImGuiContext.h"
-#include "Platform/Linux/LinuxWindow.h"
+#include "Platform/Linux/LinuxImGui.h"
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include "Platform/Linux/LinuxWindow.h"
+#include "Core/Core.h"
 
 #include "Platform/OpenGL/OpenGLTexture.h"
-
-namespace ImGui {
-	void Image(Enigma::Renderer::Texture* texture) {
-
-		Enigma::Platform::OpenGL::OpenGLTexture* image = (Enigma::Platform::OpenGL::OpenGLTexture*)texture;
-		glm::vec2 dim = {
-			image->GetWidth(),
-			image->GetHeight()
-		};
-
-		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
-		ImVec2 size = viewportSize;
-
-		size.y = (dim.y * size.x) / dim.x;
-
-		if (size.y > viewportSize.y) {
-			size.y = viewportSize.y;
-			size.x = (dim.x * size.y) / dim.x;
-		}
-
-		void* id = (void*)image->GetHandle();
-
-		ImGui::Image(id, size, ImVec2(0, 1), ImVec2(1, 0));
-	}
-}
 
 namespace Enigma {
 

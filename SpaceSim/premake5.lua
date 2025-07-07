@@ -50,6 +50,7 @@ project "SpaceSim"
 
 -- Linux ==========================
     filter "system:linux"
+        debugdir "SpaceSim"
 
         links {
             "GLAD",

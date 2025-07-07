@@ -9,11 +9,11 @@
 void SpaceSim::StartUp() {
 
 	Core::WindowConfig windowConfig;
-	windowConfig.width = 800;
-	windowConfig.height = 800;
+	windowConfig.width = 1600;
+	windowConfig.height = 1600;
 	windowConfig.renderAPI = Renderer::API::OpenGL;
 	windowConfig.title = "Kerbal Space Pro... I mean space sim";
-	windowConfig.resizable = true;
+	windowConfig.resizable = false;
 
 	Core::ImGuiConfig imguiConfig;
 	imguiConfig.docking = false;
@@ -22,7 +22,7 @@ void SpaceSim::StartUp() {
 	Core::Application::BindSubProcToWindow(this, m_WindowID);
 	Core::Application::GetWindow(m_WindowID)->AddEventCallback([&](Core::Event& e) { return OnEvent(e); });
 
-	m_Surface.scale = { 800,800 };
+	m_Surface.scale = { 1600,1600 };
 
 	SpaceRenderer::Init(&m_Surface);
 
@@ -42,6 +42,8 @@ void SpaceSim::StartUp() {
 	m_Simulation->AddPlanet({ { 0,0,0 }, { 0,0,0 }, 50, 4,   { 0.25,1,0.12 } });
 	m_SelectedPlanet = m_Simulation->AddPlanet({ { 17,0,0 }, { 0,0,3.5 }, 3, 1, { 0.75,0.75,0.75 } });
 	//m_SelectedPlanet = m_Simulation->AddPlanet({ { 0,15,0 }, { 3,0,0 }, 1, 0.25, { 0.0,0.75,0.75 } });
+
+	LOG_MESSAGE("%s", 5, Core::Application::GetArgument(0).c_str());
 
 	LOG_MESSAGE("Starting Space Sim", 5);
 }

@@ -1,5 +1,5 @@
 #!/bin/bash
-cd ../../
+#cd ../../
 
 if [[ "$1" == "" ]] ; then
     echo ""
@@ -13,4 +13,18 @@ if [[ "$1" == "" ]] ; then
 
 else
     Vendor/premake/Linux/premake5 $1
+    if [[ "$2" == "" ]] ; then
+        echo ""
+        echo "Please specify the configuration."
+        echo ""
+        echo "    debug    Includes debug symbols, includes debug tools"
+        echo "    release  Optimized, faster, harder to debug"
+        echo ""
+    else
+        if [[ "$2" == "release" ]] ; then
+            make config=release
+        else
+            make config=debug
+        fi
+    fi
 fi

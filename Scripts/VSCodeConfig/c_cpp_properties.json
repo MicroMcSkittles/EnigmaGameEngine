@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/Enigma/**",
+                "${workspaceFolder}/Enigma/Enigma/**",
+                "${workspaceFolder}/SpaceSim/src/**",
+                "${workspaceFolder}/Vendor/GLAD/GLAD/include/**",
+                "${workspaceFolder}/Vendor/GLFW/GLFW/include/**",
+                "${workspaceFolder}/Vendor/GLM/GLM/**",
+                "${workspaceFolder}/Vendor/ImGui/ImGui/**",
+                "${workspaceFolder}/Vendor/stb/stb/**"
+            ],
+            "defines": [
+                "DEBUG",
+                "PLATFORM_LINUX"
+            ],
+            "compilerPath": "/usr/bin/g++",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+}

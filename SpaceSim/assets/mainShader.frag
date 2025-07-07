@@ -244,11 +244,12 @@ void main() {
     // Convert TexCoord into normalized uv coords
     vec2 uvCoord = (TexCoord * 2 - 1);
 
-    //vec3 color = render(uvCoord);
-    vec3 color = renderAAx4();
+    vec3 color = render(uvCoord);
+    //vec3 color = renderAAx4();
 
     color = pow(color, vec3(0.7575));
     FragColor = vec4(color, 1);
     //FragColor = texture(SceneData, TexCoord);
     //FragColor = texture(RasterFrame, TexCoord);
+    //FragColor = vec4(uvCoord, 0,1);
 }
