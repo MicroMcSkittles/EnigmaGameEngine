@@ -33,7 +33,8 @@ namespace Enigma {
 			});
 
 			// Setup Scene stuff
-			m_Scene = new Scene();
+			m_Scene = new Scene("ExampleProject/Assets/defaultScene.scene.json");
+
 			m_InspectorPanel = new InspectorPanel();
 			m_HierarchyPanel = new HierarchyPanel([&](Entity* entity) {
 				m_InspectorPanel->SetContext(new EntityInspectorContext(entity));
@@ -54,20 +55,12 @@ namespace Enigma {
 
 			m_SceneViewPanel = new SceneViewPanel(m_SceneView);
 
-			JSON::DataTreeNode data;
-			if (!JSON::JSON::LoadFile("ExampleProject/.Enigma/proj.json", &data)) {
-				LOG_SOFT_ERROR("Failed to load project file");
-			}
-
-			if (!JSON::JSON::Serialize("ExampleProject/TEST.json", &data)) {
-				LOG_SOFT_ERROR("Failed to serialize data");
-			}
-
 			LOG_WARNING("Starting Editor");
 			LOG_SOFT_ERROR("Test Error");
 		}
 		void Editor::ShutDown()
 		{
+			delete m_Scene;
 			LOG_WARNING("Shutting Down Editor");
 		}
 

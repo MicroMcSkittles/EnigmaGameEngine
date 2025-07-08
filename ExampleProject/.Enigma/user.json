@@ -1,0 +1,8 @@
+{
+    "LoggerSettings": {
+        "ShowMessages": true,
+        "ShowWarnings": true,
+        "ShowErrors": true,
+        "PriorityLevel": 5
+    }
+}

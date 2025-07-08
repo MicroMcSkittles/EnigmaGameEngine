@@ -21,6 +21,47 @@ namespace Enigma {
 			return ss.str();
 		}
 
+		void Entity::Serialize(JSON::DataTreeNode& dataTree)
+		{
+			JSON::DataTreeNode node;
+			node.value.type = JSON::DataTreeType::Object;
+
+			node["Name"] = name;
+
+			{
+				using namespace Engine::ECS;
+				ECS::MakeCurrent(scene->GetECS());
+				JSON::DataTreeNode components;
+				components.value.type = JSON::DataTreeType::Array;
+				
+				for (auto& [type, id] : ECS::GetEntity(entityID).components) {
+					JSON::DataTreeNode component;
+					switch (type)
+					{
+					case ComponentType::Tag: SerializeTag(ECS::GetPool<Tag>()->Get(id), component); break;
+					case ComponentType::Transform: SerializeTransform(ECS::GetPool<Transform>()->Get(id), component); break;
+					case ComponentType::Render2D: SerializeRender2D(ECS::GetPool<Render2D>()->Get(id), component); break;
+					default: continue;
+					}
+					components.elements.push_back(component);
+				}
+
+				node["Components"] = components;
+			}
+
+			{
+				JSON::DataTreeNode children;
+				children.value.type = JSON::DataTreeType::Array;
+				for (Core::ID childID : childrenIDs) {
+					Entity* child = scene->GetEntity(childID);
+					child->Serialize(children);
+				}
+				node["Children"] = children;
+			}
+
+			dataTree.elements.push_back(node);
+		}
+
 		EntityInspectorContext::EntityInspectorContext(Entity* entity) 
 			: m_Entity(entity), m_ComponentPopup(false)
 		{

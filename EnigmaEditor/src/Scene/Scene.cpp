@@ -7,13 +7,86 @@ namespace Enigma {
 			m_ECS = new Engine::ECS::ECS();
 		}
 
+		void Scene::LoadComponent(JSON::DataTreeNode& componentData, Core::ID entity)
+		{
+			using namespace Engine::ECS;
+			std::string type = componentData["Type"].value;
+			if      (type == "Tag")       LoadTag(ECS::AddComponent<Tag>(entity), componentData);
+			else if (type == "Transform") LoadTransform(ECS::GetComponent<Transform>(entity), componentData);
+			else if (type == "Render2D")  LoadRender2D(ECS::AddComponent<Render2D>(entity), componentData);
+			else LOG_WARNING("Unknown component type");
+		}
+		void Scene::LoadEntity(JSON::DataTreeNode& entityData)
+		{
+			using namespace Engine::ECS;
+			ECS::MakeCurrent(m_ECS);
+			std::string name = entityData["Name"].value;
+			Core::ID id = CreateEntity(name);
+
+			for (JSON::DataTreeNode& componentData : entityData["Components"].elements) {
+				LoadComponent(componentData, id);
+			}
+
+			for (JSON::DataTreeNode& childData : entityData["Children"].elements) {
+				LoadEntity(childData, id);
+			}
+		}
+		void Scene::LoadEntity(JSON::DataTreeNode& entityData, Core::ID parent)
+		{
+			using namespace Engine::ECS;
+			ECS::MakeCurrent(m_ECS);
+			std::string name = entityData["Name"].value;
+			Core::ID id = CreateEntity(name, parent);
+
+			for (JSON::DataTreeNode& componentData : entityData["Components"].elements) {
+				LoadComponent(componentData, id);
+			}
+
+			for (JSON::DataTreeNode& childData : entityData["Children"].elements) {
+				LoadEntity(childData, id);
+			}
+		}
+
+		Scene::Scene(const std::string& scenePath)
+		{
+			m_ScenePath = scenePath;
+			m_ECS = new Engine::ECS::ECS();
+			JSON::JSON::LoadFile(m_ScenePath, &m_SceneData);
+
+			m_Name = m_SceneData["Name"].value;
+
+			for (JSON::DataTreeNode& entityData : m_SceneData["Entities"].elements) {
+				LoadEntity(entityData);
+			}
+		}
+
 		Scene::~Scene()
 		{
+			Save();
+
 			for (Entity* entity : m_EntityTree.GetData()) {
 				delete entity;
 			}
 			m_EntityTree.Clear();
 			delete m_ECS;
+		}
+
+		void Scene::Save()
+		{
+			if (m_ScenePath.empty()) return;
+			JSON::DataTreeNode save;
+			save.value.type = JSON::DataTreeType::Object;
+			save["Name"] = m_Name;
+
+			JSON::DataTreeNode entities;
+			entities.value.type = JSON::DataTreeType::Array;
+			for (Entity* entity : m_EntityTree.GetData()) {
+				if (m_EntityTree.IsValid(entity->parentID)) continue;
+				entity->Serialize(entities);
+			}
+			save["Entities"] = entities;
+
+			JSON::JSON::Serialize(m_ScenePath, &save);
 		}
 
 		Core::ID Scene::CreateEntity(const std::string& name) {
@@ -88,6 +161,5 @@ namespace Enigma {
 		Entity* Scene::GetEntity(Core::ID entityID) {
 			return m_EntityTree.Get(entityID);
 		}
-
 	}
 }

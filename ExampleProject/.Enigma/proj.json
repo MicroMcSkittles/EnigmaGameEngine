@@ -1,9 +1,3 @@
 {
-    "ActiveScene": "Assets/defaultScene.json",
-    "LoggerSettings": {
-        "ShowMessages": true,
-        "ShowWarnings": true,
-        "ShowErrors": true,
-        "PriorityLevel": 5
-    }
+    "ActiveScene": "Assets/defaultScene.scene.json"
 }

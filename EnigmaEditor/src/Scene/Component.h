@@ -5,6 +5,7 @@
 #include <Enigma/Core/Core.h>
 
 #include "Panel/InspectorPanel.h"
+#include "Serialization/JSON.h"
 
 namespace Enigma {
 	namespace Editor {
@@ -38,6 +39,9 @@ namespace Enigma {
 			Entity* m_Parent;
 			Engine::ECS::Tag* m_Component;
 		};
+		void SerializeTag(Engine::ECS::Tag& component, JSON::DataTreeNode& dataTree);
+		void LoadTag(Engine::ECS::Tag& component, JSON::DataTreeNode& dataTree);
+
 		class TransformContext : public ComponentContext {
 		public:
 			TransformContext(Entity* parent);
@@ -48,6 +52,9 @@ namespace Enigma {
 			Entity* m_Parent;
 			Engine::ECS::Transform* m_Component;
 		};
+		void SerializeTransform(Engine::ECS::Transform& component, JSON::DataTreeNode& dataTree);
+		void LoadTransform(Engine::ECS::Transform& component, JSON::DataTreeNode& dataTree);
+
 		class Render2DContext : public ComponentContext {
 		public:
 			Render2DContext(Entity* parent);
@@ -58,6 +65,7 @@ namespace Enigma {
 			Entity* m_Parent;
 			Engine::ECS::Render2D* m_Component;
 		};
-
+		void SerializeRender2D(Engine::ECS::Render2D& component, JSON::DataTreeNode& dataTree);
+		void LoadRender2D(Engine::ECS::Render2D& component, JSON::DataTreeNode& dataTree);
 	}
 }

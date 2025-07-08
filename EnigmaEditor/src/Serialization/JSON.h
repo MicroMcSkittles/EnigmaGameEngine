@@ -1,5 +1,5 @@
 #pragma once
-
+#include <Enigma/Core/Core.h>
 #include <vector>
 #include <map>
 #include <string>
@@ -20,6 +20,13 @@ namespace Enigma {
 				Null
 			};
 
+			enum DataTreeFormatFlag {
+				None    = 0,
+				NewLine = BIT(0), // Use new line chars in node
+				Indent  = BIT(1),  // Indent node
+				CarryToChildren = BIT(2) // Give all child nodes the same flags as the parent
+			};
+
 			struct DataTreeValue {
 				DataTreeType type = DataTreeType::Null;
 				std::string value;
@@ -30,10 +37,12 @@ namespace Enigma {
 				operator bool();
 				operator std::string();
 			};
+
 			struct DataTreeNode {
 				DataTreeValue value;
 				std::vector<DataTreeNode> elements;
 				std::map<std::string, DataTreeNode> children;
+				uint8_t flags = NewLine | Indent; // Configurations for the Data Tree Node serialization
 
 				DataTreeNode() { }
 				DataTreeNode(DataTreeType type) : value({ type, "" }) { }
@@ -41,6 +50,7 @@ namespace Enigma {
 				DataTreeNode(float v);
 				DataTreeNode(bool v);
 				DataTreeNode(const std::string& v);
+				DataTreeNode(const char* v);
 
 				// If DataTree is an array, At will return the node At id in the array
 				DataTreeNode& At(int id);

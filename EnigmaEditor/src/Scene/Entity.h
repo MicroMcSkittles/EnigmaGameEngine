@@ -1,6 +1,7 @@
 #pragma once
 #include "Panel/InspectorPanel.h"
 #include "Scene/Component.h"
+#include "Serialization/JSON.h"
 
 #include <Enigma/Core/IdHandler.h>
 #include <string>
@@ -25,6 +26,8 @@ namespace Enigma {
 			// Returns the entity's name in the format
 			// (Parent Entity Path Name)/name
 			std::string GetPathName();
+
+			void Serialize(JSON::DataTreeNode& dataTree);
 		};
 
 		class EntityInspectorContext : public InspectorContext {

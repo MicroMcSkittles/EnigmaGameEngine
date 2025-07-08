@@ -68,6 +68,10 @@ namespace Enigma {
 				value.type = DataTreeType::String;
 				value.value = v;
 			}
+			DataTreeNode::DataTreeNode(const char* v) {
+				value.type = DataTreeType::String;
+				value.value = v;
+			}
 
 			DataTreeNode& DataTreeNode::At(int id)
 			{
@@ -82,9 +86,7 @@ namespace Enigma {
 			DataTreeNode& DataTreeNode::operator[](const std::string& name)
 			{
 				if (!children.count(name)) {
-					LOG_WARNING("Data tree node does not contain child node ( %s )", name.c_str());
-					DataTreeNode nullNode;
-					return nullNode;
+					children.insert({ name, DataTreeNode() });
 				}
 				return children.at(name);
 			}
@@ -145,43 +147,62 @@ namespace Enigma {
 			}
 			void JSON::SerializeObject(std::ofstream& file, DataTreeNode* tree, int tabDepth) {
 				// Push opening bracket
-				file << "{\n";
+				file << "{";
+				if (tree->flags & NewLine) file << '\n';
 				for (auto& [name, child] : tree->children) {
 					// Push node name
 					std::string nameHeader = "\"" + name + "\": ";
-					file << Tab(tabDepth) << nameHeader;
+					if(child.flags & Indent)file << Tab(tabDepth);
+					file << nameHeader;
+
+					if (tree->flags & CarryToChildren) child.flags = tree->flags;
 
 					// Push node data
 					if (child.value.type == DataTreeType::String) file << "\"" << child.value.value << "\"";
+					else if (child.value.type == DataTreeType::Null) file << "null";
 					else if (child.value.type == DataTreeType::Array) SerializeArray(file, &child, tabDepth + 1);
 					else if (child.value.type == DataTreeType::Object) SerializeObject(file, &child, tabDepth + 1);
 					else file << child.value.value;
 
 					// Push comma if there are more nodes
-					if (name != std::prev(tree->children.end())->first) file << ",\n";
+					if (name != std::prev(tree->children.end())->first) {
+						file << ",";
+						if (child.flags & NewLine) file << '\n';
+					}
 				}
 				// Push closing bracket
-				file << "\n" << Tab(tabDepth - 1) << "}";
+				if (tree->flags & NewLine) file << '\n';
+				if (tree->flags & Indent)file << Tab(tabDepth - 1);
+				file << "}";
 			}
 			void JSON::SerializeArray(std::ofstream& file, DataTreeNode* tree, int tabDepth) {
 				// Push opening bracket
-				file << "[\n";
+				file << "[";
+				if (tree->flags & NewLine) file << '\n';
 				for (int i = 0; i < tree->elements.size(); ++i) {
 					DataTreeNode& element = tree->elements[i];
 					// Push tab
-					file << Tab(tabDepth);
+					if (element.flags & Indent) file << Tab(tabDepth);
 					
+					if (tree->flags & CarryToChildren) element.flags = tree->flags;
+
 					// Push node data
 					if (element.value.type == DataTreeType::String) file << "\"" << element.value.value << "\"";
+					else if (element.value.type == DataTreeType::Null) file << "null";
 					else if (element.value.type == DataTreeType::Array) SerializeArray(file, &element, tabDepth + 1);
 					else if (element.value.type == DataTreeType::Object) SerializeObject(file, &element, tabDepth + 1);
 					else file << element.value.value;
 					
 					// Push comma if there are more elements
-					if (i != tree->elements.size() - 1) file << ",\n";
+					if (i != tree->elements.size() - 1) {
+						file << ",";
+						if (element.flags & NewLine) file << '\n';
+					}
 				}
 				// Push closing bracket
-				file << "\n" << Tab(tabDepth - 1) << "]";
+				if (tree->flags & NewLine) file << '\n';
+				if (tree->flags & Indent)file << Tab(tabDepth - 1);
+				file << "]";
 			}
 
 			// JSON parsing
@@ -283,9 +304,7 @@ namespace Enigma {
 			bool JSON::IsArrayValid(Consumer& consumer, DataTreeNode* tree, bool& error)
 			{
 				// if peek returns [ then this is a array
-				if (consumer.peek() != '[') {
-					return false;
-				}
+				if (consumer.peek() != '[') return false;
 				consumer.eat();
 
 				tree->value.type = DataTreeType::Array;
@@ -299,7 +318,7 @@ namespace Enigma {
 					else if (IsNullValid(child.value.value, consumer, error)) child.value.type = DataTreeType::Null;
 					else if (IsObjectValid(consumer, &child, error));
 					else if (IsArrayValid(consumer, &child, error));
-
+					else if (consumer.peek() == ']') break;
 					if (error) return false;
 
 					tree->elements.push_back(child);
