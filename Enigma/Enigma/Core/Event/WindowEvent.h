@@ -5,6 +5,11 @@
 namespace Enigma {
 	namespace Core {
 
+		namespace EventType {
+			const uint64_t WindowClose  = Hash("WindowClose");
+			const uint64_t WindowResize = Hash("WindowResize");
+		}
+
 		class WindowClose : public Event {
 		public:
 			EVENT_TYPE(WindowClose);

@@ -17,6 +17,11 @@ project "Enigma"
         "Enigma/Core/**.cpp",
         "Enigma/Core/**.hpp",
 
+        "Enigma/ImGui/**.c",
+        "Enigma/ImGui/**.h",
+        "Enigma/ImGui/**.cpp",
+        "Enigma/ImGui/**.hpp",
+
         "Enigma/Engine/**.c",
         "Enigma/Engine/**.h",
         "Enigma/Engine/**.cpp",
@@ -58,7 +63,7 @@ project "Enigma"
 
 -- Windows ==========================
     filter "system:windows"
-        location "../"
+        --location "../"
 		systemversion "latest"
 		staticruntime "On"
 

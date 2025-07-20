@@ -8,9 +8,8 @@ namespace Enigma {
 
 		class HierarchyPanel {
 		public:
-			HierarchyPanel(std::function<void(Entity*)> selectCallback)
-				: m_SceneContext(nullptr), m_Selected(nullptr), m_IsMenuOpen(false),
-				m_SelectCallback(selectCallback) { }
+			HierarchyPanel()
+				: m_SceneContext(nullptr), m_Selected(nullptr), m_IsMenuOpen(false){ }
 
 			void SetContext(Scene* scene) { m_SceneContext = scene; }
 
@@ -27,7 +26,6 @@ namespace Enigma {
 			void EntityNode(Entity* entity);
 
 		private:
-			std::function<void(Entity*)> m_SelectCallback;
 			Entity* m_Selected;
 			Scene* m_SceneContext;
 			bool m_IsMenuOpen;

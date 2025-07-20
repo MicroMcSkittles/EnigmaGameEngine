@@ -11,10 +11,11 @@ namespace Enigma {
 	namespace Core {
 
 		struct ID {
-			uint32_t index = -1;
-			uint32_t generation = -1;
+			uint32_t index = (uint32_t)-1;
+			uint32_t generation = (uint32_t)-1;
 
 			// Creates an invalid id
+			// Sets index and generation to the largest possible 32 bit int
 			static ID InvalidID() {
 				return {
 					(uint32_t)-1,

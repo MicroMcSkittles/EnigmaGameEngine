@@ -1,6 +1,6 @@
 #include "Panel/SceneViewPanel.h"
 
-#include <Enigma/Core/ImGuiContext.h>
+#include <Enigma/ImGui/EnigmaWidgets.h>
 #include <imgui.h>
 
 namespace Enigma {

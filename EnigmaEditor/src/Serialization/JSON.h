@@ -22,9 +22,17 @@ namespace Enigma {
 
 			enum DataTreeFormatFlag {
 				None    = 0,
-				NewLine = BIT(0), // Use new line chars in node
-				Indent  = BIT(1),  // Indent node
-				CarryToChildren = BIT(2) // Give all child nodes the same flags as the parent
+				NewLine         = BIT(0), // Use new line chars in node
+				Indent          = BIT(1), // Indent node
+				CarryToChildren = BIT(2), // Give all child nodes the same flags as the parent
+				Collapse        = BIT(3)
+			};
+			// Used to format JSON data trees when saving
+			struct DataTreeFormat {
+				// Serialization format flags
+				uint8_t flags = NewLine | Indent;
+				// Specifies the order of an objects children in the JSON file, Only effects object nodes
+				std::vector<std::string> childOrder;
 			};
 
 			struct DataTreeValue {
@@ -42,7 +50,7 @@ namespace Enigma {
 				DataTreeValue value;
 				std::vector<DataTreeNode> elements;
 				std::map<std::string, DataTreeNode> children;
-				uint8_t flags = NewLine | Indent; // Configurations for the Data Tree Node serialization
+				DataTreeFormat format;
 
 				DataTreeNode() { }
 				DataTreeNode(DataTreeType type) : value({ type, "" }) { }
@@ -67,6 +75,7 @@ namespace Enigma {
 				static bool ParseSource(const std::string& source, DataTreeNode* tree);
 
 				// Saves a JSON data tree to file, returns false if failed to save
+				// You must specify the order of child nodes in object nodes with the nodes format
 				static bool Serialize(const std::string& filename, DataTreeNode* tree);
 
 			private:
@@ -90,6 +99,8 @@ namespace Enigma {
 				static void SerializeObject(std::ofstream& file, DataTreeNode* tree, int tabDepth);
 				// Saves array node to file
 				static void SerializeArray(std::ofstream& file, DataTreeNode* tree, int tabDepth);
+
+				static void SerializeString(std::ofstream& file, const std::string& str);
 
 				// Removes all white spaces from consumers source/buffer
 				static bool RemoveWhiteSpace(Consumer& consumer);

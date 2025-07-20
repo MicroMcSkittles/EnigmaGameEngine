@@ -10,6 +10,10 @@ namespace Enigma {
 				m_DeltaTime = 0;
 				m_LastFrame = Core::System::GetTimeMS();
 			}
+			DeltaTime(float deltaTime) {
+				m_DeltaTime = deltaTime;
+				m_LastFrame = Core::System::GetTimeMS();
+			}
 
 			void Calculate() {
 				float currentTime = Core::System::GetTimeMS();

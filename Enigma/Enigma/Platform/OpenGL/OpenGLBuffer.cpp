@@ -114,7 +114,7 @@ namespace Enigma {
 					auto& attachment = m_Config.attachments[i];
 
 					Renderer::TextureConfig textureConfig;
-					textureConfig.data = (void*)NULL;
+					textureConfig.data = (uint8_t*)NULL;
 					textureConfig.width = m_Width;
 					textureConfig.height = m_Height;
 					textureConfig.format = attachment.format;
@@ -128,7 +128,7 @@ namespace Enigma {
 						Renderer::Texture* depthTexture;
 						if (attachment.output != nullptr) depthTexture = attachment.output;
 						else depthTexture = Renderer::Texture::Create(textureConfig);
-						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, ((OpenGLTexture*)depthTexture)->GetHandle(), 0);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, *(uint32_t*)depthTexture->GetNativeTexture(), 0);
 						m_DepthAttachmentID = i;
 						m_Attachments.push_back(depthTexture);
 						break;
@@ -138,7 +138,7 @@ namespace Enigma {
 						Renderer::Texture* colorTexture;
 						if (attachment.output != nullptr) colorTexture = attachment.output;
 						else colorTexture = Renderer::Texture::Create(textureConfig);
-						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + m_ColorAttachmentCount, GL_TEXTURE_2D, ((OpenGLTexture*)colorTexture)->GetHandle(), 0);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + m_ColorAttachmentCount, GL_TEXTURE_2D, *(uint32_t*)colorTexture->GetNativeTexture(), 0);
 						m_Attachments.push_back(colorTexture);
 						m_ColorAttachmentCount += 1;
 					}
@@ -222,7 +222,7 @@ namespace Enigma {
 				auto& attachment = m_Config.attachments[index];
 
 				Renderer::TextureConfig textureConfig;
-				textureConfig.data = (void*)NULL;
+				textureConfig.data = (uint8_t*)NULL;
 				textureConfig.width = m_Width;
 				textureConfig.height = m_Height;
 				textureConfig.format = attachment.format;
@@ -230,7 +230,7 @@ namespace Enigma {
 				textureConfig.dataType = attachment.dataType;
 
 				m_Attachments[index] = Renderer::Texture::Create(textureConfig);
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + m_ColorAttachmentCount, GL_TEXTURE_2D, ((OpenGLTexture*)m_Attachments[index])->GetHandle(), 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + m_ColorAttachmentCount, GL_TEXTURE_2D, *(uint32_t*)m_Attachments[index]->GetNativeTexture(), 0);
 
 				return out;
 			}

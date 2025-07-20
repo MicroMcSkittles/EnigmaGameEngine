@@ -1,17 +1,11 @@
 #pragma once
 #include "Core/Core.h"
+#include "Core/Utilities/Utilities.h"
 #include <functional>
 #include <string>
 
 namespace Enigma {
 	namespace Core {
-		enum class EventType {
-			None = 0,
-			WindowClose, WindowResize,
-			MouseMoved, MouseButton, MouseScroll,
-			Keyboard,
-			Collision2D, Collision,
-		};
 
 		enum EventCategory {
 			EventNone = BIT(0),
@@ -20,11 +14,12 @@ namespace Enigma {
 			MouseEvent = BIT(3),
 			KeyboardEvent = BIT(4),
 			Physics2DEvent = BIT(5),
-			PhysicsEvent = BIT(6)
+			PhysicsEvent = BIT(6),
+			LastEventCategoryBit = 6
 		};
 		
-#define EVENT_TYPE(type) virtual Core::EventType GetType() override { return Core::EventType::type; } \
-						static Core::EventType StaticGetType() { return Core::EventType::type; } \
+#define EVENT_TYPE(type) virtual uint64_t GetType() override { return EventType::type; } \
+						static uint64_t StaticGetType() { return EventType::type; } \
 						virtual std::string GetName() override { return #type; }
 
 #define EVENT_CATEGORY(category) virtual uint32_t GetCategory() { return category; }
@@ -33,7 +28,7 @@ namespace Enigma {
 
 		class Event {
 		public:
-			virtual EventType GetType() = 0;
+			virtual uint64_t GetType() = 0;
 			virtual uint32_t GetCategory() = 0;
 			virtual std::string GetName() = 0;
 			virtual std::string ToString() { return GetName(); }

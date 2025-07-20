@@ -6,9 +6,10 @@ namespace Enigma {
 		namespace OpenGL {
 			class OpenGLTexture : public Renderer::Texture {
 			public:
-				OpenGLTexture(const std::string& path, const Renderer::TextureConfig& config = {});
 				OpenGLTexture(const Renderer::TextureConfig& config = {});
 				~OpenGLTexture();
+
+				virtual void* GetNativeTexture() override;
 
 				virtual void Resize(int width, int height, void* data = (void*)NULL) override;
 
@@ -18,7 +19,6 @@ namespace Enigma {
 				virtual int GetWidth() override { return m_Width; }
 				virtual int GetHeight() override { return m_Height; }
 
-				uint32_t GetHandle() { return m_Handle; }
 				int GetSlot() { return m_CurrentSlot; }
 
 			private:

@@ -2,7 +2,6 @@
 #include "Core/Core.h"
 #include "Core/System.h"
 #include "Core/Utilities/Logger.h"
-#include "Core/ImGuiContext.h"
 
 namespace Enigma {
 	namespace Core {
@@ -53,6 +52,14 @@ namespace Enigma {
 		void Application::Close()
 		{
 			s_Data->isRunning = false;
+		}
+
+		void Application::EventCallback(Event& e)
+		{
+			for (WindowHandler* handler : s_Data->windows.GetData()) {
+				for (ID& id : handler->subProcesses) s_Data->subProcStack.GetProcess(id)->OnEvent(e);
+				for (ID& id : handler->engineInstances) s_Data->engineInstances.Get(id)->OnEvent(e);
+			}
 		}
 
 		void Application::BindSubProcToWindow(SubProcess* proc, ID windowID)
@@ -144,6 +151,16 @@ namespace Enigma {
 			}
 
 			return s_Data->windows.Get(id)->window;
+		}
+		ID Application::GetWindowID(Window* window)
+		{
+			for (WindowHandler* handler : s_Data->windows.GetData()) {
+				if (handler->window == window) {
+					return s_Data->windows.Get(handler);
+				}
+			}
+			LOG_WARNING("Window isn't registered");
+			return Core::ID::InvalidID();
 		}
 		ImGuiHandler* Application::GetImGui(ID id)
 		{

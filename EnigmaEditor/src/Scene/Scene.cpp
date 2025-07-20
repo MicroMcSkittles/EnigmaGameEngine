@@ -1,4 +1,5 @@
 #include "Scene/Scene.h"
+#include "Scene/Component.h"
 
 namespace Enigma {
 	namespace Editor {
@@ -11,9 +12,9 @@ namespace Enigma {
 		{
 			using namespace Engine::ECS;
 			std::string type = componentData["Type"].value;
-			if      (type == "Tag")       LoadTag(ECS::AddComponent<Tag>(entity), componentData);
-			else if (type == "Transform") LoadTransform(ECS::GetComponent<Transform>(entity), componentData);
-			else if (type == "Render2D")  LoadRender2D(ECS::AddComponent<Render2D>(entity), componentData);
+			if      (type == "Tag")       AddComponent<EditorTag>(entity)->Load(componentData);
+			else if (type == "Transform") AddComponent<EditorTransform>(entity)->Load(componentData);
+			else if (type == "Render2D")  AddComponent<EditorRender2D>(entity)->Load(componentData);
 			else LOG_WARNING("Unknown component type");
 		}
 		void Scene::LoadEntity(JSON::DataTreeNode& entityData)
@@ -46,7 +47,7 @@ namespace Enigma {
 				LoadEntity(childData, id);
 			}
 		}
-
+	
 		Scene::Scene(const std::string& scenePath)
 		{
 			m_ScenePath = scenePath;
@@ -60,6 +61,66 @@ namespace Enigma {
 			}
 		}
 
+		void Scene::SaveEntity(JSON::DataTreeNode& dataTree, Core::ID entity)
+		{
+			JSON::DataTreeNode node;
+			node.value.type = JSON::DataTreeType::Object;
+			node.format.childOrder = { "Name", "Components", "Children" };
+
+			Entity* e = m_EntityTree.Get(entity);
+
+			node["Name"] = e->name;
+
+			{
+				using namespace Engine::ECS;
+				ECS::MakeCurrent(m_ECS);
+				JSON::DataTreeNode components;
+				components.value.type = JSON::DataTreeType::Array;
+
+				for (auto& [type, id] : ECS::GetEntity(e->entityID).components) {
+					JSON::DataTreeNode component;
+					switch (type)
+					{
+					case ComponentType::Tag:       GetComponent<EditorTag>(entity)->Save(component); break;
+					case ComponentType::Transform: GetComponent<EditorTransform>(entity)->Save(component); break;
+					case ComponentType::Render2D:  GetComponent<EditorRender2D>(entity)->Save(component); break;
+					default: continue;
+					}
+					components.elements.push_back(component);
+				}
+
+				node["Components"] = components;
+			}
+
+			{
+				JSON::DataTreeNode children;
+				children.value.type = JSON::DataTreeType::Array;
+				for (Core::ID childID : e->childrenIDs) {
+					SaveEntity(children, childID);
+				}
+				node["Children"] = children;
+			}
+
+			dataTree.elements.push_back(node);
+		}
+		void Scene::Save()
+		{
+			if (m_ScenePath.empty()) return;
+			JSON::DataTreeNode save;
+			save.value.type = JSON::DataTreeType::Object;
+			save.format.childOrder = { "Name", "Entities" };
+			save["Name"] = m_Name;
+
+			JSON::DataTreeNode entities;
+			entities.value.type = JSON::DataTreeType::Array;
+			for (Entity* entity : m_EntityTree.GetData()) {
+				if (m_EntityTree.IsValid(entity->parentID)) continue;
+				SaveEntity(entities, entity->ID);
+			}
+			save["Entities"] = entities;
+
+			JSON::JSON::Serialize(m_ScenePath, &save);
+		}
 		Scene::~Scene()
 		{
 			Save();
@@ -71,22 +132,12 @@ namespace Enigma {
 			delete m_ECS;
 		}
 
-		void Scene::Save()
-		{
-			if (m_ScenePath.empty()) return;
-			JSON::DataTreeNode save;
-			save.value.type = JSON::DataTreeType::Object;
-			save["Name"] = m_Name;
-
-			JSON::DataTreeNode entities;
-			entities.value.type = JSON::DataTreeType::Array;
-			for (Entity* entity : m_EntityTree.GetData()) {
-				if (m_EntityTree.IsValid(entity->parentID)) continue;
-				entity->Serialize(entities);
+		EditorComponentInterface* Scene::GetComponent(Core::ID component) {
+			if (!m_Components.IsValid(component)) {
+				LOG_WARNING("Failed to get component, invalid ID %s", ((std::string)component).c_str());
+				return nullptr;
 			}
-			save["Entities"] = entities;
-
-			JSON::JSON::Serialize(m_ScenePath, &save);
+			return m_Components.Get(component);
 		}
 
 		Core::ID Scene::CreateEntity(const std::string& name) {
@@ -126,6 +177,53 @@ namespace Enigma {
 
 			return e->ID;
 		}
+		void Scene::SetEntityParent(Core::ID entity, Core::ID newParent)
+		{
+			// Make sure entity exists in the entity tree
+			if (!m_EntityTree.IsValid(entity)) {
+				LOG_WARNING("Failed to set parent, ID is invalid %s", ((std::string)entity).c_str());
+				return;
+			}
+			Entity* e = m_EntityTree.Get(entity);
+
+			// If entity had a parent then remove entity from the parents children ids
+			if (m_EntityTree.IsValid(e->parentID)) {
+				Entity* parent = m_EntityTree.Get(e->parentID);
+				// Loop through childrenIDs to remove entity
+				for (int i = 0; i < parent->childrenIDs.size(); ++i) {
+					Core::ID& childID = parent->childrenIDs[i];
+					if (childID == entity) {
+						parent->childrenIDs.erase(parent->childrenIDs.begin() + i);
+						break;
+					}
+				}
+			}
+
+			using namespace Engine::ECS;
+			ECS::MakeCurrent(m_ECS);
+
+			// if newParent is equal to InvalidID then entity has no parent
+			if (newParent == Core::ID::InvalidID()) {
+				e->parentID = Core::ID::InvalidID();
+				Transform& transform = ECS::GetComponent<Transform>(e->entityID);
+				transform.parentTransform = Core::ID::InvalidID();
+				return;
+			}
+
+			// Make sure the new parent exists in the entity tree
+			if (!m_EntityTree.IsValid(newParent)) {
+				LOG_WARNING("Failed to set parent for %s, parent ID is invalid %s", e->name.c_str(), ((std::string)newParent).c_str());
+				return;
+			}
+			Entity* parent = m_EntityTree.Get(newParent);
+			parent->childrenIDs.push_back(entity);
+
+			// Set the parent transform of the entity's transform
+			Transform& transform = ECS::GetComponent<Transform>(e->entityID);
+			transform.parentTransform = ECS::GetComponentID<Transform>(parent->entityID);
+
+			e->parentID = newParent;
+		}
 
 		void Scene::DeleteEntity(Core::ID entity)
 		{
@@ -146,6 +244,23 @@ namespace Enigma {
 				}
 			}
 			
+			for (Core::ID& childID : e->childrenIDs) {
+				DeleteChildEntity(childID);
+			}
+
+			m_ECS->DeleteEntity(e->entityID);
+			m_EntityTree.Delete(entity);
+			delete e;
+		}
+		void Scene::DeleteChildEntity(Core::ID entity)
+		{
+			if (!m_EntityTree.IsValid(entity)) {
+				LOG_WARNING("ID isn't valid ( %s )", ((std::string)entity).c_str());
+				return;
+			}
+
+			Entity* e = m_EntityTree.Get(entity);
+
 			for (Core::ID& childID : e->childrenIDs) {
 				DeleteEntity(childID);
 			}

@@ -13,7 +13,8 @@ project "EnigmaEditor"
         "src/**.c",
         "src/**.h",
         "src/**.cpp",
-        "src/**.hpp"
+        "src/**.hpp",
+        rootdir .. "Vendor/stb/stb/stb_image.h",
     }
 
     includedirs {
@@ -22,6 +23,7 @@ project "EnigmaEditor"
         rootdir .. "Enigma/Enigma",
         rootdir .. "Vendor/GLM/GLM",
         rootdir .. "Vendor/ImGui/ImGui",
+        rootdir .. "Vendor/stb",
     }
 
     defines {
@@ -37,7 +39,8 @@ project "EnigmaEditor"
 
 -- Windows ==========================
     filter "system:windows"
-        location "../"
+        -- Use debugdir!
+        --location "../"
         staticruntime "On"
         systemversion "latest"
 

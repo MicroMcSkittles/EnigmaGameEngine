@@ -6,7 +6,7 @@
 
 namespace Enigma {
 	namespace Renderer {
-		Texture* Texture::Create(const std::string& path, const TextureConfig& config)
+		/*Texture* Texture::Create(const std::string& path, const TextureConfig& config)
 		{
 			switch (RenderAPI::GetAPI())
 			{
@@ -16,6 +16,16 @@ namespace Enigma {
 			}
 			return nullptr;
 		}
+		Texture* Texture::Create(uint8_t* bytes, int length, const TextureConfig& config)
+		{
+			switch (RenderAPI::GetAPI())
+			{
+			case API::OpenGL: return new Platform::OpenGL::OpenGLTexture(bytes, length, config); break;
+			default:
+				LOG_ERROR("Can't create shader, API not supported");
+			}
+			return nullptr;
+		}*/
 		Texture* Texture::Create(const TextureConfig& config)
 		{
 			switch (RenderAPI::GetAPI())
@@ -27,8 +37,7 @@ namespace Enigma {
 			}
 		}
 		
-		
-		TextureAtlas::TextureAtlas(const std::string& path, const glm::vec2& size, const TextureConfig& config)
+		/*TextureAtlas::TextureAtlas(const std::string& path, const glm::vec2& size, const TextureConfig& config)
 		{
 			m_Config = config;
 			m_Size = size;
@@ -115,6 +124,6 @@ namespace Enigma {
 		{
 			int index = id.x + m_Size.x * id.y;
 			return m_Textures[index];
-		}
+		}*/
 	}
 }

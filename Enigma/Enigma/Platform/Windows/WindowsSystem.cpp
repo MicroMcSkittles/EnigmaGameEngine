@@ -1,33 +1,40 @@
-#include "Platform/Windows/WindowsSystem.h"
+#include "Core/System.h"
+#include "Platform/Windows/WindowsWindow.h"
+#include "Core/Process/Application.h"
 #include "Core/Core.h"
+#include "Engine/InputCodes.h"
 
+#include <Windows.h>
+#include <commdlg.h>
 #include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+
 #include <ctime>
+#include <sstream>
 
 namespace Enigma {
 
-    Core::System* Core::System::s_Instance = new Platform::WindowsSystem();
-
-    namespace Platform {
-        void WindowsSystem::InitImpl()
+    namespace Core {
+        void System::Init()
         {
             if (!glfwInit()) {
                 LOG_ERROR("Failed to initialize GLFW");
             }
         }
-        void WindowsSystem::ShutdownImpl()
+        void System::Shutdown()
         {
             glfwTerminate();
         }
 
-        Core::Time WindowsSystem::GetTimeImpl() {
+        Core::Time System::GetTime() {
             time_t timestamp;
             time(&timestamp);
             tm timestruct;
             timestruct = *localtime(&timestamp);
 
             Core::Time rslt;
-            rslt.miliseconds = GetTimeMSImpl();
+            rslt.miliseconds = GetTimeMS();
             rslt.seconds = timestruct.tm_sec;
             rslt.minutes = timestruct.tm_min;
             rslt.hours = timestruct.tm_hour;
@@ -47,40 +54,76 @@ namespace Enigma {
 
             return rslt;
         }
-        float WindowsSystem::GetTimeMSImpl() {
+        float System::GetTimeMS() {
             float ms = glfwGetTime();
             //if (ms == 0) LOG_ERROR("GLFW failed to get the time from start of application");
             return glfwGetTime();
         }
 
-        std::string WindowsSystem::GetOSNameImpl() {
+        std::string System::GetOSName() {
             return "Windows";
         }
 
-        std::string WindowsSystem::GetKeyNameImpl(int key)
+        std::string System::OpenFileDialog(const char* filter, Core::ID windowID)
         {
-            std::string name = glfwGetKeyName(key, glfwGetKeyScancode(key));
-            return name;
-        }
-        std::string WindowsSystem::GetButtonNameImpl(int button)
-        {
-            std::string name = std::to_string(button);
-            if (button == GLFW_MOUSE_BUTTON_LEFT) name = "Left";
-            else if (button == GLFW_MOUSE_BUTTON_MIDDLE) name = "Middle";
-            else if (button == GLFW_MOUSE_BUTTON_RIGHT) name = "right";
-            return name;
-        }
-        std::string WindowsSystem::GetActionNameImpl(int action)
-        {
-            std::string name = std::to_string(action);
-            if (action == GLFW_PRESS) name = "Press";
-            else if (action == GLFW_REPEAT) name = "Repeat";
-            else if (action == GLFW_RELEASE) name = "Release";
-            return name;
-        }
-        std::string WindowsSystem::GetModsNameImpl(int action)
-        {
+            Platform::WindowsWindow* window = (Platform::WindowsWindow*)Application::GetWindow(windowID);
+
+            OPENFILENAMEA ofn;
+            CHAR szFile[260] = { 0 };
+            ZeroMemory(&ofn, sizeof(OPENFILENAME));
+            ofn.lStructSize = sizeof(OPENFILENAME);
+            ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)window->GetHandle());
+            ofn.lpstrFile = szFile;
+            ofn.nMaxFile = sizeof(szFile);
+            ofn.lpstrFilter = filter;
+            ofn.nFilterIndex = 1;
+            ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+            if (GetOpenFileNameA(&ofn) == TRUE) {
+                return ofn.lpstrFile;
+            }
+
             return std::string();
         }
+
+        std::string System::SaveFileDialog(const char* filter, Core::ID windowID)
+        {
+            Platform::WindowsWindow* window = (Platform::WindowsWindow*)Application::GetWindow(windowID);
+
+            OPENFILENAMEA ofn;
+            CHAR szFile[260] = { 0 };
+            ZeroMemory(&ofn, sizeof(OPENFILENAME));
+            ofn.lStructSize = sizeof(OPENFILENAME);
+            ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)window->GetHandle());
+            ofn.lpstrFile = szFile;
+            ofn.nMaxFile = sizeof(szFile);
+            ofn.lpstrFilter = filter;
+            ofn.nFilterIndex = 1;
+            ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+            if (GetSaveFileNameA(&ofn) == TRUE) {
+                return ofn.lpstrFile;
+            }
+
+            return std::string();
+        }
+
+        std::string System::GetKeyName(int key)
+        {
+            std::string name = "Unknown Key";
+            switch (key)
+            {
+            case GLFW_KEY_LEFT_CONTROL: name = "Left Control"; break;
+            case GLFW_KEY_RIGHT_CONTROL: name = "Right Control"; break;
+            case GLFW_KEY_LEFT_SHIFT: name = "Left Shift"; break;
+            case GLFW_KEY_RIGHT_SHIFT: name = "Right Shift"; break;
+            case GLFW_KEY_LEFT_ALT: name = "Left Alt"; break;
+            case GLFW_KEY_RIGHT_ALT: name = "Right Alt"; break;
+            default:
+                int scancode = glfwGetKeyScancode(key);
+                if (scancode == -1) return name;
+                name = glfwGetKeyName(key, scancode);
+            }
+            return name;
+        }
+        
     }
 }

@@ -1,0 +1,25 @@
+{
+	"RootPath": "..\\",
+	"AssetsPath": "Assets\\",
+	"ActiveScene": "Assets\\defaultScene.scene.json",
+	"Assets": {
+		"ExampleProject\\Assets\\test.jpeg": {
+			"Type": 1,
+			"sWrapMode": 1,
+			"tWrapMode": 1,
+			"MinFilter": 1,
+			"MagFilter": 2,
+			"BorderColor": [1.000000, 0.000000, 1.000000],
+			"FlipY": false
+		},
+		"ExampleProject\\Assets\\test.png": {
+			"Type": 1,
+			"sWrapMode": 2,
+			"tWrapMode": 2,
+			"MinFilter": 2,
+			"MagFilter": 1,
+			"BorderColor": [0.000000, 1.000000, 1.000000],
+			"FlipY": false
+		}
+	}
+}

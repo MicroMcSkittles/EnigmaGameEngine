@@ -9,6 +9,7 @@ namespace Enigma {
 
 			Transform Transform::ApplyParent()
 			{
+				if (!relative) return *this;
 				if (parentTransform == Core::ID::InvalidID()) return *this;
 
 				Transform parent = ECS::GetPool<Transform>()->Get(parentTransform).ApplyParent();

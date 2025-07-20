@@ -28,6 +28,8 @@ namespace Enigma {
 			ImGui::Checkbox("Warnings", &m_ShowWarningLogs);
 			ImGui::SameLine();
 			ImGui::Checkbox("Errors", &m_ShowErrorLogs);
+			ImGui::SameLine();
+			if (ImGui::Button("Clear Logs")) m_Logs.clear();
 			ImGui::Separator();
 
 			ImGui::BeginChild("LOGGER_CHILD_WINDOW", { 0,0 }, ImGuiChildFlags_Border);
@@ -43,7 +45,7 @@ namespace Enigma {
 				else if (log.info.type == Core::LogType::Warning) textColor = IM_COL32(255, 155, 0, 255);
 				else if (log.info.type == Core::LogType::SoftError) textColor = IM_COL32(255, 0, 0, 255);
 				ImGui::PushStyleColor(ImGuiCol_Text, textColor);
-				ImGui::Text(log.message.c_str());
+				ImGui::TextWrapped(log.message.c_str());
 				ImGui::PopStyleColor();
 			}
 			ImGui::EndChild();

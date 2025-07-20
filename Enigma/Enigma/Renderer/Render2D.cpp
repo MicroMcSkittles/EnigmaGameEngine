@@ -29,7 +29,7 @@ namespace Enigma {
 			TextureConfig textureConfig;
 			textureConfig.width = 1;
 			textureConfig.height = 1;
-			textureConfig.data = malloc(3);
+			textureConfig.data = (uint8_t*)malloc(3);
 			if (textureConfig.data) memset(textureConfig.data, 255, 3);
 			m_BlankTexture = Texture::Create(textureConfig);
 			free(textureConfig.data);

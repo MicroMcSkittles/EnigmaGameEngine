@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 namespace Enigma {
 	namespace Editor {
@@ -12,6 +13,17 @@ namespace Enigma {
 		class NullInspectorContext : public InspectorContext {
 		public:
 			virtual void ImGui() override;
+		};
+
+		class TextFileInspectorContext : public InspectorContext {
+		public:
+			TextFileInspectorContext(const std::string& filename);
+
+			virtual void ImGui() override;
+
+		private:
+			std::string m_Filename;
+			std::string m_Content;
 		};
 
 		class InspectorPanel {

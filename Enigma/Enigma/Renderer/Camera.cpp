@@ -22,15 +22,14 @@ namespace Enigma {
 			return { 0,0,0 };
 		}
 
-		Frustum Frustum::ScreenFrustum()
+		Frustum Frustum::SurfaceFrustum(Engine::Surface surface)
 		{
 			Frustum frustum;
 			frustum.fov = glm::radians(45.0f);
 			frustum.near = 0.1f;
 			frustum.far = 1000.0f;
 
-			//auto window = Core::Window::Get();
-			//frustum.aspectRatio = (float)window->GetWidth() / (float)window->GetHeight();
+			frustum.aspectRatio = surface.scale.x / surface.scale.y;
 			return frustum;
 		}
 
@@ -38,6 +37,7 @@ namespace Enigma {
 			: Camera(position, direction), m_Frustum(frustum)
 		{
 			m_Projection = glm::perspective(m_Frustum.fov, m_Frustum.aspectRatio, m_Frustum.near, m_Frustum.far);
+			m_InvProjection = glm::inverse(m_Projection);
 			CalculateView();
 		}
 		void PerspectiveCamera::Resize(uint32_t width, uint32_t height)
@@ -48,11 +48,13 @@ namespace Enigma {
 		void PerspectiveCamera::CalculateView()
 		{
 			m_View = glm::lookAt(m_Position, m_Position + m_Direction, glm::vec3(0.0f, 1.0f, 0.0f));
+			m_InvView = glm::inverse(m_View);
 			m_ViewProjection = m_Projection * m_View;
 		}
 		void PerspectiveCamera::CalculateProjection()
 		{
 			m_Projection = glm::perspective(m_Frustum.fov, m_Frustum.aspectRatio, m_Frustum.near, m_Frustum.far);
+			m_InvProjection = glm::inverse(m_Projection);
 			m_ViewProjection = m_Projection * m_View;
 		}
 
@@ -129,5 +131,6 @@ namespace Enigma {
 			m_ZoomViewBox = m_ViewBox.Zoom(m_Zoom);
 			CalculateProjection();
 		}
-	}
+		
+}
 }

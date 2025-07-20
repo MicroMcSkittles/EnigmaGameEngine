@@ -28,7 +28,7 @@ namespace Enigma {
 
 			virtual void Render() override;
 
-			void SetWindowContext(Core::Window* window);
+			void SetWindowContext(Core::ID window);
 			void SetSceneContext(Scene* scene) { m_SceneContext = scene; }
 
 			void SetSurface(const Engine::Surface& surface);
@@ -45,6 +45,9 @@ namespace Enigma {
 			Engine::Surface m_Surface;
 			Renderer::Render2D* m_RendererContext;
 
+			bool m_Focused;
+			float m_ZoomSpeed;
+			float m_CameraSpeed;
 			Renderer::OrthographicCamera* m_Camera;
 
 			Scene* m_SceneContext;

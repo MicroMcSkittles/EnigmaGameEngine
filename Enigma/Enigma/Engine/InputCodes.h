@@ -139,11 +139,15 @@ namespace Enigma {
 			constexpr int MouseButtonLast     = MouseButton8;
 			constexpr int MouseButtonLeft     = MouseButton1;
 			constexpr int MouseButtonRight    = MouseButton2;
-			constexpr int MouseButtonMiddle = MouseButton3;
-		}
+			constexpr int MouseButtonMiddle   = MouseButton3;
 
-		constexpr int KeyRelease          = 0;
-		constexpr int KeyPress            = 1;
-		constexpr int KeyRepeat           = 2;
+			constexpr int ShiftMask           = 1;
+			constexpr int CtrlMask            = 2;
+			constexpr int AltMask             = 4;
+
+			constexpr int KeyRelease          = 0;
+			constexpr int KeyPress            = 1;
+			constexpr int KeyRepeat           = 2;
+		}
 	}
 }

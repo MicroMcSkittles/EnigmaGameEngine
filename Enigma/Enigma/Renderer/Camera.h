@@ -21,7 +21,9 @@ namespace Enigma {
 			void SetDirection(const glm::vec3& direction) { m_Direction = direction; CalculateView(); }
 
 			const glm::mat4& GetView() const { return m_View; }
+			const glm::mat4& GetInvView() const { return m_InvView; }
 			const glm::mat4& GetProjection() const { return m_Projection; }
+			const glm::mat4& GetInvProjection() const { return m_InvProjection; }
 			const glm::mat4& GetViewProjection() const { return m_ViewProjection; }
 
 			glm::vec2 WorldToScreen(const glm::vec3& worldPoint);
@@ -32,7 +34,9 @@ namespace Enigma {
 			glm::vec3 m_Direction;
 
 			glm::mat4 m_View;
+			glm::mat4 m_InvView;
 			glm::mat4 m_Projection;
+			glm::mat4 m_InvProjection;
 			glm::mat4 m_ViewProjection;
 		};
 
@@ -42,7 +46,7 @@ namespace Enigma {
 			float near;
 			float far;
 
-			static Frustum ScreenFrustum();
+			static Frustum SurfaceFrustum(Engine::Surface surface);
 		};
 
 		class PerspectiveCamera : public Camera {
@@ -85,6 +89,7 @@ namespace Enigma {
 			const ViewBox& GetViewBox() { return m_ViewBox; }
 			void SetViewBox(const ViewBox& view);
 
+			float GetZoom() { return m_Zoom; }
 			void SetZoom(float zoom);
 
 		private:

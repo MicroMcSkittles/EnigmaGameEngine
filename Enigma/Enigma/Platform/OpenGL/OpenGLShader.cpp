@@ -94,7 +94,7 @@ namespace Enigma {
 				if (!success) {
 					glGetProgramInfoLog(m_Handle, 512, NULL, info);
 					std::string infoLog = info;
-					LOG_ERROR("Failed to link shader program.\n%s", infoLog.c_str());
+					LOG_SOFT_ERROR("Failed to link shader program.\n%s", infoLog.c_str());
 				}
 
 				FindUniforms();

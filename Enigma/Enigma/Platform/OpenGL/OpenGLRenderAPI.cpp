@@ -44,6 +44,7 @@ namespace Enigma {
 					case Renderer::DataType::UnsignedByte:  return GL_UNSIGNED_BYTE;
 					case Renderer::DataType::UnsignedShort: return GL_UNSIGNED_SHORT;
 					case Renderer::DataType::UnsignedInt:   return GL_UNSIGNED_INT;
+					case Renderer::DataType::UnsignedInt_24_8:     return GL_UNSIGNED_INT_24_8;
 					case Renderer::DataType::Int:			  return GL_INT;
 					case Renderer::DataType::Int2:		  return GL_INT_VEC2;
 					case Renderer::DataType::Int3:		  return GL_INT_VEC3;
@@ -140,6 +141,7 @@ namespace Enigma {
 					case Renderer::TexFormat::RG:               return GL_RG;
 					case Renderer::TexFormat::RGB:              return GL_RGB;
 					case Renderer::TexFormat::RGBA:             return GL_RGBA;
+					case Renderer::TexFormat::RED32F:           return GL_R32F;
 					case Renderer::TexFormat::DEPTH24_STENCIL8: return GL_DEPTH24_STENCIL8;
 					case Renderer::TexFormat::DEPTH_STENCIL:    return GL_DEPTH_STENCIL;
 					default:
@@ -181,6 +183,7 @@ namespace Enigma {
                 }
 
 				glEnable(GL_DEPTH_TEST); // TODO: add an enable function to RenderAPI
+				glLineWidth(1.f);
 
                 LOG_MESSAGE("Initialized OpenGL!!", 2);
             }

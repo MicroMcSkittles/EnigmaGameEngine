@@ -146,48 +146,66 @@ namespace Enigma {
 				file.close();
 			}
 			void JSON::SerializeObject(std::ofstream& file, DataTreeNode* tree, int tabDepth) {
+				
+				if (tree->children.empty()) {
+					file << "{ }";
+					return;
+				}
+				
 				// Push opening bracket
 				file << "{";
-				if (tree->flags & NewLine) file << '\n';
-				for (auto& [name, child] : tree->children) {
-					// Push node name
-					std::string nameHeader = "\"" + name + "\": ";
-					if(child.flags & Indent)file << Tab(tabDepth);
-					file << nameHeader;
+				if (!(tree->format.flags & Collapse)) file << '\n';
 
-					if (tree->flags & CarryToChildren) child.flags = tree->flags;
+				for (int i = 0; i < tree->format.childOrder.size(); ++i) {
+					std::string& name = tree->format.childOrder[i];
+					DataTreeNode& child = tree->children[name];
+					// Push node name
+					if (child.format.flags & Indent)file << Tab(tabDepth);
+					SerializeString(file, name);
+					file << ": ";
+
+					if (tree->format.flags & CarryToChildren) child.format.flags = tree->format.flags;
+					if (tree->format.flags & Collapse) child.format.flags &= ((uint8_t)(-1)) - ((uint8_t)Indent);
 
 					// Push node data
-					if (child.value.type == DataTreeType::String) file << "\"" << child.value.value << "\"";
+					if (child.value.type == DataTreeType::String) SerializeString(file, child.value.value); //file << "\"" << child.value.value << "\"";
 					else if (child.value.type == DataTreeType::Null) file << "null";
 					else if (child.value.type == DataTreeType::Array) SerializeArray(file, &child, tabDepth + 1);
 					else if (child.value.type == DataTreeType::Object) SerializeObject(file, &child, tabDepth + 1);
 					else file << child.value.value;
 
 					// Push comma if there are more nodes
-					if (name != std::prev(tree->children.end())->first) {
+					if (i < tree->format.childOrder.size() - 1) {
 						file << ",";
-						if (child.flags & NewLine) file << '\n';
+						if (!(tree->format.flags & Collapse)) file << '\n';
 					}
 				}
 				// Push closing bracket
-				if (tree->flags & NewLine) file << '\n';
-				if (tree->flags & Indent)file << Tab(tabDepth - 1);
+				if (tree->format.flags & NewLine) file << '\n';
+				if (tree->format.flags & Indent)file << Tab(tabDepth - 1);
 				file << "}";
 			}
 			void JSON::SerializeArray(std::ofstream& file, DataTreeNode* tree, int tabDepth) {
+				if (tree->elements.empty()) {
+					file << "[ ]";
+					return;
+				}
+				
 				// Push opening bracket
 				file << "[";
-				if (tree->flags & NewLine) file << '\n';
+				if (!(tree->format.flags & Collapse)) file << '\n';
 				for (int i = 0; i < tree->elements.size(); ++i) {
 					DataTreeNode& element = tree->elements[i];
+
+					if (tree->format.flags & CarryToChildren) element.format.flags = tree->format.flags;
+					if (tree->format.flags & Collapse)
+						element.format.flags &= ((uint8_t)(-1)) - ((uint8_t)Indent);
+
 					// Push tab
-					if (element.flags & Indent) file << Tab(tabDepth);
-					
-					if (tree->flags & CarryToChildren) element.flags = tree->flags;
+					if (element.format.flags & Indent) file << Tab(tabDepth);
 
 					// Push node data
-					if (element.value.type == DataTreeType::String) file << "\"" << element.value.value << "\"";
+					if (element.value.type == DataTreeType::String) SerializeString(file, element.value.value); //file << "\"" << element.value.value << "\"";
 					else if (element.value.type == DataTreeType::Null) file << "null";
 					else if (element.value.type == DataTreeType::Array) SerializeArray(file, &element, tabDepth + 1);
 					else if (element.value.type == DataTreeType::Object) SerializeObject(file, &element, tabDepth + 1);
@@ -195,14 +213,24 @@ namespace Enigma {
 					
 					// Push comma if there are more elements
 					if (i != tree->elements.size() - 1) {
-						file << ",";
-						if (element.flags & NewLine) file << '\n';
+						file << ", ";
+						if (!(tree->format.flags & Collapse)) file << '\n';
 					}
 				}
 				// Push closing bracket
-				if (tree->flags & NewLine) file << '\n';
-				if (tree->flags & Indent)file << Tab(tabDepth - 1);
+				if (!(tree->format.flags & Collapse)) file << '\n';
+				if (tree->format.flags & Indent && !(tree->format.flags & Collapse)) file << Tab(tabDepth - 1);
 				file << "]";
+			}
+			void JSON::SerializeString(std::ofstream& file, const std::string& str)
+			{
+				std::string rslt = str;
+				size_t offset = 0;
+				while ((offset = rslt.find_first_of('\\', offset)) != std::string::npos) {
+					rslt.insert(rslt.begin() + offset + 1, '\\');
+					offset += 2;
+				}
+				file << "\"" << rslt << "\"";
 			}
 
 			// JSON parsing
@@ -212,6 +240,19 @@ namespace Enigma {
 				for (char& c : consumer.source) {
 					// Flip quoteFlag if c is a " char
 					if (c == '\"' && lastChar != '\\') quoteFlag = !quoteFlag;
+
+					if (quoteFlag) {
+						if (c == '\\' && lastChar != '\\') {
+							lastChar = c;
+							continue;
+						}
+						if (lastChar == '\\') {
+							consumer.buffer << c;
+							lastChar = ' ';
+							continue;
+						}
+					}
+
 					// Skip char if c is a white space and isn't in quotes
 					if (isspace(c) && !quoteFlag) continue;
 					// Push back c

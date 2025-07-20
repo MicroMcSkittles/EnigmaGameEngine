@@ -21,3 +21,4 @@ include "Enigma"
 
 include "ExampleApp" -- Example Project
 include "EnigmaEditor" -- Enigma Editor Project
+include "SpaceSim" -- The space simulation project

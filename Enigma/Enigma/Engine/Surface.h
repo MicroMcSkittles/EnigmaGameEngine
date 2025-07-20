@@ -14,7 +14,7 @@ namespace Enigma {
 			{
 				if (scale.x == width && scale.y == height) return;
 				scale = { width, height };
-				frame->Resize(width, height);
+				if(frame) frame->Resize(width, height);
 			}
 		};
 	}

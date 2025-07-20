@@ -4,11 +4,12 @@
 // By Noah Beauchamp
 // Version 1 0 1
 // Note:
-// Rewrote like the entire thing. I didn't like how the engine and window were static. so I
-// rewrote it. You can know make multiple windows and engine instances.
-// Some of the functionality was lost, but I will add those features back in.
+// There is now a Editor, it is a work in progress and most of it 
+// will probably change in the future. I'm going to pause work on the Editor
+// to focus more on the Engine its self.
 // 
-// There is now a proof of consept editor. it isn't permanent
+// There is now a example application. its a very simple (and buggy) space simulation.
+// 
 // ==============================
 
 #include "Core/Core.h"

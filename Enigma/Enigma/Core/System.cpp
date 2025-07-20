@@ -1,5 +1,6 @@
 #include "Core/System.h"
 #include "Core/Core.h"
+#include "Engine/InputCodes.h"
 
 #include <fstream>
 #include <sstream>
@@ -36,5 +37,31 @@ namespace Enigma {
             ss << file.rdbuf();
             return ss.str();
         }
+
+        std::string System::GetButtonName(int button)
+        {
+            std::string name = std::to_string(button);
+            if (button == Engine::KeyCode::MouseButtonLeft) name = "Left";
+            else if (button == Engine::KeyCode::MouseButtonMiddle) name = "Middle";
+            else if (button == Engine::KeyCode::MouseButtonRight) name = "right";
+            return name;
+        }
+        std::string System::GetActionName(int action)
+        {
+            std::string name = std::to_string(action);
+            if (action == Engine::KeyCode::KeyPress) name = "Press";
+            else if (action == Engine::KeyCode::KeyRepeat) name = "Repeat";
+            else if (action == Engine::KeyCode::KeyRelease) name = "Release";
+            return name;
+        }
+        std::string System::GetModsName(int mods)
+        {
+            std::stringstream ss;
+            if (mods & Engine::KeyCode::ShiftMask) ss << "( Shift ) ";
+            if (mods & Engine::KeyCode::CtrlMask) ss << "( Ctrl ) ";
+            if (mods & Engine::KeyCode::AltMask) ss << "( Alt )";
+            return ss.str();
+        }
+
     }
 }

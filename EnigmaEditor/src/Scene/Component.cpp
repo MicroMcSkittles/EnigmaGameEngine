@@ -2,99 +2,67 @@
 #include "Scene/Entity.h"
 #include "Scene/Scene.h"
 
+#include "EditorWidgets.h"
+#include "Editor.h"
+
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
 namespace Enigma {
 	namespace Editor {
-		TagContext::TagContext(Entity* parent) : m_Parent(parent)
+
+		void EditorTag::Save(JSON::DataTreeNode& dataTree)
 		{
-			Engine::ECS::ECS::MakeCurrent(m_Parent->scene->GetECS());
-			m_Component = &Engine::ECS::ECS::GetComponent<Engine::ECS::Tag>(m_Parent->entityID);
-		}
-		void TagContext::ImGui()
-		{
-			std::string strID = m_Parent->GetPathName() + " - Tag";
-			//if (!ImGui::TreeNode(strID.c_str(), "Tag")) return;
-
-			ImGui::SeparatorText("Tag");
-			ImGui::InputText("Tag", &m_Component->tag);
-
-			//ImGui::TreePop();
-		}
-
-
-		TransformContext::TransformContext(Entity* parent) : m_Parent(parent)
-		{
-			Engine::ECS::ECS::MakeCurrent(m_Parent->scene->GetECS());
-			m_Component = &Engine::ECS::ECS::GetComponent<Engine::ECS::Transform>(m_Parent->entityID);
-		}
-		void TransformContext::ImGui()
-		{
-			std::string strID = m_Parent->GetPathName() + " - Transform";
-			//if (!ImGui::TreeNode(strID.c_str(), "Transform")) return;
-
-			ImGui::SeparatorText("Transform");
-			ImGui::InputFloat3("Position", &m_Component->position.x);
-			ImGui::InputFloat3("Rotation", &m_Component->rotation.x);
-			ImGui::InputFloat3("Scale", &m_Component->scale.x);
-
-			//ImGui::TreePop();
-		}
-
-		Render2DContext::Render2DContext(Entity* parent) : m_Parent(parent)
-		{
-			Engine::ECS::ECS::MakeCurrent(m_Parent->scene->GetECS());
-			m_Component = &Engine::ECS::ECS::GetComponent<Engine::ECS::Render2D>(m_Parent->entityID);
-		}
-
-		void Render2DContext::ImGui()
-		{
-			std::string strID = m_Parent->GetPathName() + " - Render 2D";
-			//if (!ImGui::TreeNode(strID.c_str(), "Render 2D")) return;
-
-			ImGui::SeparatorText("Render 2D");
-			ImGui::InputInt("Depth", &m_Component->depth);
-			ImGui::InputFloat4("Tint", &m_Component->tint.x);
-			ImGui::Text("TODO: Add a texture imgui widget");
-
-			//ImGui::TreePop();
-		}
-
-		void SerializeTag(Engine::ECS::Tag& component, JSON::DataTreeNode& dataTree)
-		{
-			dataTree.value.type = JSON::DataTreeType::Object;
+			dataTree = JSON::DataTreeType::Object;
+			dataTree.format.childOrder = { "Type", "Tag" };
 			dataTree["Type"] = "Tag";
 
+			Engine::ECS::Tag& component = GetComponent();
 			dataTree["Tag"] = component.tag;
 		}
-		void LoadTag(Engine::ECS::Tag& component, JSON::DataTreeNode& dataTree)
+		void EditorTag::Load(JSON::DataTreeNode& dataTree)
 		{
+			Engine::ECS::Tag& component = GetComponent();
 			component.tag = dataTree["Tag"].value;
 		}
-
-		void SerializeTransform(Engine::ECS::Transform& component, JSON::DataTreeNode& dataTree)
+		void EditorTag::InspectorImGuiImpl(Engine::ECS::Tag& component)
 		{
-			dataTree.value.type = JSON::DataTreeType::Object;
+			ImGui::InputText("Tag", &component.tag);
+		}
+
+		void EditorTransform::Save(JSON::DataTreeNode& dataTree)
+		{
+			dataTree = JSON::DataTreeType::Object;
+			dataTree.format.childOrder = { "Type", "Relative", "Position", "Rotation", "Scale" };
 			dataTree["Type"] = "Transform";
 
-			dataTree["Position"].value.type = JSON::DataTreeType::Array;
+			Engine::ECS::Transform& component = GetComponent();
+
+			dataTree["Relative"] = component.relative;
+
+			dataTree["Position"] = JSON::DataTreeType::Array;
+			dataTree["Position"].format.flags |= JSON::Collapse;
 			dataTree["Position"].elements.push_back(component.position.x);
 			dataTree["Position"].elements.push_back(component.position.y);
 			dataTree["Position"].elements.push_back(component.position.z);
 
-			dataTree["Rotation"].value.type = JSON::DataTreeType::Array;
+			dataTree["Rotation"] = JSON::DataTreeType::Array;
+			dataTree["Rotation"].format.flags |= JSON::Collapse;
 			dataTree["Rotation"].elements.push_back(component.rotation.x);
 			dataTree["Rotation"].elements.push_back(component.rotation.y);
 			dataTree["Rotation"].elements.push_back(component.rotation.z);
 
-			dataTree["Scale"].value.type = JSON::DataTreeType::Array;
+			dataTree["Scale"] = JSON::DataTreeType::Array;
+			dataTree["Scale"].format.flags |= JSON::Collapse;
 			dataTree["Scale"].elements.push_back(component.scale.x);
 			dataTree["Scale"].elements.push_back(component.scale.y);
 			dataTree["Scale"].elements.push_back(component.scale.z);
 		}
-		void LoadTransform(Engine::ECS::Transform& component, JSON::DataTreeNode& dataTree)
+		void EditorTransform::Load(JSON::DataTreeNode& dataTree)
 		{
+			Engine::ECS::Transform& component = GetComponent();
+			component.relative = dataTree["Relative"].value;
+
 			component.position.x = dataTree["Position"].elements[0].value;
 			component.position.y = dataTree["Position"].elements[1].value;
 			component.position.z = dataTree["Position"].elements[2].value;
@@ -107,24 +75,45 @@ namespace Enigma {
 			component.scale.y = dataTree["Scale"].elements[1].value;
 			component.scale.z = dataTree["Scale"].elements[2].value;
 		}
+		void EditorTransform::InspectorImGuiImpl(Engine::ECS::Transform& component)
+		{
+			ImGui::Checkbox("Relative", &component.relative);
+			ImGui::DragFloat3("Position", &component.position.x);
+			ImGui::DragFloat3("Rotation", &component.rotation.x);
+			ImGui::DragFloat3("Scale", &component.scale.x);
+		}
 
-		void SerializeRender2D(Engine::ECS::Render2D& component, JSON::DataTreeNode& dataTree)
+		EditorRender2D::~EditorRender2D()
+		{
+			if (m_TextureAsset == nullptr) return;
+			m_TextureAsset->userCount -= 1;
+			m_TextureAsset->Unload();
+		}
+
+		void EditorRender2D::Save(JSON::DataTreeNode& dataTree)
 		{
 			dataTree.value.type = JSON::DataTreeType::Object;
+			dataTree.format.childOrder = { "Type", "Depth", "Tint", "Texture" };
 			dataTree["Type"] = "Render2D";
 
+			Engine::ECS::Render2D& component = GetComponent();
+
 			dataTree["Depth"] = component.depth;
-			
-			dataTree["Tint"].value.type = JSON::DataTreeType::Array;
+
+			dataTree["Tint"] = JSON::DataTreeType::Array;
+			dataTree["Tint"].format.flags |= JSON::Collapse;
 			dataTree["Tint"].elements.push_back(component.tint.x);
 			dataTree["Tint"].elements.push_back(component.tint.y);
 			dataTree["Tint"].elements.push_back(component.tint.z);
 			dataTree["Tint"].elements.push_back(component.tint.w);
 
-			dataTree["Texture"].value.type = JSON::DataTreeType::Null;
+			if (m_TextureAsset == nullptr) dataTree["Texture"] = JSON::DataTreeType::Null;
+			else dataTree["Texture"] = m_TextureAsset->path;
 		}
-		void LoadRender2D(Engine::ECS::Render2D& component, JSON::DataTreeNode& dataTree)
+		void EditorRender2D::Load(JSON::DataTreeNode& dataTree)
 		{
+			Engine::ECS::Render2D& component = GetComponent();
+
 			component.depth = dataTree["Depth"].value;
 
 			component.tint.x = dataTree["Tint"].elements[0].value;
@@ -132,8 +121,28 @@ namespace Enigma {
 			component.tint.z = dataTree["Tint"].elements[2].value;
 			component.tint.w = dataTree["Tint"].elements[3].value;
 
-			component.texture = nullptr;
+			if (dataTree["Texture"].value.IsNull()) component.texture = nullptr;
+			else {
+				Asset* asset = Editor::GetActiveProject()->GetAssetHandler()->GetAsset(dataTree["Texture"].value);
+				if (asset->type != AssetType::Texture) {
+					LOG_WARNING("Failed to load texture for entity ( %s ) invailed asset path ( %s )", m_Parent->name.c_str(), asset->path.c_str());
+					component.texture = nullptr;
+				}
+				else {
+					m_TextureAsset = (TextureAsset*)asset;
+					m_TextureAsset->userCount += 1;
+				}
+			}
 		}
+		void EditorRender2D::InspectorImGuiImpl(Engine::ECS::Render2D& component)
+		{
+			ImGui::InputInt("Depth", &component.depth);
+			ImGui::ColorEdit4("Tint", &component.tint.r);
 
+			if (ImGui::InputTextureAsset("Texture", m_TextureAsset, { 0, 128 })) {
+				if (m_TextureAsset->texture != nullptr) component.texture = m_TextureAsset->texture;
+				LOG_MESSAGE("New texture ( %s ) asset for %s", 5, m_TextureAsset->name.c_str(), m_Parent->GetPathName().c_str());
+			}
+		}
 	}
 }

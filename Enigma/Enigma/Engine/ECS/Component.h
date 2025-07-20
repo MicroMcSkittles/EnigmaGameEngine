@@ -54,6 +54,10 @@ namespace Enigma {
 				glm::vec3 rotation = glm::vec3(0);
 				glm::vec3 scale = glm::vec3(1);
 
+				// Is the transform relative to its parent
+				bool relative = true;
+
+				// The ID of the transforms parent transform
 				Core::ID parentTransform = Core::ID::InvalidID();
 
 				// Transforms the transform based on the parent transform

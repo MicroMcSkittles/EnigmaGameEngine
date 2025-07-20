@@ -2,6 +2,8 @@
 
 #include <Enigma/Core/Process/Application.h>
 #include <Enigma/Engine/ECS/RenderComponent.h>
+#include <Enigma/Engine/Input.h>
+#include <Enigma/Engine/InputCodes.h>
 
 namespace Enigma {
 	namespace Editor {
@@ -15,6 +17,9 @@ namespace Enigma {
 			viewBox.near = 0.1;
 			viewBox.far = 1000;
 			m_Camera = new Renderer::OrthographicCamera(viewBox);
+			m_Focused = false;
+			m_ZoomSpeed = 4.0f;
+			m_CameraSpeed = 0.25f;
 		}
 		void SceneView2D::ShutDown()
 		{
@@ -25,14 +30,43 @@ namespace Enigma {
 
 		bool SceneView2D::OnMouseScroll(Core::MouseScroll& e)
 		{
+			if (!m_Focused) return false;
+
+			float zoom = m_Camera->GetZoom();
+			zoom -= e.GetY() / m_ZoomSpeed;
+			if (zoom < 0.1f) zoom = 0.1f;
+			else if (zoom > 10) zoom = 10;
+			m_Camera->SetZoom(zoom);
+
 			return false;
 		}
 		bool SceneView2D::OnEvent(Core::Event& e)
 		{
+			Core::EventHandler handler(e);
+			handler.Dispatch<Core::MouseScroll>([&](Core::MouseScroll& e) { return OnMouseScroll(e); });
 			return false;
 		}
 		void SceneView2D::Update(Enigma::Engine::DeltaTime deltaTime)
 		{
+			Engine::Input::MakeCurrent(m_InputContext);
+
+			glm::vec2 mousePos = Engine::Input::GetMousePosition();
+			m_Focused = (mousePos.x >= 0 && mousePos.x < m_Surface.scale.x) && (mousePos.y >= 0 && mousePos.y < m_Surface.scale.y);
+			m_Focused = Engine::Input::IsMouseButtonPressed(Engine::KeyCode::MouseButtonRight) && m_Focused;
+		
+			if (!m_Focused) return;
+
+			glm::vec2 move = { 0,0 };
+			if (Engine::Input::IsKeyPressed(Engine::KeyCode::KeyW)) move.y = 1;
+			if (Engine::Input::IsKeyPressed(Engine::KeyCode::KeyS)) move.y = -1;
+			if (Engine::Input::IsKeyPressed(Engine::KeyCode::KeyA)) move.x = -1;
+			if (Engine::Input::IsKeyPressed(Engine::KeyCode::KeyD)) move.x = 1;
+			if (move.x != 0 || move.y != 0) {
+				glm::vec2 dir = glm::normalize(move);
+				glm::vec3 position = m_Camera->GetPosition();
+				position += glm::vec3(dir * m_CameraSpeed * (m_Camera->GetZoom() / 4.0f), 0);
+				m_Camera->SetPosition(position);
+			}
 		}
 
 		void SceneView2D::Render()
@@ -72,9 +106,11 @@ namespace Enigma {
 			Renderer::Render2D::EndFrame();
 		}
 
-		void SceneView2D::SetWindowContext(Core::Window* window)
+		void SceneView2D::SetWindowContext(Core::ID window)
 		{
-			m_Window = window;
+			m_Window = Core::Application::GetWindow(window);
+			Core::Application::BindSubProcToWindow(this, window);
+			m_Window->AddEventCallback([&](Core::Event& e) { OnEvent(e); });
 
 			Core::Application::UseRenderAPI(m_Window->GetAPI());
 
@@ -105,7 +141,6 @@ namespace Enigma {
 			if (m_RendererContext) delete m_RendererContext;
 			m_RendererContext = new Renderer::Render2D(renderConfig);
 		}
-
 		void SceneView2D::SetSurface(const Engine::Surface& surface)
 		{
 			m_Surface.position = surface.position;

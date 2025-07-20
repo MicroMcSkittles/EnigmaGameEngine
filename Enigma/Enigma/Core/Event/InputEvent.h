@@ -1,10 +1,18 @@
 #pragma once
 #include "Core/Event/Event.h"
 #include "Core/System.h"
+#include "Engine/InputCodes.h"
 #include <sstream>
 
 namespace Enigma {
 	namespace Core {
+
+		namespace EventType {
+			const uint64_t MouseMoved  = Hash("MouseMoved");
+			const uint64_t MouseButton = Hash("MouseButton");
+			const uint64_t MouseScroll = Hash("MouseScroll");
+			const uint64_t Keyboard    = Hash("Keyboard");
+		}
 
 		class MouseMoved : public Event {
 		public:
@@ -61,8 +69,8 @@ namespace Enigma {
 			virtual std::string ToString() override {
 				std::stringstream ss;
 				ss << "Mouse Button ( " << m_Button;
-				ss << " ), Action ( " << m_Action;
-				ss << " ), Mods ( " << m_Mods << " )";
+				ss << " ), Action ( " << System::GetActionName(m_Action);
+				ss << " ), Mods " << System::GetModsName(m_Mods);
 				return ss.str();
 			}
 
@@ -89,13 +97,20 @@ namespace Enigma {
 				ss << "Keyboard, Key ( " << System::GetKeyName(m_Key);
 				ss << " ), Scancode ( " << m_Scancode;
 				ss << " ), Action ( " << System::GetActionName(m_Action);
-				ss << " ), Mods ( " << m_Mods << " )";
+				ss << " ), Mods " << System::GetModsName(m_Mods);
 				return ss.str();
 			}
 
 			int GetKey() { return m_Key; }
 			int GetAction() { return m_Action; }
 			int GetMods() { return m_Mods; }
+
+			bool IsShortcut(int key, int mods) {
+				if (!m_Action != Engine::KeyCode::KeyPress) return false;
+				if (m_Mods != mods) return false;
+				if (m_Key != key) return false;
+				return true;
+			}
 
 		private:
 			int m_Key;

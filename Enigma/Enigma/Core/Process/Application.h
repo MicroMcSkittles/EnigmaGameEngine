@@ -3,7 +3,8 @@
 #include "Engine/DeltaTime.h"
 #include "Core/IdHandler.h"
 #include "Core/Window.h"
-#include "Core/ImGuiContext.h"
+#include "Core/Event/Event.h"
+#include "ImGui/ImGuiHandler.h"
 #include "Core/Process/SubProcess.h"
 #include "Renderer/RenderAPI.h"
 
@@ -28,6 +29,8 @@ namespace Enigma {
 			// Finishes the rest of the current frame then closes the application
 			static void Close();
 
+			static void EventCallback(Event& e);
+
 			// Creates a sub process and stores it to the sub process stack
 			// Returns a pointer to the process
 			// T must be a inherited class of the SubProcess class
@@ -47,6 +50,7 @@ namespace Enigma {
 			static ID CreateWindow(const WindowConfig& config);
 			static ID CreateWindow(const WindowConfig& windowConfig, const ImGuiConfig& imguiConfig);
 			static Window* GetWindow(ID id);
+			static ID GetWindowID(Window* window);
 			static ImGuiHandler* GetImGui(ID id);
 
 			static void UseRenderAPI(Renderer::API api);

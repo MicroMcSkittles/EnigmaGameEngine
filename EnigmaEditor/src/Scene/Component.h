@@ -4,15 +4,18 @@
 #include <Enigma/Engine/ECS/RenderComponent.h>
 #include <Enigma/Core/Core.h>
 
+#include <imgui.h>
+
 #include "Panel/InspectorPanel.h"
 #include "Serialization/JSON.h"
+#include "Assets/TextureAsset.h"
 
 namespace Enigma {
 	namespace Editor {
 
 		class Entity;
 
-		static const char* s_ComponentNames[] = {
+		static std::string s_ComponentNames[] = {
 			"Tag",
 			"Transform",
 			"Render2D"
@@ -23,49 +26,100 @@ namespace Enigma {
 			{ "Render2D",  Engine::ECS::ComponentType::Render2D },
 		};
 
-		class ComponentContext {
+		class EditorComponentInterface {
 		public:
-			virtual ~ComponentContext() { }
-			virtual void ImGui() = 0;
+			virtual ~EditorComponentInterface() { }
+
+			virtual void InspectorImGui() = 0;
+			virtual Engine::ECS::ComponentType GetType() = 0;
+
+			virtual void Save(JSON::DataTreeNode& dataTree) = 0;
+			virtual void Load(JSON::DataTreeNode& dataTree) = 0;
 		};
 
-		class TagContext : public ComponentContext {
+		template<typename T>
+		class EditorComponent : public EditorComponentInterface {
 		public:
-			TagContext(Entity* parent);
+			EditorComponent(Entity* entity) {
+				m_Parent = entity;
+				Engine::ECS::ECS::MakeCurrent(m_Parent->scene->GetECS());
+				if (Engine::ECS::ECS::GetEntity(m_Parent->entityID).components.count(T::GetType()))
+					m_ComponentID = Engine::ECS::ECS::GetComponentID<T>(m_Parent->entityID);
+				else {
+					Engine::ECS::ECS::AddComponent<T>(m_Parent->entityID);
+					m_ComponentID = Engine::ECS::ECS::GetComponentID<T>(m_Parent->entityID);
+				}
+			}
+			virtual ~EditorComponent() { }
 
-			virtual void ImGui() override;
+			static Engine::ECS::ComponentType GetStaticType() { return T::GetType(); }
+			static const char* GetStaticName() { return T::GetName(); }
+
+			T& GetComponent() {
+				Engine::ECS::ECS::MakeCurrent(m_Parent->scene->GetECS());
+				return Engine::ECS::ECS::GetPool<T>()->Get(m_ComponentID);
+			}
+
+			virtual void InspectorImGui() {
+				ImGui::PushID((void*)m_Parent);
+				if (!ImGui::TreeNode(T::GetName())) {
+					ImGui::PopID();
+					return;
+				}
+
+				InspectorImGuiImpl(GetComponent());
+
+				ImGui::TreePop();
+				ImGui::PopID();
+			}
+			virtual Engine::ECS::ComponentType GetType() override { return T::GetType(); }
+
+			virtual void Save(JSON::DataTreeNode& dataTree) = 0;
+			virtual void Load(JSON::DataTreeNode& dataTree) = 0;
+
+		protected:
+			virtual void InspectorImGuiImpl(T& component) = 0;
+
+		protected:
+			Entity* m_Parent;
+			Core::ID m_ComponentID;
+		};
+
+		class EditorTag : public EditorComponent<Engine::ECS::Tag> {
+		public:
+			EditorTag(Entity* entity) : EditorComponent(entity) { }
+
+			virtual void Save(JSON::DataTreeNode& dataTree) override;
+			virtual void Load(JSON::DataTreeNode& dataTree) override;
+
+		protected:
+			virtual void InspectorImGuiImpl(Engine::ECS::Tag& component) override;
+		};
+
+		class EditorTransform : public EditorComponent<Engine::ECS::Transform> {
+		public:
+			EditorTransform(Entity* entity) : EditorComponent(entity) { }
+
+			virtual void Save(JSON::DataTreeNode& dataTree) override;
+			virtual void Load(JSON::DataTreeNode& dataTree) override;
+
+		protected:
+			virtual void InspectorImGuiImpl(Engine::ECS::Transform& component) override;
+		};
+
+		class EditorRender2D : public EditorComponent<Engine::ECS::Render2D> {
+		public:
+			EditorRender2D(Entity* entity) : EditorComponent(entity), m_TextureAsset(nullptr) { }
+			~EditorRender2D();
+
+			virtual void Save(JSON::DataTreeNode& dataTree) override;
+			virtual void Load(JSON::DataTreeNode& dataTree) override;
+
+		protected:
+			virtual void InspectorImGuiImpl(Engine::ECS::Render2D& component) override;
 
 		private:
-			Entity* m_Parent;
-			Engine::ECS::Tag* m_Component;
+			TextureAsset* m_TextureAsset;
 		};
-		void SerializeTag(Engine::ECS::Tag& component, JSON::DataTreeNode& dataTree);
-		void LoadTag(Engine::ECS::Tag& component, JSON::DataTreeNode& dataTree);
-
-		class TransformContext : public ComponentContext {
-		public:
-			TransformContext(Entity* parent);
-
-			virtual void ImGui() override;
-
-		private:
-			Entity* m_Parent;
-			Engine::ECS::Transform* m_Component;
-		};
-		void SerializeTransform(Engine::ECS::Transform& component, JSON::DataTreeNode& dataTree);
-		void LoadTransform(Engine::ECS::Transform& component, JSON::DataTreeNode& dataTree);
-
-		class Render2DContext : public ComponentContext {
-		public:
-			Render2DContext(Entity* parent);
-
-			virtual void ImGui() override;
-
-		private:
-			Entity* m_Parent;
-			Engine::ECS::Render2D* m_Component;
-		};
-		void SerializeRender2D(Engine::ECS::Render2D& component, JSON::DataTreeNode& dataTree);
-		void LoadRender2D(Engine::ECS::Render2D& component, JSON::DataTreeNode& dataTree);
 	}
 }
