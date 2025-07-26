@@ -1,7 +1,7 @@
 #pragma once
-#include "Core/Window.h"
-#include "Renderer/RenderEnum.h"
-#include "Renderer/Texture.h"
+#include "Enigma/Core/Window.h"
+#include "Enigma/Renderer/RenderEnum.h"
+#include "Enigma/Renderer/Texture.h"
 
 #include <map>
 

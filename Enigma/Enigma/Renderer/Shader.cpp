@@ -1,7 +1,7 @@
-#include "Renderer/Shader.h"
-#include "Renderer/RenderAPI.h"
+#include "Enigma/Renderer/Shader.h"
+#include "Enigma/Renderer/RenderAPI.h"
 
-#include "Platform/OpenGL/OpenGLShader.h"
+#include "Enigma/Platform/OpenGL/OpenGLShader.h"
 
 namespace Enigma {
 	namespace Renderer {

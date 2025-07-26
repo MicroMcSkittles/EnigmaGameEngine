@@ -1,19 +1,16 @@
 #pragma once
-#include "Core/Event/Event.h"
-#include "Core/IdHandler.h"
-#include "Engine/DeltaTime.h"
+#include "Enigma/Core/Event/Event.h"
+#include "Enigma/Core/IdHandler.h"
+#include "Enigma/Engine/DeltaTime.h"
 #include <vector>
 
 namespace Enigma {
-	namespace Engine {
-		class Engine;
-	}
 	namespace Core {
 		class SubProcStack;
 
 		class SubProcess {
 		public:
-			SubProcess() : m_Started(false), m_EngineID(nullptr) { }
+			SubProcess() : m_Started(false) { }
 
 			// Called when sub process is created
 			virtual void StartUp() {}
@@ -29,15 +26,11 @@ namespace Enigma {
 			// Called when the engine is showing ImGui
 			virtual void ImGui() {}
 
-			Engine::Engine* GetEngine();
-
 		private:
 			bool m_Started;
-			Core::ID* m_EngineID;
 
 		private:
 			friend SubProcStack;
-			friend Engine::Engine;
 		};
 
 		class SubProcStack {

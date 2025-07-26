@@ -1,12 +1,11 @@
 #pragma once
-#include "Engine/Engine.h"
-#include "Engine/DeltaTime.h"
-#include "Core/IdHandler.h"
-#include "Core/Window.h"
-#include "Core/Event/Event.h"
-#include "ImGui/ImGuiHandler.h"
-#include "Core/Process/SubProcess.h"
-#include "Renderer/RenderAPI.h"
+#include "Enigma/Engine/DeltaTime.h"
+#include "Enigma/Core/IdHandler.h"
+#include "Enigma/Core/Window.h"
+#include "Enigma/Core/Event/Event.h"
+#include "Enigma/ImGui/ImGuiHandler.h"
+#include "Enigma/Core/Process/SubProcess.h"
+#include "Enigma/Renderer/RenderAPI.h"
 
 #include <vector>
 #include <map>
@@ -42,10 +41,10 @@ namespace Enigma {
 			}
 			static void BindSubProcToWindow(SubProcess* proc, ID windowID);
 
-			static ID CreateEngineInstance(const Engine::EngineConfig& config);
+			/*static ID CreateEngineInstance(const Engine::EngineConfig& config);
 			static void DeleteEngineInstance(Engine::Engine* instance);
 			static Engine::Engine* GetEngineInstance(ID id);
-			static ID GetEngineInstanceID(Engine::Engine* instance);
+			static ID GetEngineInstanceID(Engine::Engine* instance);*/
 
 			static ID CreateWindow(const WindowConfig& config);
 			static ID CreateWindow(const WindowConfig& windowConfig, const ImGuiConfig& imguiConfig);
@@ -76,7 +75,7 @@ namespace Enigma {
 				SubProcStack subProcStack;
 
 				IDHandler<WindowHandler*> windows;
-				IDHandler<Engine::Engine*> engineInstances;
+				//IDHandler<Engine::Engine*> engineInstances;
 				std::map<Renderer::API, Renderer::RenderAPI*> renderAPIs;
 			};
 

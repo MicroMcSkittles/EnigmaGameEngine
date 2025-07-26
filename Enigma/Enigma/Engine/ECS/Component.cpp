@@ -1,5 +1,5 @@
-#include "Engine/ECS/Component.h"
-#include "Engine/ECS/EntityComponentSystem.h"
+#include "Enigma/Engine/ECS/Component.h"
+#include "Enigma/Engine/ECS/EntityComponentSystem.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 

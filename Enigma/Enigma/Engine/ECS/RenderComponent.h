@@ -1,6 +1,6 @@
 #pragma once
-#include "Engine/ECS/Component.h"
-#include "Renderer/Texture.h"
+#include "Enigma/Engine/ECS/Component.h"
+#include "Enigma/Renderer/Texture.h"
 
 #include <glm/glm.hpp>
 

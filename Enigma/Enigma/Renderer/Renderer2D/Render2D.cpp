@@ -1,15 +1,21 @@
-#include "Renderer/Render2D.h"
-#include "Core/Process/Application.h"
+#include "Enigma/Renderer/Renderer2D/Render2D.h"
+#include "Enigma/Core/Process/Application.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <cstring>
 
 namespace Enigma {
 	namespace Renderer {
-		Render2D::Render2D(const Render2DConfig& config) : Renderer({ config.type, config.renderAPI, config.surface })
+		Render2D::Render2D(const Render2DConfig& config)
 		{
-			m_MainShader = config.mainShader;
-			m_PostProcShader = config.postProcShader;
+			m_RenderAPI = config.renderAPI;
+			m_Surface = config.surface;
+
+			if (!config.mainShader) m_MainShader = LoadDefaultMainShader();
+			else m_MainShader = config.mainShader;
+			if (!config.postProcShader) m_PostProcShader = LoadDefaultPostProcShader();
+			else m_PostProcShader = config.postProcShader;
+
 			m_CurrentCamera = nullptr;
 
 			// Init frame buffers
@@ -57,14 +63,14 @@ namespace Enigma {
 			RenderAPI::SetViewport(config.surface.scale.x, config.surface.scale.y);
 		}
 
-		void Render2D::ResizeImpl(int width, int height)
+		void Render2D::Resize(int width, int height)
 		{
 			RenderAPI::SetViewport(width, height);
 			if(m_CurrentCamera != nullptr)m_CurrentCamera->Resize(width, height);
 			m_FrameBuffer->Resize(width, height);
 			if (m_OutputBuffer != nullptr) m_OutputBuffer->Resize(width, height);
 		}
-		void Render2D::StartFrameImpl(OrthographicCamera* camera)
+		void Render2D::StartFrame(OrthographicCamera* camera)
 		{
 			m_CurrentCamera = camera;
 
@@ -76,7 +82,7 @@ namespace Enigma {
 
 			RenderAPI::Clear();
 		}
-		void Render2D::EndFrameImpl()
+		void Render2D::EndFrame()
 		{
 			m_MainShader->Bind();
 
@@ -119,7 +125,7 @@ namespace Enigma {
 			if (m_OutputBuffer != nullptr) m_OutputBuffer->Unbind();
 		}
 
-		void Render2D::DrawQuadImpl(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, const glm::vec4& tint)
+		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, const glm::vec4& tint)
 		{
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth -1.0f });
@@ -128,7 +134,7 @@ namespace Enigma {
 
 			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, transform, tint });
 		}
-		void Render2D::DrawQuadImpl(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, Texture* texture, const glm::vec4& tint)
+		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, Texture* texture, const glm::vec4& tint)
 		{
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });

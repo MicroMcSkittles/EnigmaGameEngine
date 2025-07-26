@@ -38,7 +38,7 @@ project "Enigma"
         "Enigma/Platform/OpenGL/**.hpp",
     }
     includedirs {
-        "Enigma",
+        "./",
         rootdir .. "Vendor/GLFW/GLFW/include",
         rootdir .. "Vendor/GLAD/GLAD/include",
         rootdir .. "Vendor/GLM/GLM",

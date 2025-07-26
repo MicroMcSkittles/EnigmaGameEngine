@@ -1,26 +1,25 @@
- #include "Engine/Render2DProc.h"
- #include "Engine/Engine.h"
- #include "Core/Process/Application.h"
+ #include "Enigma/Engine/Render2DProc.h"
+ #include "Enigma/Core/Process/Application.h"
 
- #include "Engine/ECS/EntityComponentSystem.h"
- #include "Engine/ECS/Component.h"
- #include "Engine/ECS/RenderComponent.h"
+ #include "Enigma/Engine/ECS/EntityComponentSystem.h"
+ #include "Enigma/Engine/ECS/Component.h"
+ #include "Enigma/Engine/ECS/RenderComponent.h"
 
  namespace Enigma {
  	namespace Engine {
 
  		void Render2DProc::StartUp()
  		{
- 			Surface& surface = GetEngine()->GetSurface();
- 			Renderer::ViewBox viewBox = Renderer::ViewBox::SurfaceViewBox(surface);
+ 			//Surface& surface = GetEngine()->GetSurface();
+ 			/*Renderer::ViewBox viewBox = Renderer::ViewBox::SurfaceViewBox(surface);
  			m_CurrentCamera = new Renderer::OrthographicCamera(viewBox);
- 			m_LastFrameSize = surface.scale;
+ 			m_LastFrameSize = surface.scale;*/
  		}
 
  		void Render2DProc::Render()
  		{
- 			Surface& surface = GetEngine()->GetSurface();
- 			if (m_LastFrameSize != surface.scale) {
+ 			//Surface& surface = GetEngine()->GetSurface();
+ 			/*if (m_LastFrameSize != surface.scale) {
  				m_LastFrameSize = surface.scale;
  				Renderer::Render2D::Resize(surface.scale.x, surface.scale.y);
  			}
@@ -51,7 +50,7 @@
                 }
             }
 
- 			Renderer::Render2D::EndFrame();
+ 			Renderer::Render2D::EndFrame();*/
  		}
  	}
  }

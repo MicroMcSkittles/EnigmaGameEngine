@@ -1,8 +1,8 @@
-#include "Platform/OpenGL/OpenGLBuffer.h"
-#include "Platform/OpenGL/OpenGLRenderAPI.h"
-#include "Platform/OpenGL/OpenGLTexture.h"
+#include "Enigma/Platform/OpenGL/OpenGLBuffer.h"
+#include "Enigma/Platform/OpenGL/OpenGLRenderAPI.h"
+#include "Enigma/Platform/OpenGL/OpenGLTexture.h"
 
-#include "Renderer/RenderAPI.h"
+#include "Enigma/Renderer/RenderAPI.h"
 
 #include <glad/glad.h>
 

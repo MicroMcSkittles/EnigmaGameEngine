@@ -1,7 +1,7 @@
-#include "Renderer/RenderAPI.h"
-#include "Core/Core.h"
+#include "Enigma/Renderer/RenderAPI.h"
+#include "Enigma/Core/Core.h"
 
-#include "Platform/OpenGL/OpenGLRenderAPI.h"
+#include "Enigma/Platform/OpenGL/OpenGLRenderAPI.h"
 
 namespace Enigma {
     namespace Renderer {

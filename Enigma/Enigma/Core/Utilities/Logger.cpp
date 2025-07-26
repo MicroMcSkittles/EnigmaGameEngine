@@ -1,5 +1,5 @@
-#include "Core/Utilities/Logger.h"
-#include "Core/System.h"
+#include "Enigma/Core/Utilities/Logger.h"
+#include "Enigma/Core/System.h"
 #include <iostream>
 #include <sstream>
 #include <math.h>

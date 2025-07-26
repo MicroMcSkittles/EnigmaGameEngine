@@ -1,7 +1,7 @@
-#include "Renderer/VertexArray.h"
-#include "Renderer/RenderAPI.h"
+#include "Enigma/Renderer/VertexArray.h"
+#include "Enigma/Renderer/RenderAPI.h"
 
-#include "Platform/OpenGL/OpenGLVertexArray.h"
+#include "Enigma/Platform/OpenGL/OpenGLVertexArray.h"
 
 namespace Enigma {
 	namespace Renderer {

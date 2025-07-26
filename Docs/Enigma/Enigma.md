@@ -149,3 +149,5 @@ Links to all of the docs
 - [Engine](Engine/Engine.md)
 ## Renderer
 - [Renderer](Renderer/Renderer.md)
+## Serialization
+- [Serialization](../EnigmaSerialization/EnigmaSerialization.md)

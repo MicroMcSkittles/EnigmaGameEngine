@@ -1,6 +1,7 @@
 #include "Fonts/FontTestContext.h"
 #include <Enigma/Core/Process/Application.h>
 #include <Enigma/Core/Window.h>
+#include <Enigma/Core/Event/WindowEvent.h>
 #include <Enigma/Engine/InputCodes.h>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -21,16 +22,8 @@ FontTestContext::FontTestContext(Core::ID windowID) : TestContext(windowID)
 
 	Core::Application::UseRenderAPI(window->GetAPI());
 
-	Renderer::ShaderConfig shaderConfig;
-	shaderConfig.vertexPath = "assets/SceneViewShader.vert";
-	shaderConfig.pixelPath = "assets/SceneViewShader.frag";
-	m_MainShader = Renderer::Shader::Create(shaderConfig);
-	renderConfig.mainShader = m_MainShader;
-	shaderConfig.vertexPath = "assets/PostProcessShader.vert";
-	shaderConfig.pixelPath = "assets/PostProcessShader.frag";
-	renderConfig.postProcShader = Renderer::Shader::Create(shaderConfig);
-
 	m_RenderContext = new Renderer::Render2D(renderConfig);
+	m_MainShader = m_RenderContext->GetMainShader();
 
 	Renderer::ViewBox viewBox = Renderer::ViewBox::SurfaceViewBox(m_Surface);
 	m_Camera = new Renderer::OrthographicCamera(viewBox, 4);
@@ -184,11 +177,9 @@ Renderer::VertexArray* Text::GenerateVAO()
 	return vao;
 }
 
-
 void FontTestContext::OnResize(int width, int height)
 {
-	Renderer::Render2D::MakeCurrent(m_RenderContext);
-	Renderer::Render2D::Resize(width, height);
+	m_RenderContext->Resize(width, height);
 	m_Surface.Resize(width, height);
 }
 void FontTestContext::OnEvent(Core::Event& e)
@@ -204,16 +195,14 @@ void FontTestContext::Update(Engine::DeltaTime deltaTime)
 
 void FontTestContext::Render()
 {
-	
-	Renderer::Render2D::MakeCurrent(m_RenderContext);
 
-	Renderer::Render2D::StartFrame(m_Camera);
+	m_RenderContext->StartFrame(m_Camera);
 
 	if (m_ShowPoints) {
 		for (int i = 0; i < m_Text.points.size(); ++i) {
 			glm::vec2 point = m_Text.points[i];
 			point = glm::vec4(point, 0, 1);
-			Renderer::Render2D::DrawQuad(point + m_TextPosition, { 0.015, 0.015 }, 0, 0, { 1,1,1,1 });
+			m_RenderContext->DrawQuad(point + m_TextPosition, { 0.015, 0.015 }, 0, 0, { 1,1,1,1 });
 		}
 	}
 
@@ -236,7 +225,7 @@ void FontTestContext::Render()
 
 	Renderer::RenderAPI::SetDrawMode(Renderer::DrawMode::Triangles);
 
-	Renderer::Render2D::EndFrame();
+	m_RenderContext->EndFrame();
 }
 
 void FontTestContext::ImGui()
@@ -256,4 +245,3 @@ void FontTestContext::ImGui()
 	ImGui::Checkbox("Show Points", &m_ShowPoints);
 	ImGui::End();
 }
-

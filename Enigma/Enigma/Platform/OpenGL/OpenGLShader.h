@@ -1,5 +1,5 @@
 #pragma once
-#include "Renderer/Shader.h"
+#include "Enigma/Renderer/Shader.h"
 #include <map>
 
 namespace Enigma {

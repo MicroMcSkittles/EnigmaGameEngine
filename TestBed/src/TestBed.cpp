@@ -2,6 +2,7 @@
 #include "Fonts/FontTestContext.h"
 
 #include <Enigma/Core/Process/Application.h>
+#include <Enigma/Core/Event/WindowEvent.h>
 
 #define CURRENT_TEST_CONTEXT FontTestContext
 

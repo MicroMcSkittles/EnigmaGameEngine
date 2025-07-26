@@ -1,8 +1,8 @@
-#include "Renderer/Texture.h"
-#include "Renderer/RenderAPI.h"
-#include "Renderer/VertexArray.h"
+#include "Enigma/Renderer/Texture.h"
+#include "Enigma/Renderer/RenderAPI.h"
+#include "Enigma/Renderer/VertexArray.h"
 
-#include "Platform/OpenGL/OpenGLTexture.h"
+#include "Enigma/Platform/OpenGL/OpenGLTexture.h"
 
 namespace Enigma {
 	namespace Renderer {

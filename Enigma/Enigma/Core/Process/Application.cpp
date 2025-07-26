@@ -1,7 +1,7 @@
-#include "Core/Process/Application.h"
-#include "Core/Core.h"
-#include "Core/System.h"
-#include "Core/Utilities/Logger.h"
+#include "Enigma/Core/Process/Application.h"
+#include "Enigma/Core/Core.h"
+#include "Enigma/Core/System.h"
+#include "Enigma/Core/Utilities/Logger.h"
 
 namespace Enigma {
 	namespace Core {
@@ -58,7 +58,7 @@ namespace Enigma {
 		{
 			for (WindowHandler* handler : s_Data->windows.GetData()) {
 				for (ID& id : handler->subProcesses) s_Data->subProcStack.GetProcess(id)->OnEvent(e);
-				for (ID& id : handler->engineInstances) s_Data->engineInstances.Get(id)->OnEvent(e);
+				//for (ID& id : handler->engineInstances) s_Data->engineInstances.Get(id)->OnEvent(e);
 			}
 		}
 
@@ -76,48 +76,48 @@ namespace Enigma {
 			});*/
 		}
 
-		ID Application::CreateEngineInstance(const Engine::EngineConfig& config)
-		{
-			if (!s_Data->windows.IsValid(config.windowID)) {
-				LOG_WARNING("Failed to create a engine instance. Window does not exist.");
-				return ID::InvalidID();
-			}
+		//ID Application::CreateEngineInstance(const Engine::EngineConfig& config)
+		//{
+		//	if (!s_Data->windows.IsValid(config.windowID)) {
+		//		LOG_WARNING("Failed to create a engine instance. Window does not exist.");
+		//		return ID::InvalidID();
+		//	}
 
-			Engine::Engine* instance = new Engine::Engine(config);
-			ID id = s_Data->engineInstances.Create(instance);
-			instance->SetID(id);
-			
-			s_Data->windows.Get(config.windowID)->engineInstances.push_back(id);
+		//	Engine::Engine* instance = new Engine::Engine(config);
+		//	ID id = s_Data->engineInstances.Create(instance);
+		//	instance->SetID(id);
+		//	
+		//	s_Data->windows.Get(config.windowID)->engineInstances.push_back(id);
 
-			return id;
-		}
-		void Application::DeleteEngineInstance(Engine::Engine* instance)
-		{
-			ID id = s_Data->engineInstances.Get(instance);
+		//	return id;
+		//}
+		//void Application::DeleteEngineInstance(Engine::Engine* instance)
+		//{
+		//	ID id = s_Data->engineInstances.Get(instance);
 
-			// Remove instance ID from the windows instance list
-			std::vector<ID>& instances = s_Data->windows.Get(instance->GetWindowID())->engineInstances;
-			for (int i = 0; i < instances.size(); ++i) {
-				if (instances[i] == id) {
-					instances.erase(instances.begin() + i);
-					break;
-				}
-			}
+		//	// Remove instance ID from the windows instance list
+		//	std::vector<ID>& instances = s_Data->windows.Get(instance->GetWindowID())->engineInstances;
+		//	for (int i = 0; i < instances.size(); ++i) {
+		//		if (instances[i] == id) {
+		//			instances.erase(instances.begin() + i);
+		//			break;
+		//		}
+		//	}
 
-			s_Data->engineInstances.Delete(id);
- 		}
-		Engine::Engine* Application::GetEngineInstance(ID id)
-		{
-			if (!s_Data->engineInstances.IsValid(id)) {
-				LOG_WARNING("Engine Instance does not exist");
-				return nullptr;
-			}
-			return s_Data->engineInstances.Get(id);
-		}
-		ID Application::GetEngineInstanceID(Engine::Engine* instance)
-		{
-			return s_Data->engineInstances.Get(instance);
-		}
+		//	s_Data->engineInstances.Delete(id);
+ 	//	}
+		//Engine::Engine* Application::GetEngineInstance(ID id)
+		//{
+		//	if (!s_Data->engineInstances.IsValid(id)) {
+		//		LOG_WARNING("Engine Instance does not exist");
+		//		return nullptr;
+		//	}
+		//	return s_Data->engineInstances.Get(id);
+		//}
+		//ID Application::GetEngineInstanceID(Engine::Engine* instance)
+		//{
+		//	return s_Data->engineInstances.Get(instance);
+		//}
 
 		ID Application::CreateWindow(const WindowConfig& config)
 		{
@@ -210,9 +210,9 @@ namespace Enigma {
 				s_Data->subProcStack.Update(s_Data->deltaTime);
 				s_Data->subProcStack.Render();
 
-				for (auto& instance : s_Data->engineInstances.GetData()) {
+				/*for (auto& instance : s_Data->engineInstances.GetData()) {
 					instance->Update(s_Data->deltaTime);
-				}
+				}*/
 
 				std::vector<WindowHandler*>& windows = s_Data->windows.GetData();
 				for (int i = 0; i < windows.size(); ++i) {
@@ -231,9 +231,9 @@ namespace Enigma {
 						ImGuiHandler::MakeCurrent(windowHandler->imgui);
 						ImGuiHandler::StartFrame();
 
-						for (auto& instanceID : windowHandler->engineInstances) {
+						/*for (auto& instanceID : windowHandler->engineInstances) {
 							s_Data->engineInstances.Get(instanceID)->ImGui();
-						}
+						}*/
 						for (auto& processID : windowHandler->subProcesses) {
 							s_Data->subProcStack.GetProcess(processID)->ImGui();
 						}

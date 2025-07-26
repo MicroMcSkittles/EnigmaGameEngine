@@ -1,6 +1,6 @@
 #pragma once
-#include "Core/Core.h"
-#include "Core/Utilities/Utilities.h"
+#include "Enigma/Core/Core.h"
+#include "Enigma/Core/Utilities/Utilities.h"
 #include <functional>
 #include <string>
 

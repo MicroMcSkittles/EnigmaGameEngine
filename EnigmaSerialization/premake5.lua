@@ -21,7 +21,7 @@ project "EnigmaSerialization"
     includedirs {
         "EnigmaSerialization",
         rootdir .. "Enigma",
-        rootdir .. "Enigma/Enigma",
+        --rootdir .. "Enigma/Enigma",
         rootdir .. "Vendor/GLM/GLM",
         rootdir .. "Vendor/stb",
     }

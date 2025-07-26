@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/Event/Event.h"
+#include "Enigma/Core/Event/Event.h"
 #include <sstream>
 
 namespace Enigma {

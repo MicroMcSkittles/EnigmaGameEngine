@@ -1,6 +1,6 @@
 #pragma once
-#include "Renderer/RenderEnum.h"
-#include "Renderer/Texture.h"
+#include "Enigma/Renderer/RenderEnum.h"
+#include "Enigma/Renderer/Texture.h"
 #include <vector>
 
 namespace Enigma {

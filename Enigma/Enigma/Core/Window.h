@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
 #include <functional>
-#include "Core/Event/Event.h"
-#include "Renderer/RenderEnum.h"
+#include "Enigma/Core/Event/Event.h"
+#include "Enigma/Renderer/RenderEnum.h"
 
 namespace Enigma {
 	namespace Core {

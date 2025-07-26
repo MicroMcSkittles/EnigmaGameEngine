@@ -1,5 +1,5 @@
 #pragma once
-#include "Renderer/VertexArray.h"
+#include "Enigma/Renderer/VertexArray.h"
 
 namespace Enigma {
 	namespace Platform {

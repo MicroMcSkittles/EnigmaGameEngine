@@ -37,7 +37,7 @@
 
 #ifdef ENABLE_LOGGER
 
-#    include "Core/Utilities/Logger.h"
+#    include "Enigma/Core/Utilities/Logger.h"
 
 #    define INIT_LOGGER(config)        Enigma::Core::Logger::Init(config)
 #    define SET_LOGGER_FLAGS(flags)    Enigma::Core::Logger::GetConfig()->flags = flags;

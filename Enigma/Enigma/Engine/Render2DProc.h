@@ -1,8 +1,8 @@
  #pragma once
- #include "Core/Process/SubProcess.h"
+ #include "Enigma/Core/Process/SubProcess.h"
 
- #include "Renderer/Render2D.h"
- #include "Renderer/Camera.h"
+ #include "Enigma/Renderer/Renderer2D/Render2D.h"
+ #include "Enigma/Renderer/Camera.h"
 
  namespace Enigma {
  	namespace Engine {

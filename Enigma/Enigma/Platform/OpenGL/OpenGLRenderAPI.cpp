@@ -1,6 +1,6 @@
-#include "Platform/OpenGL/OpenGLRenderAPI.h"
-#include "Core/Core.h"
-#include "Core/Window.h"
+#include "Enigma/Platform/OpenGL/OpenGLRenderAPI.h"
+#include "Enigma/Core/Core.h"
+#include "Enigma/Core/Window.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>

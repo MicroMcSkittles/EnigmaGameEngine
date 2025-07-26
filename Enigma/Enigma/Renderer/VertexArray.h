@@ -1,6 +1,6 @@
 #pragma once
-#include "Renderer/RenderAPI.h"
-#include "Renderer/Buffer.h"
+#include "Enigma/Renderer/RenderAPI.h"
+#include "Enigma/Renderer/Buffer.h"
 
 namespace Enigma {
 	namespace Renderer {

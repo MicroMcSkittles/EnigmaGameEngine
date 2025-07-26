@@ -17,5 +17,6 @@
 #include "Core/Utilities/Logger.h"
 #include "Core/System.h"
 #include "Core/Event/Event.h"
+#include "Core/Event/WindowEvent.h"
 #include "Core/Process/Application.h"
 #include "Core/Process/SubProcess.h"

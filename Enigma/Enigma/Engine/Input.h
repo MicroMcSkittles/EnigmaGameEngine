@@ -2,8 +2,8 @@
 #include <glm/glm.hpp>
 #include <string>
 
-#include "Core/Window.h"
-#include "Engine/Surface.h"
+#include "Enigma/Core/Window.h"
+#include "Enigma/Engine/Surface.h"
 
 namespace Enigma {
 	namespace Engine {

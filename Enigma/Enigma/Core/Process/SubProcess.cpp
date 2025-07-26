@@ -1,12 +1,8 @@
-#include "SubProcess.h"
-#include "Core/Process/Application.h"
+#include "Enigma/Core/Process/SubProcess.h"
+#include "Enigma/Core/Process/Application.h"
 
 namespace Enigma {
 	namespace Core {
-		Engine::Engine* SubProcess::GetEngine()
-		{
-			return Application::GetEngineInstance(*m_EngineID);
-		}
 
 		SubProcStack::SubProcStack()
 		{

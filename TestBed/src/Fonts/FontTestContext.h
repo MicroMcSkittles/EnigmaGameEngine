@@ -1,6 +1,6 @@
 #pragma once
 #include "TestBed.h"
-#include <Enigma/Renderer/Render2D.h>
+#include <Enigma/Renderer/Renderer2D/Render2D.h>
 #include <Enigma/Engine/Input.h>
 
 #include <EnigmaSerialization/Font.h>
@@ -33,7 +33,6 @@ public:
 
 private:
 	glm::vec2 lerp(const glm::vec2& p0, const glm::vec2& p1, float t);
-	void GenerateGlyph(int index);
 
 private:
 	Renderer::OrthographicCamera* m_Camera;

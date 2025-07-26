@@ -1,5 +1,5 @@
-#include "RenderEnum.h"
-#include "Core/Core.h"
+#include "Enigma/Renderer/RenderEnum.h"
+#include "Enigma/Core/Core.h"
 #include <sstream>
 
 namespace Enigma {

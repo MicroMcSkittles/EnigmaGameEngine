@@ -21,7 +21,7 @@ project "TestBed"
         "src",
         rootdir .. "Enigma",
         rootdir .. "EnigmaSerialization",
-        rootdir .. "Enigma/Enigma",
+        --rootdir .. "Enigma/Enigma",
         rootdir .. "Vendor/GLM/GLM",
         rootdir .. "Vendor/ImGui/ImGui",
     }

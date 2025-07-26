@@ -1,5 +1,5 @@
 #pragma once
-#include "Renderer/RenderEnum.h"
+#include "Enigma/Renderer/RenderEnum.h"
 
 #include <stdint.h>
 #include <string>

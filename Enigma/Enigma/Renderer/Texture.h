@@ -1,6 +1,6 @@
 #pragma once
-#include "Renderer/RenderEnum.h"
-#include "Renderer/Shader.h"
+#include "Enigma/Renderer/RenderEnum.h"
+#include "Enigma/Renderer/Shader.h"
 
 #include <glm/glm.hpp>
 

@@ -1,7 +1,7 @@
 #pragma once
-#include "Engine/ECS/Component.h"
-#include "Core/IdHandler.h"
-#include "Core/Core.h"
+#include "Enigma/Engine/ECS/Component.h"
+#include "Enigma/Core/IdHandler.h"
+#include "Enigma/Core/Core.h"
 #include <map>
 
 // Times writen: 3

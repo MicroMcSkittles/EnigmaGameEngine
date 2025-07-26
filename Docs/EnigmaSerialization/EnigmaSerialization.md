@@ -1,0 +1,2 @@
+# Enigma Serialization
+The Enigma Engine its self should not have to deal with things like differant file types,  generating primitive meshes, and others. So I created the Enigma Serialization project to handle all of that. 

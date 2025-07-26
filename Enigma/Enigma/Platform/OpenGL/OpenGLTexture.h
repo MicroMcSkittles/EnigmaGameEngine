@@ -1,5 +1,5 @@
 #pragma once
-#include "Renderer/Texture.h"
+#include "Enigma/Renderer/Texture.h"
 
 namespace Enigma {
 	namespace Platform {

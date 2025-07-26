@@ -1,7 +1,7 @@
-#include "Platform/OpenGL/OpenGLShader.h"
-#include "Platform/OpenGL/OpenGLRenderAPI.h"
-#include "Platform/OpenGL/OpenGLTexture.h"
-#include "Core/System.h"
+#include "Enigma/Platform/OpenGL/OpenGLShader.h"
+#include "Enigma/Platform/OpenGL/OpenGLRenderAPI.h"
+#include "Enigma/Platform/OpenGL/OpenGLTexture.h"
+#include "Enigma/Core/System.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
