@@ -13,12 +13,11 @@ namespace Enigma {
 			return screenPos;*/
 			return { 0,0 };
 		}
-		glm::vec3 Camera::ScreenToWorld(const glm::vec2& screenPoint) {
-			/*auto window = Core::Window::Get();
+		glm::vec3 Camera::ScreenToWorld(const glm::vec2& screenPoint, const Engine::Surface& surface) {
 			glm::vec2 projView;
-			projView.x = (screenPoint.x * 2) / window->GetWidth() - 1.0f;
-			projView.y = ((window->GetHeight() - screenPoint.y) * 2) / window->GetHeight() - 1.0f;
-			return glm::inverse(m_ViewProjection) * glm::vec4(projView, 0.0f, 1.0f);*/
+			projView.x = (screenPoint.x * 2) / surface.scale.x - 1.0f;
+			projView.y = ((surface.scale.y - screenPoint.y) * 2) / surface.scale.y - 1.0f;
+			return glm::inverse(m_ViewProjection) * glm::vec4(projView, 0.0f, 1.0f);
 			return { 0,0,0 };
 		}
 

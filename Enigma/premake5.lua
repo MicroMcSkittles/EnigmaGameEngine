@@ -36,8 +36,6 @@ project "Enigma"
         "Enigma/Platform/OpenGL/**.h",
         "Enigma/Platform/OpenGL/**.cpp",
         "Enigma/Platform/OpenGL/**.hpp",
-
-        rootdir .. "Vendor/stb/stb/stb_image.h",
     }
     includedirs {
         "Enigma",
@@ -45,11 +43,9 @@ project "Enigma"
         rootdir .. "Vendor/GLAD/GLAD/include",
         rootdir .. "Vendor/GLM/GLM",
         rootdir .. "Vendor/ImGui/ImGui",
-        rootdir .. "Vendor/stb",
     }
 
     defines {
-        "STB_IMAGE_IMPLEMENTATION",
         "GLM_ENABLE_EXPERIMENTAL"
     }
 

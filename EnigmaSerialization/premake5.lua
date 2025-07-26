@@ -1,5 +1,5 @@
-project "ExampleApp"
-    kind "ConsoleApp"
+project "EnigmaSerialization"
+    kind "StaticLib"
     language "C++"
     cppdialect "C++17"
 
@@ -8,20 +8,22 @@ project "ExampleApp"
     targetdir (rootdir .. "bin/" .. outputdir .. "/%{prj.name}")
     objdir (rootdir .. "bin-int/" .. outputdir .. "/%{prj.name}")
 
-    -- Include all c/c++ files in project
-    files {
-        "src/**.c",
-        "src/**.h",
-        "src/**.cpp",
-        "src/**.hpp"
-    }
+-- Include all c/c++ files in project
+    files
+	{
+        "EnigmaSerialization/**.hpp",
+        "EnigmaSerialization/**.h",
+        "EnigmaSerialization/**.cpp",
+        "EnigmaSerialization/**.c",
 
+        rootdir .. "Vendor/stb/stb/stb_image.h",
+    }
     includedirs {
-        "src",
+        "EnigmaSerialization",
         rootdir .. "Enigma",
         rootdir .. "Enigma/Enigma",
         rootdir .. "Vendor/GLM/GLM",
-        rootdir .. "Vendor/ImGui/ImGui",
+        rootdir .. "Vendor/stb",
     }
 
     defines {
@@ -30,38 +32,35 @@ project "ExampleApp"
     }
 
 -- Link libraries ===================
+
     links {
-        "Enigma",
-        "ImGui"
+        "Enigma"
     }
 
 -- Windows ==========================
     filter "system:windows"
         --location "../"
-        staticruntime "On"
-        systemversion "latest"
+		systemversion "latest"
+		staticruntime "On"
 
         defines {
             "PLATFORM_WINDOWS"
         }
 
--- Linux ==========================
+-- Linux ============================
     filter "system:linux"
-
-        links {
-            "GLAD",
-            "GLFW"
-        }
 
         defines {
             "PLATFORM_LINUX"
         }
 
--- Configuations ====================
+-- Configurations ===================
     filter "configurations:Debug"
         defines "DEBUG"
-        symbols "On"
+		runtime "Debug"
+		symbols "on"
 
-    filter "configurations:Release"
+	filter "configurations:Release"
         defines "RELEASE"
-        optimize "On"
+		runtime "Release"
+		optimize "speed"

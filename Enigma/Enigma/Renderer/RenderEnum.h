@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Core.h"
+#include <string>
 
 namespace Enigma {
     namespace Renderer {

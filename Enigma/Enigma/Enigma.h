@@ -2,13 +2,14 @@
 
 // Enigma Game Engine ===========
 // By Noah Beauchamp
-// Version 1 0 1
+// Version 1 0 3
 // Note:
-// There is now a Editor, it is a work in progress and most of it 
-// will probably change in the future. I'm going to pause work on the Editor
-// to focus more on the Engine its self.
+// I'm jumping around a lot of random features I will get back to the editor eventualy
 // 
-// There is now a example application. its a very simple (and buggy) space simulation.
+// Added a new project to handle serialization.
+// The engine doesn't need to know about differant file formats, you should be able to just
+// pass in the raw data. To do this I made the EnigmaSerialization project that will handle all of the
+// differant files, like textures, models, json, fonts, etc.
 // 
 // ==============================
 

@@ -67,7 +67,13 @@ namespace Enigma {
 			if (!s_Data->windows.IsValid(windowID)) {
 				LOG_ERROR("Failed to create sub process. Window does not exist");
 			}
-			s_Data->windows.Get(windowID)->subProcesses.push_back(s_Data->subProcStack.GetProcessID(proc));
+			ID procID = s_Data->subProcStack.GetProcessID(proc);
+			s_Data->windows.Get(windowID)->subProcesses.push_back(procID);
+
+			// Push the process's OnEvent function to the windows event callback list
+			/*s_Data->windows.Get(windowID)->window->AddEventCallback([&](Event& e) {
+				s_Data->subProcStack.GetProcess(procID)->OnEvent(e);
+			});*/
 		}
 
 		ID Application::CreateEngineInstance(const Engine::EngineConfig& config)

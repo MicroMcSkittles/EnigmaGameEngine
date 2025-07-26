@@ -6,7 +6,7 @@ workspace "EnigmaGameEngine"
         "Release"
     }
 
-    startproject "EnigmaEditor"
+    startproject "SpaceSim"
 
 -- Directory final files will be placed into
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
@@ -18,7 +18,8 @@ include "Vendor/GLM"
 include "Vendor/stb"
 include "Vendor/ImGui"
 include "Enigma"
+include "EnigmaSerialization"
 
---include "ExampleApp" -- Example Project
---include "EnigmaEditor" -- Enigma Editor Project
+include "EnigmaEditor" -- Enigma Editor Project
 include "SpaceSim" -- The space simulation project
+include "TestBed" -- A project used for testing new features in the engine

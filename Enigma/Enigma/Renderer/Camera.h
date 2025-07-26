@@ -27,7 +27,7 @@ namespace Enigma {
 			const glm::mat4& GetViewProjection() const { return m_ViewProjection; }
 
 			glm::vec2 WorldToScreen(const glm::vec3& worldPoint);
-			glm::vec3 ScreenToWorld(const glm::vec2& screenPoint);
+			glm::vec3 ScreenToWorld(const glm::vec2& screenPoint, const Engine::Surface& surface);
 
 		protected:
 			glm::vec3 m_Position;

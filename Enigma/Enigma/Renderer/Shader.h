@@ -1,5 +1,6 @@
 #pragma once
 #include "Renderer/RenderEnum.h"
+
 #include <stdint.h>
 #include <string>
 #include <vector>
