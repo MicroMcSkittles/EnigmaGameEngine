@@ -23,22 +23,15 @@ namespace Enigma {
 			int nrChannels;
 
 			textureConfig.data = nullptr;
-			textureConfig.data = stbi_load(filename.c_str(), &textureConfig.width, &textureConfig.height, &nrChannels, 0);
+			textureConfig.data = stbi_load(filename.c_str(), &textureConfig.width, &textureConfig.height, &nrChannels, STBI_rgb_alpha);
 
 			if (!textureConfig.data) {
 				LOG_SOFT_ERROR("Failed to load texture ( %s )", filename.c_str());
 				return nullptr;
 			}
 
-			Renderer::TexFormat format = Renderer::TexFormat::None;
-			if (nrChannels == 3) format = Renderer::TexFormat::RGB;
-			else if (nrChannels == 4) format = Renderer::TexFormat::RGBA;
-			else {
-				LOG_SOFT_ERROR("Failed to load texture ( %s ) because it's a unknown image format", filename.c_str());
-				return nullptr;
-			}
-			textureConfig.format = format;
-			textureConfig.internalFormat = format;
+			textureConfig.format = Renderer::TexFormat::RGBA;
+			textureConfig.internalFormat = Renderer::TexFormat::RGBA;
 
 			Renderer::Texture* texture = Renderer::Texture::Create(textureConfig);
 			free(textureConfig.data);

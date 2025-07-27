@@ -142,6 +142,9 @@ namespace Enigma {
 					case Renderer::TexFormat::RGB:              return GL_RGB;
 					case Renderer::TexFormat::RGBA:             return GL_RGBA;
 					case Renderer::TexFormat::RED32F:           return GL_R32F;
+					case Renderer::TexFormat::RED_INT:           return GL_RED_INTEGER;
+					case Renderer::TexFormat::RED32I:           return GL_R32I;
+					case Renderer::TexFormat::RED32UI:           return GL_R32UI;
 					case Renderer::TexFormat::DEPTH24_STENCIL8: return GL_DEPTH24_STENCIL8;
 					case Renderer::TexFormat::DEPTH_STENCIL:    return GL_DEPTH_STENCIL;
 					default:

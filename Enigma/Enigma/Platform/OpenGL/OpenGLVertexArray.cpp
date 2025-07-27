@@ -1,4 +1,4 @@
-#include "OpenGLVertexArray.h"
+#include "Enigma/Platform/OpenGL/OpenGLVertexArray.h"
 
 #include <glad/glad.h>
 

@@ -25,6 +25,9 @@ namespace Enigma {
 			void DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, const glm::vec4& tint);
 			void DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, Texture* texture, const glm::vec4& tint);
 
+			void DrawCircle(const glm::vec2& position, float radius, int depth, const glm::vec4& tint);
+			void DrawCircle(const glm::vec2& position, float radius, int depth, Texture* texture, const glm::vec4& tint);
+
 			Shader* GetMainShader() { return m_MainShader; }
 			Shader* GetPostProcShader() { return m_PostProcShader; }
 
@@ -39,17 +42,24 @@ namespace Enigma {
 
 				glm::mat4 model;
 				glm::vec4 tint;
+				bool useStencil;
+				int stencilID;
 			};
 
 			OrthographicCamera* m_CurrentCamera;
 
 			FrameBuffer* m_FrameBuffer;
+			FrameBuffer* m_StencilBuffer;
 			FrameBuffer* m_OutputBuffer;
 
 			Shader* m_MainShader;
+			Shader* m_CircleStencilShader;
 			Shader* m_PostProcShader;
 
 			Texture* m_BlankTexture; // Used for anything with no texture
+			Texture* m_StencilTexture;
+
+			int m_CurrentStencilID;
 
 			std::vector<DrawCall> m_DrawCalls;
 

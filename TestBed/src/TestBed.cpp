@@ -1,17 +1,18 @@
 #include "TestBed.h"
-#include "Fonts/FontTestContext.h"
 
 #include <Enigma/Core/Process/Application.h>
 #include <Enigma/Core/Event/WindowEvent.h>
 
-#define CURRENT_TEST_CONTEXT FontTestContext
+//#include "Fonts/FontTestContext.h"
+#include "Primitives/PrimitiveTestContext.h"
+
 
 void TestBed::StartUp()
 {
 	Core::WindowConfig windowConfig;
 	windowConfig.width = 800;
 	windowConfig.height = 600;
-	windowConfig.title = "Test Bed";
+	windowConfig.title = CURRENT_TEST_CONTEXT_NAME;
 	windowConfig.renderAPI = Renderer::API::OpenGL;
 
 	Core::ImGuiConfig imguiConfig;

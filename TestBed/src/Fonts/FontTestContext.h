@@ -6,6 +6,9 @@
 #include <EnigmaSerialization/Font.h>
 using namespace Enigma::Serialization;
 
+#define CURRENT_TEST_CONTEXT FontTestContext
+#define CURRENT_TEST_CONTEXT_NAME "Font Test"
+
 struct Curve {
 	std::vector<uint32_t> points;
 	int resolution;

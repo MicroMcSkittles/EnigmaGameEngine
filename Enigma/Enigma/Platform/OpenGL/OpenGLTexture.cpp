@@ -1,5 +1,5 @@
-#include "Platform/OpenGL/OpenGLTexture.h"
-#include "Platform/OpenGL/OpenGLRenderAPI.h"
+#include "Enigma/Platform/OpenGL/OpenGLTexture.h"
+#include "Enigma/Platform/OpenGL/OpenGLRenderAPI.h"
 
 #include <glad/glad.h>
 

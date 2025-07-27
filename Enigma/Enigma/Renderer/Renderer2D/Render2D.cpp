@@ -11,10 +11,17 @@ namespace Enigma {
 			m_RenderAPI = config.renderAPI;
 			m_Surface = config.surface;
 
+			Core::Application::UseRenderAPI(m_RenderAPI);
+
 			if (!config.mainShader) m_MainShader = LoadDefaultMainShader();
 			else m_MainShader = config.mainShader;
 			if (!config.postProcShader) m_PostProcShader = LoadDefaultPostProcShader();
 			else m_PostProcShader = config.postProcShader;
+
+			ShaderConfig circleStencilShaderConfig;
+			circleStencilShaderConfig.vertexPath = "assets/CircleStencilShader.vert";
+			circleStencilShaderConfig.pixelPath = "assets/CircleStencilShader.frag";
+			m_CircleStencilShader = Shader::Create(circleStencilShaderConfig);
 
 			m_CurrentCamera = nullptr;
 
@@ -31,15 +38,28 @@ namespace Enigma {
 				m_OutputBuffer = FrameBuffer::Create(frameBufferConfig);
 			}
 
+			// Create Stencil Buffer and Texture
+			TextureConfig stencilTextureConfig;
+			stencilTextureConfig.width = config.surface.scale.x;
+			stencilTextureConfig.height = config.surface.scale.y;
+			stencilTextureConfig.minFilter = TexFilterMode::Nearest;
+			stencilTextureConfig.magFilter = TexFilterMode::Nearest;
+			stencilTextureConfig.dataType = DataType::UnsignedInt;
+			stencilTextureConfig.format = TexFormat::RED_INT;
+			stencilTextureConfig.internalFormat = TexFormat::RED32UI;
+			m_StencilTexture = Texture::Create(stencilTextureConfig);
+			frameBufferConfig.attachments = { { AttachmentType::ColorAttachment, m_StencilTexture } };
+			m_StencilBuffer = FrameBuffer::Create(frameBufferConfig);
+
 			// Create blank texture
-			TextureConfig textureConfig;
-			textureConfig.width = 1;
-			textureConfig.height = 1;
-			textureConfig.data = (uint8_t*)malloc(3);
-			if (textureConfig.data) memset(textureConfig.data, 255, 3);
-			m_BlankTexture = Texture::Create(textureConfig);
-			free(textureConfig.data);
-		
+			TextureConfig blankTextureConfig;
+			blankTextureConfig.width = 1;
+			blankTextureConfig.height = 1;
+			blankTextureConfig.data = (uint8_t*)malloc(3);
+			if (blankTextureConfig.data) memset(blankTextureConfig.data, 255, 3);
+			m_BlankTexture = Texture::Create(blankTextureConfig);
+			free(blankTextureConfig.data);
+
 			// Create quad vertex array
 			s_Quad = VertexArray::Create();
 			s_Quad->Bind();
@@ -68,15 +88,21 @@ namespace Enigma {
 			RenderAPI::SetViewport(width, height);
 			if(m_CurrentCamera != nullptr)m_CurrentCamera->Resize(width, height);
 			m_FrameBuffer->Resize(width, height);
+			m_StencilBuffer->Resize(width, height);
 			if (m_OutputBuffer != nullptr) m_OutputBuffer->Resize(width, height);
 		}
 		void Render2D::StartFrame(OrthographicCamera* camera)
 		{
 			m_CurrentCamera = camera;
+			m_CurrentStencilID = 0;
 
 			Core::Application::UseRenderAPI(m_RenderAPI);
 
 			RenderAPI::Clear();
+
+			m_StencilBuffer->Bind();
+			RenderAPI::Clear();
+			m_StencilBuffer->Unbind();
 
 			m_FrameBuffer->Bind();
 
@@ -93,10 +119,19 @@ namespace Enigma {
 				m_MainShader->SetUniform("ViewProjection", (void*)&call.camera->GetViewProjection());
 				m_MainShader->SetUniform("Model", (void*)&call.model);
 
+				int stencilID = -1;
+				if (call.useStencil) {
+					m_StencilTexture->Bind();
+					m_MainShader->SetUniform("StencilMap", (void*)m_StencilTexture);
+					stencilID = call.stencilID;
+				}
+				m_MainShader->SetUniform("StencilID", (void*)&stencilID);
+
 				s_Quad->Bind();
 				RenderAPI::DrawIndexed(6, DataType::UnsignedInt, NULL);
 				s_Quad->Unbind();
 
+				if (call.useStencil) m_StencilTexture->Unbind();
 				call.texture->Unbind();
 			}
 			m_DrawCalls.clear();
@@ -112,6 +147,8 @@ namespace Enigma {
 
 			m_PostProcShader->Bind();
 			Texture* frame = m_FrameBuffer->GetColorAttachment(0);
+			//Texture* frame = m_StencilTexture;
+
 			frame->Bind();
 			m_PostProcShader->SetUniform("FrameTexture", (void*)frame);
 
@@ -132,7 +169,7 @@ namespace Enigma {
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
 			transform = glm::scale(transform, { scale, 1.0f });
 
-			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, transform, tint });
+			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, transform, tint, false });
 		}
 		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, Texture* texture, const glm::vec4& tint)
 		{
@@ -141,7 +178,56 @@ namespace Enigma {
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
 			transform = glm::scale(transform, { scale, 1.0f });
 
-			m_DrawCalls.push_back({ m_CurrentCamera, texture, transform, tint });
+			m_DrawCalls.push_back({ m_CurrentCamera, texture, transform, tint, false });
+		}
+
+		void Render2D::DrawCircle(const glm::vec2& position, float radius, int depth, const glm::vec4& tint)
+		{
+			glm::mat4 transform = glm::mat4(1.0f);
+			transform = glm::translate(transform, { position, depth - 1.0f });
+			transform = glm::scale(transform, { radius, radius, 1.0f });
+
+			m_FrameBuffer->Unbind();
+			m_StencilBuffer->Bind();
+			m_CircleStencilShader->Bind();
+			m_CircleStencilShader->SetUniform("ViewProjection", (void*)&m_CurrentCamera->GetViewProjection());
+			m_CircleStencilShader->SetUniform("Model", (void*)&transform);
+			m_CircleStencilShader->SetUniform("StencilID", (void*)&m_CurrentStencilID);
+
+			s_Quad->Bind();
+			RenderAPI::DrawIndexed(6, DataType::UnsignedInt, NULL);
+			s_Quad->Unbind();
+
+			m_CircleStencilShader->Unbind();
+			m_StencilBuffer->Unbind();
+			m_FrameBuffer->Bind();
+
+			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, transform, tint, true, m_CurrentStencilID });
+			m_CurrentStencilID += 1;
+		}
+		void Render2D::DrawCircle(const glm::vec2& position, float radius, int depth, Texture* texture, const glm::vec4& tint)
+		{
+			glm::mat4 transform = glm::mat4(1.0f);
+			transform = glm::translate(transform, { position, depth - 1.0f });
+			transform = glm::scale(transform, { radius, radius, 1.0f });
+
+			m_FrameBuffer->Unbind();
+			m_StencilBuffer->Bind();
+			m_CircleStencilShader->Bind();
+			m_CircleStencilShader->SetUniform("ViewProjection", (void*)&m_CurrentCamera->GetViewProjection());
+			m_CircleStencilShader->SetUniform("Model", (void*)&transform);
+			m_CircleStencilShader->SetUniform("StencilID", (void*)&m_CurrentStencilID);
+
+			s_Quad->Bind();
+			RenderAPI::DrawIndexed(6, DataType::UnsignedInt, NULL);
+			s_Quad->Unbind();
+
+			m_CircleStencilShader->Unbind();
+			m_StencilBuffer->Unbind();
+			m_FrameBuffer->Bind();
+			
+			m_DrawCalls.push_back({ m_CurrentCamera, texture, transform, tint, true, m_CurrentStencilID });
+			m_CurrentStencilID += 1;
 		}
 	}
 }

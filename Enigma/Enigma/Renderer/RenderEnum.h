@@ -78,6 +78,9 @@ namespace Enigma {
 			RGB,
 			RGBA,
 			RED32F,
+			RED_INT,
+			RED32I,
+			RED32UI,
 			DEPTH24_STENCIL8,
 			DEPTH_STENCIL,
 		};
