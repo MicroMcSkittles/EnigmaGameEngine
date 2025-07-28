@@ -22,6 +22,7 @@ public:
 private:
 	float m_Radius;
 	glm::vec2 m_Position;
+	glm::vec2 m_Scale;
 	glm::vec4 m_Tint;
 	Renderer::Texture* m_Texture;
 

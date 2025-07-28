@@ -18,10 +18,9 @@ namespace Enigma {
 			if (!config.postProcShader) m_PostProcShader = LoadDefaultPostProcShader();
 			else m_PostProcShader = config.postProcShader;
 
-			ShaderConfig circleStencilShaderConfig;
-			circleStencilShaderConfig.vertexPath = "assets/CircleStencilShader.vert";
-			circleStencilShaderConfig.pixelPath = "assets/CircleStencilShader.frag";
-			m_CircleStencilShader = Shader::Create(circleStencilShaderConfig);
+			m_CircleStencilShader = LoadCircleStencilShader();
+			m_LineCircleStencilShader = LoadLineCircleStencilShader();
+			m_LineQuadStencilShader = LoadLineQuadStencilShader();
 
 			m_CurrentCamera = nullptr;
 
@@ -180,6 +179,36 @@ namespace Enigma {
 
 			m_DrawCalls.push_back({ m_CurrentCamera, texture, transform, tint, false });
 		}
+		void Render2D::DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, float thickness, int depth, const glm::vec4& tint)
+		{
+			glm::mat4 transform = glm::mat4(1.0f);
+			transform = glm::translate(transform, { position, depth - 1.0f });
+			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
+			transform = glm::scale(transform, { scale, 1.0f });
+
+			glm::vec2 bounds;
+			bounds.x = (scale.x / scale.y) / 2;
+			bounds.y = 0.5;
+			m_LineQuadStencilShader->SetUniform("Thickness", (void*)&thickness);
+			m_LineQuadStencilShader->SetUniform("Bounds", (void*)&scale);
+			DrawStencil(m_LineQuadStencilShader, transform);
+
+			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, transform, tint, true, m_CurrentStencilID - 1 });
+		}
+		void Render2D::DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, float thickness, int depth, Texture* texture, const glm::vec4& tint)
+		{
+			glm::mat4 transform = glm::mat4(1.0f);
+			transform = glm::translate(transform, { position, depth - 1.0f });
+			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
+			transform = glm::scale(transform, { scale, 1.0f });
+
+			glm::vec2 bounds = scale;
+			m_LineQuadStencilShader->SetUniform("Thickness", (void*)&thickness);
+			m_LineQuadStencilShader->SetUniform("Bounds", (void*)&bounds);
+			DrawStencil(m_LineQuadStencilShader, transform);
+
+			m_DrawCalls.push_back({ m_CurrentCamera, texture, transform, tint, true, m_CurrentStencilID - 1 });
+		}
 
 		void Render2D::DrawCircle(const glm::vec2& position, float radius, int depth, const glm::vec4& tint)
 		{
@@ -187,23 +216,9 @@ namespace Enigma {
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::scale(transform, { radius, radius, 1.0f });
 
-			m_FrameBuffer->Unbind();
-			m_StencilBuffer->Bind();
-			m_CircleStencilShader->Bind();
-			m_CircleStencilShader->SetUniform("ViewProjection", (void*)&m_CurrentCamera->GetViewProjection());
-			m_CircleStencilShader->SetUniform("Model", (void*)&transform);
-			m_CircleStencilShader->SetUniform("StencilID", (void*)&m_CurrentStencilID);
+			DrawStencil(m_CircleStencilShader, transform);
 
-			s_Quad->Bind();
-			RenderAPI::DrawIndexed(6, DataType::UnsignedInt, NULL);
-			s_Quad->Unbind();
-
-			m_CircleStencilShader->Unbind();
-			m_StencilBuffer->Unbind();
-			m_FrameBuffer->Bind();
-
-			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, transform, tint, true, m_CurrentStencilID });
-			m_CurrentStencilID += 1;
+			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, transform, tint, true, m_CurrentStencilID - 1 });
 		}
 		void Render2D::DrawCircle(const glm::vec2& position, float radius, int depth, Texture* texture, const glm::vec4& tint)
 		{
@@ -211,22 +226,50 @@ namespace Enigma {
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::scale(transform, { radius, radius, 1.0f });
 
+			DrawStencil(m_CircleStencilShader, transform);
+			
+			m_DrawCalls.push_back({ m_CurrentCamera, texture, transform, tint, true, m_CurrentStencilID - 1 });
+		}
+		void Render2D::DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, const glm::vec4& tint)
+		{
+			glm::mat4 transform = glm::mat4(1.0f);
+			transform = glm::translate(transform, { position, depth - 1.0f });
+			transform = glm::scale(transform, { radius, radius, 1.0f });
+
+			m_LineCircleStencilShader->SetUniform("Thickness", (void*)&thickness);
+			DrawStencil(m_LineCircleStencilShader, transform);
+
+			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, transform, tint, true, m_CurrentStencilID - 1 });
+		}
+		void Render2D::DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, Texture* texture, const glm::vec4& tint)
+		{
+			glm::mat4 transform = glm::mat4(1.0f);
+			transform = glm::translate(transform, { position, depth - 1.0f });
+			transform = glm::scale(transform, { radius, radius, 1.0f });
+			
+			m_LineCircleStencilShader->SetUniform("Thickness", (void*)&thickness);
+			DrawStencil(m_LineCircleStencilShader, transform);
+
+			m_DrawCalls.push_back({ m_CurrentCamera, texture, transform, tint, true, m_CurrentStencilID - 1 });
+		}
+
+		void Render2D::DrawStencil(Shader* stencilShader, const glm::mat4& transform)
+		{
 			m_FrameBuffer->Unbind();
 			m_StencilBuffer->Bind();
-			m_CircleStencilShader->Bind();
-			m_CircleStencilShader->SetUniform("ViewProjection", (void*)&m_CurrentCamera->GetViewProjection());
-			m_CircleStencilShader->SetUniform("Model", (void*)&transform);
-			m_CircleStencilShader->SetUniform("StencilID", (void*)&m_CurrentStencilID);
+			stencilShader->Bind();
+			stencilShader->SetUniform("ViewProjection", (void*)&m_CurrentCamera->GetViewProjection());
+			stencilShader->SetUniform("Model", (void*)&transform);
+			stencilShader->SetUniform("StencilID", (void*)&m_CurrentStencilID);
 
 			s_Quad->Bind();
 			RenderAPI::DrawIndexed(6, DataType::UnsignedInt, NULL);
 			s_Quad->Unbind();
 
-			m_CircleStencilShader->Unbind();
+			stencilShader->Unbind();
 			m_StencilBuffer->Unbind();
 			m_FrameBuffer->Bind();
-			
-			m_DrawCalls.push_back({ m_CurrentCamera, texture, transform, tint, true, m_CurrentStencilID });
+
 			m_CurrentStencilID += 1;
 		}
 	}

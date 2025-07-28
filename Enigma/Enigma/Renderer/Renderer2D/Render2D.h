@@ -24,9 +24,15 @@ namespace Enigma {
 
 			void DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, const glm::vec4& tint);
 			void DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, Texture* texture, const glm::vec4& tint);
+			
+			void DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, float thickness, int depth, const glm::vec4& tint);
+			void DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, float thickness, int depth, Texture* texture, const glm::vec4& tint);
 
 			void DrawCircle(const glm::vec2& position, float radius, int depth, const glm::vec4& tint);
 			void DrawCircle(const glm::vec2& position, float radius, int depth, Texture* texture, const glm::vec4& tint);
+			
+			void DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, const glm::vec4& tint);
+			void DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, Texture* texture, const glm::vec4& tint);
 
 			Shader* GetMainShader() { return m_MainShader; }
 			Shader* GetPostProcShader() { return m_PostProcShader; }
@@ -34,6 +40,12 @@ namespace Enigma {
 		private:
 			static Shader* LoadDefaultMainShader();
 			static Shader* LoadDefaultPostProcShader();
+
+			static Shader* LoadCircleStencilShader();
+			static Shader* LoadLineCircleStencilShader();
+			static Shader* LoadLineQuadStencilShader();
+
+			void DrawStencil(Shader* stencilShader, const glm::mat4& transform);
 
 		private:
 			struct DrawCall {
@@ -54,6 +66,8 @@ namespace Enigma {
 
 			Shader* m_MainShader;
 			Shader* m_CircleStencilShader;
+			Shader* m_LineCircleStencilShader;
+			Shader* m_LineQuadStencilShader;
 			Shader* m_PostProcShader;
 
 			Texture* m_BlankTexture; // Used for anything with no texture
