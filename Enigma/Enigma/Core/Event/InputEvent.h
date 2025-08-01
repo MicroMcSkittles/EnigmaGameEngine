@@ -1,7 +1,7 @@
 #pragma once
-#include "Core/Event/Event.h"
-#include "Core/System.h"
-#include "Engine/InputCodes.h"
+#include "Enigma/Core/Event/Event.h"
+#include "Enigma/Core/System.h"
+#include "Enigma/Engine/InputCodes.h"
 #include <sstream>
 
 namespace Enigma {

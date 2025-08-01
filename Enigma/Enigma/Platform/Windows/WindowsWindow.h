@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/Window.h"
+#include "Enigma/Core/Window.h"
 
 namespace Enigma {
 	namespace Platform {

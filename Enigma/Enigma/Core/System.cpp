@@ -1,6 +1,6 @@
-#include "Core/System.h"
-#include "Core/Core.h"
-#include "Engine/InputCodes.h"
+#include "Enigma/Core/System.h"
+#include "Enigma/Core/Core.h"
+#include "Enigma/Engine/InputCodes.h"
 
 #include <fstream>
 #include <sstream>

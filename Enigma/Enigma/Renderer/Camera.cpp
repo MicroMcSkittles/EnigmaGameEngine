@@ -1,5 +1,5 @@
-#include "Renderer/Camera.h"
-#include "Core/Window.h"
+#include "Enigma/Renderer/Camera.h"
+#include "Enigma/Core/Window.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
