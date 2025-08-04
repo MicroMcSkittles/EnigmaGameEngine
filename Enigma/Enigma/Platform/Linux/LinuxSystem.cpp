@@ -1,8 +1,8 @@
-#include "Core/System.h"
-#include "Platform/Linux/LinuxWindow.h"
-#include "Core/Process/Application.h"
-#include "Core/Core.h"
-#include "Engine/InputCodes.h"
+#include "Enigma/Core/System.h"
+#include "Enigma/Platform/Linux/LinuxWindow.h"
+#include "Enigma/Core/Process/Application.h"
+#include "Enigma/Core/Core.h"
+#include "Enigma/Engine/InputCodes.h"
 
 // #include <Windows.h>
 // #include <commdlg.h>
@@ -18,9 +18,10 @@ namespace Enigma {
     namespace Core {
         void System::Init()
         {
-            if (!glfwInit()) {
-                LOG_ERROR("Failed to initialize GLFW");
-            }
+            glfwSetErrorCallback([](int code, const char* desc){ 
+                LOG_ERROR("Failed to initialize GLFW. Error code: " + std::to_string(code) + ", " + std::string(desc));
+            });
+            glfwInit();
         }
         void System::Shutdown()
         {

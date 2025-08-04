@@ -1,7 +1,7 @@
 #pragma once
-#include "Engine/Input.h"
+#include "Enigma/Engine/Input.h"
 
-#include "Platform/Linux/LinuxWindow.h"
+#include "Enigma/Platform/Linux/LinuxWindow.h"
 
 namespace Enigma {
 	namespace Platform {

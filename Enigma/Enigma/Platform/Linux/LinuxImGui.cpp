@@ -1,11 +1,11 @@
-#include "Platform/Linux/LinuxImGui.h"
+#include "Enigma/Platform/Linux/LinuxImGui.h"
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-#include "Platform/Linux/LinuxWindow.h"
-#include "Core/Core.h"
 
-#include "Platform/OpenGL/OpenGLTexture.h"
+#include "Enigma/Platform/Linux/LinuxWindow.h"
+#include "Enigma/Core/Core.h"
+#include "Enigma/Platform/OpenGL/OpenGLTexture.h"
 
 namespace Enigma {
 

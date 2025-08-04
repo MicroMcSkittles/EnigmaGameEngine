@@ -1,7 +1,7 @@
-#include "Platform/Linux/LinuxWindow.h"
-#include "Core/Event/WindowEvent.h"
-#include "Core/Event/InputEvent.h"
-#include "Core/Core.h"
+#include "Enigma/Platform/Linux/LinuxWindow.h"
+#include "Enigma/Core/Event/WindowEvent.h"
+#include "Enigma/Core/Event/InputEvent.h"
+#include "Enigma/Core/Core.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>

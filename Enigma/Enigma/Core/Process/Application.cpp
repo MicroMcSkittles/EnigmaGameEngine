@@ -8,14 +8,14 @@ namespace Enigma {
 
 		Application::Application(int argc, char** argv)
 		{
-			// Call an error if an instance of application exists
+      // Call an error if an instance of application exists
 			if (s_Instance) {
 				LOG_SOFT_ERROR("Application Instance already exists");
 				return;
 			}
 			s_Instance = this;
 			s_Data = new Data();
-
+      
 			System::Init();
 
 			// Store all commandline arguments
@@ -25,7 +25,7 @@ namespace Enigma {
 			Core::LoggerConfig loggerConfig;
 			loggerConfig.flags = Core::LoggerFunction | Core::LoggerTime | Core::LoggerShort;
 			loggerConfig.priorityLevel = 5;
-			INIT_LOGGER(loggerConfig);
+      INIT_LOGGER(loggerConfig);
 
 			s_Data->isRunning = true;
 		}
@@ -58,7 +58,6 @@ namespace Enigma {
 		{
 			for (WindowHandler* handler : s_Data->windows.GetData()) {
 				for (ID& id : handler->subProcesses) s_Data->subProcStack.GetProcess(id)->OnEvent(e);
-				//for (ID& id : handler->engineInstances) s_Data->engineInstances.Get(id)->OnEvent(e);
 			}
 		}
 
@@ -69,55 +68,7 @@ namespace Enigma {
 			}
 			ID procID = s_Data->subProcStack.GetProcessID(proc);
 			s_Data->windows.Get(windowID)->subProcesses.push_back(procID);
-
-			// Push the process's OnEvent function to the windows event callback list
-			/*s_Data->windows.Get(windowID)->window->AddEventCallback([&](Event& e) {
-				s_Data->subProcStack.GetProcess(procID)->OnEvent(e);
-			});*/
 		}
-
-		//ID Application::CreateEngineInstance(const Engine::EngineConfig& config)
-		//{
-		//	if (!s_Data->windows.IsValid(config.windowID)) {
-		//		LOG_WARNING("Failed to create a engine instance. Window does not exist.");
-		//		return ID::InvalidID();
-		//	}
-
-		//	Engine::Engine* instance = new Engine::Engine(config);
-		//	ID id = s_Data->engineInstances.Create(instance);
-		//	instance->SetID(id);
-		//	
-		//	s_Data->windows.Get(config.windowID)->engineInstances.push_back(id);
-
-		//	return id;
-		//}
-		//void Application::DeleteEngineInstance(Engine::Engine* instance)
-		//{
-		//	ID id = s_Data->engineInstances.Get(instance);
-
-		//	// Remove instance ID from the windows instance list
-		//	std::vector<ID>& instances = s_Data->windows.Get(instance->GetWindowID())->engineInstances;
-		//	for (int i = 0; i < instances.size(); ++i) {
-		//		if (instances[i] == id) {
-		//			instances.erase(instances.begin() + i);
-		//			break;
-		//		}
-		//	}
-
-		//	s_Data->engineInstances.Delete(id);
- 	//	}
-		//Engine::Engine* Application::GetEngineInstance(ID id)
-		//{
-		//	if (!s_Data->engineInstances.IsValid(id)) {
-		//		LOG_WARNING("Engine Instance does not exist");
-		//		return nullptr;
-		//	}
-		//	return s_Data->engineInstances.Get(id);
-		//}
-		//ID Application::GetEngineInstanceID(Engine::Engine* instance)
-		//{
-		//	return s_Data->engineInstances.Get(instance);
-		//}
 
 		ID Application::CreateWindow(const WindowConfig& config)
 		{

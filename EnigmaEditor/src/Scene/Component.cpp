@@ -23,7 +23,7 @@ namespace Enigma {
 		void EditorTag::Load(JSON::DataTreeNode& dataTree)
 		{
 			Engine::ECS::Tag& component = GetComponent();
-			component.tag = dataTree["Tag"].value;
+			component.tag = (std::string)dataTree["Tag"].value;
 		}
 		void EditorTag::InspectorImGuiImpl(Engine::ECS::Tag& component)
 		{

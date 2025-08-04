@@ -1,5 +1,5 @@
 #!/bin/bash
-#cd ../../
+cd ../../
 
 if [[ "$1" == "" ]] ; then
     echo ""

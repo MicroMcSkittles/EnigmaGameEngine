@@ -1,5 +1,6 @@
 #pragma once
 #include <fstream>
+#include <stdint.h>
 
 namespace Enigma {
 	namespace Serialization {
