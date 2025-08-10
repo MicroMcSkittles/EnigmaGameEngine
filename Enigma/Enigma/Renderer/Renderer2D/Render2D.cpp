@@ -172,7 +172,6 @@ namespace Enigma {
 
 		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, const glm::vec4& tint)
 		{
-			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth -1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
@@ -182,7 +181,6 @@ namespace Enigma {
 		}
 		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, Texture* texture, const glm::vec4& tint)
 		{
-			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
@@ -192,7 +190,6 @@ namespace Enigma {
 		}
 		void Render2D::DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, float thickness, int depth, const glm::vec4& tint)
 		{
-			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
@@ -209,7 +206,6 @@ namespace Enigma {
 		}
 		void Render2D::DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, float thickness, int depth, Texture* texture, const glm::vec4& tint)
 		{
-			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
@@ -225,7 +221,6 @@ namespace Enigma {
 
 		void Render2D::DrawCircle(const glm::vec2& position, float radius, int depth, const glm::vec4& tint)
 		{
-			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::scale(transform, { radius, radius, 1.0f });
@@ -236,7 +231,6 @@ namespace Enigma {
 		}
 		void Render2D::DrawCircle(const glm::vec2& position, float radius, int depth, Texture* texture, const glm::vec4& tint)
 		{
-			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::scale(transform, { radius, radius, 1.0f });
@@ -247,7 +241,6 @@ namespace Enigma {
 		}
 		void Render2D::DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, const glm::vec4& tint)
 		{
-			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::scale(transform, { radius, radius, 1.0f });
@@ -259,7 +252,6 @@ namespace Enigma {
 		}
 		void Render2D::DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, Texture* texture, const glm::vec4& tint)
 		{
-			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::scale(transform, { radius, radius, 1.0f });

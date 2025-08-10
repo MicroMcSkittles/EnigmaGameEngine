@@ -9,9 +9,13 @@
 
 namespace Enigma {
 	namespace Core {
-		ProfilingTimer::ProfilingTimer(const char* function, const char* file) : m_Function(function), m_File(file)
+
+		ProfilingTimer::ProfilingTimer(const char* function, const char* file, const char* description)
 		{
-			m_StartPoint = std::chrono::high_resolution_clock::now();
+			m_Function    = function;
+			m_File        = file;
+			m_Description = description;
+			m_StartPoint  = std::chrono::high_resolution_clock::now();
 		}
 		ProfilingTimer::~ProfilingTimer()
 		{
@@ -21,7 +25,7 @@ namespace Enigma {
 			long long end   = std::chrono::time_point_cast<std::chrono::microseconds>(endPoint).time_since_epoch().count();
 
 			float duration = (end - start) * 0.001f;
-			Profiler::Submit(m_Function, m_File, duration);
+			Profiler::Submit(m_Function, m_File, m_Description, duration);
 		}
 
 		void Profiler::Init(uint8_t profileDepth)
@@ -30,6 +34,7 @@ namespace Enigma {
 			s_Data->profileDepth = profileDepth;
 			LOG_WARNING("Using profiler, This is a debug tool and could harm performance");
 		}
+
 		void Profiler::ImGui()
 		{
 			ImGui::Begin("Enigma Profiler");
@@ -39,6 +44,18 @@ namespace Enigma {
 				s_Data->profileDepth = inputProfileDepth % ((uint8_t)-1);
 				if (s_Data->profileDepth == 0) s_Data->profileDepth = 1;
 				UpdateProfileDepth();
+			}
+			if (ImGui::Button("Clear")) {
+				s_Data->files.clear();
+				for (auto& [profileHash, profile] : s_Data->profiles) {
+					// Make sure memory was allocated properly
+					if (!profile.durations) {
+						LOG_ERROR("Failed to allocate memory for profile duration ( %s, %s )", profile.function, profile.file);
+						return;
+					}
+					else free(profile.durations);
+				}
+				s_Data->profiles.clear();
 			}
 			
 			// Loop through each file
@@ -64,7 +81,8 @@ namespace Enigma {
 				ImGui::PushID(profileHash);
 				Profile& profile = s_Data->profiles[profileHash];
 
-				if (ImGui::TreeNode(profile.function)) {
+				if (ImGui::TreeNode((profile.description == "") ? profile.function : profile.description)) {
+					if (profile.description == "") ImGui::Text(profile.function);
 					// Display duration info
 					float lastMS = profile.durations[s_Data->profileDepth - 1];
 					ImGui::Text("Last MS: %.2f", lastMS);
@@ -81,23 +99,23 @@ namespace Enigma {
 			s_Data->files.clear();
 			std::map<uint64_t, Profile> profiles = s_Data->profiles;
 			for (auto& [profileHash, profile] : profiles) {
+				// Make sure memory was allocated properly
 				if (!profile.durations) {
 					LOG_ERROR("Failed to allocate memory for profile duration ( %s, %s )", profile.function, profile.file);
 					return;
-				}
-				else free(profile.durations);
+				} else free(profile.durations);
 				s_Data->profiles.erase(profileHash);
-				CreateProfileEntry(profile.function, profile.file, 0.0);
+				CreateProfileEntry(profile.function, profile.file, profile.description, 0.0);
 			}
 		}
 		
-		void Profiler::Submit(const char* function, const char* file, float duration)
+		void Profiler::Submit(const char* function, const char* file, const char* description, float duration)
 		{
 			uint64_t profileHash = Hash(function, file);
 
 			// If this is a new profile, then create a new entry in the profiles table
 			if (!s_Data->profiles.count(profileHash)) {
-				CreateProfileEntry(function, file, duration);
+				CreateProfileEntry(function, file, description, duration);
 				return;
 			}
 
@@ -113,12 +131,13 @@ namespace Enigma {
 			memmove(profile.durations, profile.durations + 1, sizeof(float) * (s_Data->profileDepth - 1));
 			profile.durations[s_Data->profileDepth - 1] = duration;
 		}
-		void Profiler::CreateProfileEntry(const char* function, const char* file, float duration)
+		void Profiler::CreateProfileEntry(const char* function, const char* file, const char* description, float duration)
 		{
 			// Create profile
 			Profile profile;
-			profile.file = file;
-			profile.function = function;
+			profile.file        = file;
+			profile.function    = function;
+			profile.description = description;
 
 			// Allocate memory for profile durations
 			profile.durations = (float*)malloc(sizeof(float) * s_Data->profileDepth);

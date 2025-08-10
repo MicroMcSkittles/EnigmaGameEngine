@@ -8,21 +8,23 @@ namespace Enigma {
 	namespace Core {
 
 		struct Profile {
-			const char* function;  // The name of the function being profiled
-			const char* file;      // The name of the file the function is in
-			float*      durations; // Each recorded duration, its length is specifed by the profileDepth variable
+			const char* function;    // The name of the function being profiled
+			const char* file;        // The name of the file the function is in
+			const char* description; // An optional value
+			float*      durations;   // Each recorded duration, its length is specifed by the profileDepth variable
 		};
 
 		// When it gets created it records the current time, 
 		// when it gets destroyed it finds the duration from start to finish and sends it to the profiling
 		class ProfilingTimer {
 		public:
-			ProfilingTimer(const char* function, const char* file);
+			ProfilingTimer(const char* function, const char* file, const char* description = "");
 			~ProfilingTimer();
 		
 		private:
 			const char* m_Function;
 			const char* m_File;
+			const char* m_Description;
 			std::chrono::time_point<std::chrono::steady_clock> m_StartPoint;
 		};
 
@@ -32,10 +34,10 @@ namespace Enigma {
 			// Shows a imgui window that displays all profiles
 			static void ImGui(); 
 
-			static void Submit(const char* function, const char* file, float duration);
+			static void Submit(const char* function, const char* file, const char* description, float duration);
 
 		private:
-			static void CreateProfileEntry(const char* function, const char* file, float duration);
+			static void CreateProfileEntry(const char* function, const char* file, const char* description, float duration);
 
 			static void FileNodeImGui(const std::vector<uint64_t>& profiles);
 

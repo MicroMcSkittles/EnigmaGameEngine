@@ -12,7 +12,8 @@
 #pragma region utils
 
 #define BIT(x) 1 << x
-#define MACRO_COMBINE(a, b) a##b
+#define MACRO_COMBINE_INTERNAL(a, b) a##b
+#define MACRO_COMBINE(a, b) MACRO_COMBINE_INTERNAL(a, b)
 
 #pragma endregion
 
@@ -85,7 +86,12 @@
 #    include "Enigma/Core/Utilities/Profiler.h"
 #    define INIT_PROFILER(profileDepth) Enigma::Core::Profiler::Init(profileDepth);
 #    define SHOW_PROFILER_IMGUI()       Enigma::Core::Profiler::ImGui()
-#    define PROFILE()                   Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)(__FUNCSIG__, __FILE__)
+
+#    ifdef PLATFORM_WINDOWS
+#        define PROFILE(...) Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)(__FUNCSIG__, __FILE__,   __VA_ARGS__)
+#    elif PLATFORM_LINUX
+#        define PROFILE(...) Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)(__FUNCSIG__, __FILE__, ##__VA_ARGS__)
+#    endif
 #else
 #    define INIT_PROFILER(profileDepth)
 #    define ENIGMA_PROFILE()
