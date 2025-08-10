@@ -12,6 +12,7 @@
 #pragma region utils
 
 #define BIT(x) 1 << x
+#define MACRO_COMBINE(a, b) a##b
 
 #pragma endregion
 
@@ -30,10 +31,12 @@
 #pragma endregion
 
 #pragma region Logger Impl
+// TODO: remove this ===
 #ifdef DEBUG
 #    define ENABLE_LOGGER
 #endif
 #define ENABLE_LOGGER
+// =====================
 
 #ifdef ENABLE_LOGGER
 
@@ -68,4 +71,25 @@
      
 #    define LOG_ASSERT(condition, msg, ...) if(condition) LOG_ERROR(msg);
 #endif
+#pragma endregion
+
+#pragma region Profiler Impl
+// TODO: remove this ===
+#ifdef DEBUG
+#    define ENABLE_PROFILING
+#endif
+#define ENABLE_PROFILING
+// =====================
+
+#ifdef ENABLE_PROFILING
+#    include "Enigma/Core/Utilities/Profiler.h"
+#    define INIT_PROFILER(profileDepth) Enigma::Core::Profiler::Init(profileDepth);
+#    define SHOW_PROFILER_IMGUI()       Enigma::Core::Profiler::ImGui()
+#    define PROFILE()                   Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)(__FUNCSIG__, __FILE__)
+#else
+#    define INIT_PROFILER(profileDepth)
+#    define ENIGMA_PROFILE()
+#    define SHOW_PROFILER_IMGUI()
+#endif
+
 #pragma endregion

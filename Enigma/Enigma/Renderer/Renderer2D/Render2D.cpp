@@ -94,6 +94,7 @@ namespace Enigma {
 		}
 		void Render2D::StartFrame(OrthographicCamera* camera)
 		{
+			PROFILE();
 			Core::Application::UseRenderAPI(m_RenderAPI);
 			RenderAPI::Clear();
 
@@ -111,6 +112,7 @@ namespace Enigma {
 		}
 		void Render2D::EndFrame()
 		{
+			PROFILE();
 			m_MainShader->Bind();
 
 			// Loop through all the draw calls
@@ -170,6 +172,7 @@ namespace Enigma {
 
 		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, const glm::vec4& tint)
 		{
+			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth -1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
@@ -179,6 +182,7 @@ namespace Enigma {
 		}
 		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, Texture* texture, const glm::vec4& tint)
 		{
+			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
@@ -188,6 +192,7 @@ namespace Enigma {
 		}
 		void Render2D::DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, float thickness, int depth, const glm::vec4& tint)
 		{
+			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
@@ -204,6 +209,7 @@ namespace Enigma {
 		}
 		void Render2D::DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, float thickness, int depth, Texture* texture, const glm::vec4& tint)
 		{
+			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
@@ -219,6 +225,7 @@ namespace Enigma {
 
 		void Render2D::DrawCircle(const glm::vec2& position, float radius, int depth, const glm::vec4& tint)
 		{
+			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::scale(transform, { radius, radius, 1.0f });
@@ -229,6 +236,7 @@ namespace Enigma {
 		}
 		void Render2D::DrawCircle(const glm::vec2& position, float radius, int depth, Texture* texture, const glm::vec4& tint)
 		{
+			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::scale(transform, { radius, radius, 1.0f });
@@ -239,6 +247,7 @@ namespace Enigma {
 		}
 		void Render2D::DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, const glm::vec4& tint)
 		{
+			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::scale(transform, { radius, radius, 1.0f });
@@ -250,6 +259,7 @@ namespace Enigma {
 		}
 		void Render2D::DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, Texture* texture, const glm::vec4& tint)
 		{
+			PROFILE();
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::scale(transform, { radius, radius, 1.0f });
@@ -262,6 +272,7 @@ namespace Enigma {
 
 		void Render2D::DrawText(Text* text, const glm::vec2& position, float scale, float rotation, int depth, const glm::vec4& tint)
 		{
+			PROFILE();
 			// Create stencil, the vao with glyph bounding box info uses a different transform matrix from the main quad
 			glm::mat4 glyphTransform = glm::mat4(1.0f);
 			glyphTransform = glm::translate(glyphTransform, { position, depth - 1.0f });
@@ -281,6 +292,7 @@ namespace Enigma {
 		}
 		void Render2D::DrawText(Text* text, const glm::vec2& position, float scale, float rotation, int depth, Texture* texture, const glm::vec4& tint)
 		{
+			PROFILE();
 			// Create stencil, the vao with glyph bounding box info uses a different transform matrix from the main quad
 			glm::mat4 glyphTransform = glm::mat4(1.0f);
 			glyphTransform = glm::translate(glyphTransform, { position, depth - 1.0f });
@@ -301,6 +313,7 @@ namespace Enigma {
 
 		void Render2D::DrawStencil(Shader* stencilShader, const glm::mat4& transform)
 		{
+			PROFILE();
 			m_FrameBuffer->Unbind();
 			m_StencilBuffer->Bind();
 			stencilShader->Bind();
@@ -320,6 +333,7 @@ namespace Enigma {
 		}
 		void Render2D::DrawTextStencil(Text* text, const glm::mat4& transform)
 		{
+			PROFILE();
 			// Unbind frame buffer so that we can render to the stencil buffer
 			m_FrameBuffer->Unbind();
 

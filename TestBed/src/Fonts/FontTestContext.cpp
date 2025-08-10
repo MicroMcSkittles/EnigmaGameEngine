@@ -12,6 +12,7 @@
 FontTestContext::FontTestContext(Core::ID windowID) : TestContext(windowID)
 {
 	LOG_MESSAGE("Started Font Test Context", 5);
+	INIT_PROFILER(25);
 
 	// Setup surface
 	Core::Window* window = Core::Application::GetWindow(m_WindowID);
@@ -73,6 +74,7 @@ void FontTestContext::OnEvent(Core::Event& e)
 
 void FontTestContext::Update(Engine::DeltaTime deltaTime)
 {
+	PROFILE();
 	Engine::Input::MakeCurrent(m_InputContext);
 
 	// Handle camera input
@@ -97,6 +99,7 @@ void FontTestContext::Update(Engine::DeltaTime deltaTime)
 
 void FontTestContext::Render()
 {
+	PROFILE();
 	m_RenderContext->StartFrame(m_Camera);
 
 	// Render Text
@@ -111,6 +114,7 @@ void FontTestContext::Render()
 }
 void FontTestContext::RenderBoundingBox(const Renderer::TextBoundingBox& boundingBox, const glm::vec2& position, float scale)
 {
+	PROFILE();
 	// Transform text bounding box
 	glm::mat4 transform(1.0f);
 	transform = glm::translate(transform, { position,0 });
@@ -129,6 +133,7 @@ void FontTestContext::RenderBoundingBox(const Renderer::TextBoundingBox& boundin
 }
 void FontTestContext::RenderTextPoint(const Renderer::TextPoint& point, const glm::mat4& transform)
 {
+	PROFILE();
 	glm::vec4 tint = { 1,1,1,1 };
 	bool control = point.type & Renderer::TextPointType::TextPointType_Control;
 	bool implied = point.type & Renderer::TextPointType::TextPointType_Implied;
@@ -146,6 +151,7 @@ void FontTestContext::RenderTextPoint(const Renderer::TextPoint& point, const gl
 }
 void FontTestContext::RenderTextDebugElements(const glm::mat4& transform)
 {
+	PROFILE();
 	bool showPoints = m_ShowCurvePoints || m_ShowImpliedPoints || m_ShowControlPoints;
 	if (!showPoints && !m_ShowBounds) return;
 
@@ -202,6 +208,8 @@ void FontTestContext::RenderTextDebugElements(const glm::mat4& transform)
 
 void FontTestContext::ImGui()
 {
+	SHOW_PROFILER_IMGUI();
+
 	ImGui::Begin("Debug Menu");
 	ImGui::Text("Font Test");
 	ImGui::TextWrapped("Text Rendering From Fonts Demo");

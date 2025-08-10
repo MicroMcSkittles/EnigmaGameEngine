@@ -1,0 +1,54 @@
+#pragma once
+#include <chrono>
+#include <string>
+#include <vector>
+#include <map>
+
+namespace Enigma {
+	namespace Core {
+
+		struct Profile {
+			const char* function;  // The name of the function being profiled
+			const char* file;      // The name of the file the function is in
+			float*      durations; // Each recorded duration, its length is specifed by the profileDepth variable
+		};
+
+		// When it gets created it records the current time, 
+		// when it gets destroyed it finds the duration from start to finish and sends it to the profiling
+		class ProfilingTimer {
+		public:
+			ProfilingTimer(const char* function, const char* file);
+			~ProfilingTimer();
+		
+		private:
+			const char* m_Function;
+			const char* m_File;
+			std::chrono::time_point<std::chrono::steady_clock> m_StartPoint;
+		};
+
+		class Profiler {
+		public:
+			static void Init(uint8_t profileDepth);
+			// Shows a imgui window that displays all profiles
+			static void ImGui(); 
+
+			static void Submit(const char* function, const char* file, float duration);
+
+		private:
+			static void CreateProfileEntry(const char* function, const char* file, float duration);
+
+			static void FileNodeImGui(const std::vector<uint64_t>& profiles);
+
+			static void UpdateProfileDepth();
+
+		private:
+			struct Data {
+				std::map<uint64_t, Profile> profiles;
+				std::map<std::string, std::vector<uint64_t>> files; // Maps each file to the its functions
+				uint8_t profileDepth;
+			};
+			inline static Data* s_Data;
+		};
+
+	}
+}
