@@ -19,7 +19,7 @@ project "EnigmaSerialization"
         rootdir .. "Vendor/stb/stb/stb_image.h",
     }
     includedirs {
-        "EnigmaSerialization",
+        "./",
         rootdir .. "Enigma",
         --rootdir .. "Enigma/Enigma",
         rootdir .. "Vendor/GLM/GLM",

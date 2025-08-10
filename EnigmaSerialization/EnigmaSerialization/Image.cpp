@@ -1,4 +1,4 @@
-#include "Image.h"
+#include "EnigmaSerialization/Image.h"
 
 #include <Enigma/Core/Core.h>
 #include <Enigma/Core/System.h>

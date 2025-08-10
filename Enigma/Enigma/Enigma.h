@@ -6,10 +6,8 @@
 // Note:
 // I'm jumping around a lot of random features I will get back to the editor eventualy
 // 
-// Added a new project to handle serialization.
-// The engine doesn't need to know about differant file formats, you should be able to just
-// pass in the raw data. To do this I made the EnigmaSerialization project that will handle all of the
-// differant files, like textures, models, json, fonts, etc.
+// I've spent almost 2 weeks on the text/font stuff, but it works now. Theres still more
+// I want to do with it, like fixing the strange artifacts.
 // 
 // ==============================
 

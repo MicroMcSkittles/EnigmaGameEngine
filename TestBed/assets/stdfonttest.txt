@@ -1,0 +1,9 @@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyz
+1234567890!@#$%^&*()_+-=[]
+{}\|;:'",.<>/?~`
+
+Pangrams:
+The five boxing wizards jump quickly.
+Two driven jocks help fax my big quiz.
+Sympathizing would fix Quaker objectives.

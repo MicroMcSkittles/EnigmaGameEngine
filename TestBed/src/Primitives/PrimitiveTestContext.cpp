@@ -36,7 +36,7 @@ void PrimitiveTestContext::Render()
 	m_RenderContext->DrawCircle(m_Position, m_Radius, -1, m_Texture, m_Tint);
 	m_RenderContext->DrawCircle({ 1,0 }, 0.5, 0, { 1,0,1,1 });
 	m_RenderContext->DrawLineCircle({ -1,1 }, 0.25, 0.1, 0, { 0,1,1,1 });
-	m_RenderContext->DrawLineQuad({ -1,0.25 }, m_Scale, 0, 0.1, 0, { 0,1,1,1 });
+	m_RenderContext->DrawLineQuad({ -1,0.25 }, m_Scale, 0.1, 0.1, 0, { 0,1,1,1 });
 	m_RenderContext->EndFrame();
 }
 void PrimitiveTestContext::ImGui()

@@ -13,14 +13,16 @@ namespace Enigma {
 
 			Core::Application::UseRenderAPI(m_RenderAPI);
 
-			if (!config.mainShader) m_MainShader = LoadDefaultMainShader();
-			else m_MainShader = config.mainShader;
+			// Load all shaders
+			m_MainShader     = config.mainShader;
+			m_PostProcShader = config.postProcShader;
+			if (!config.mainShader)     m_MainShader     = LoadDefaultMainShader();
 			if (!config.postProcShader) m_PostProcShader = LoadDefaultPostProcShader();
-			else m_PostProcShader = config.postProcShader;
 
-			m_CircleStencilShader = LoadCircleStencilShader();
+			m_CircleStencilShader     = LoadCircleStencilShader();
 			m_LineCircleStencilShader = LoadLineCircleStencilShader();
-			m_LineQuadStencilShader = LoadLineQuadStencilShader();
+			m_LineQuadStencilShader   = LoadLineQuadStencilShader();
+			m_TextStencilShader       = LoadTextStencilShader();
 
 			m_CurrentCamera = nullptr;
 
@@ -85,39 +87,42 @@ namespace Enigma {
 		void Render2D::Resize(int width, int height)
 		{
 			RenderAPI::SetViewport(width, height);
-			if(m_CurrentCamera != nullptr)m_CurrentCamera->Resize(width, height);
 			m_FrameBuffer->Resize(width, height);
 			m_StencilBuffer->Resize(width, height);
 			if (m_OutputBuffer != nullptr) m_OutputBuffer->Resize(width, height);
+			if(m_CurrentCamera != nullptr) m_CurrentCamera->Resize(width, height);
 		}
 		void Render2D::StartFrame(OrthographicCamera* camera)
 		{
+			Core::Application::UseRenderAPI(m_RenderAPI);
+			RenderAPI::Clear();
+
 			m_CurrentCamera = camera;
 			m_CurrentStencilID = 0;
 
-			Core::Application::UseRenderAPI(m_RenderAPI);
-
-			RenderAPI::Clear();
-
+			// Clear stencil buffer
 			m_StencilBuffer->Bind();
 			RenderAPI::Clear();
 			m_StencilBuffer->Unbind();
 
+			// Bind and clear frame buffer
 			m_FrameBuffer->Bind();
-
 			RenderAPI::Clear();
 		}
 		void Render2D::EndFrame()
 		{
 			m_MainShader->Bind();
 
+			// Loop through all the draw calls
 			for (auto& call : m_DrawCalls) {
+				// Set uniforms
 				call.texture->Bind();
 				m_MainShader->SetUniform("TextureMap", (void*)call.texture);
 				m_MainShader->SetUniform("Tint", (void*)&call.tint);
 				m_MainShader->SetUniform("ViewProjection", (void*)&call.camera->GetViewProjection());
 				m_MainShader->SetUniform("Model", (void*)&call.model);
 
+				// If the draw call is using a stencil then set the stencil uniforms
 				int stencilID = -1;
 				if (call.useStencil) {
 					m_StencilTexture->Bind();
@@ -126,6 +131,7 @@ namespace Enigma {
 				}
 				m_MainShader->SetUniform("StencilID", (void*)&stencilID);
 
+				// Draw the thing
 				s_Quad->Bind();
 				RenderAPI::DrawIndexed(6, DataType::UnsignedInt, NULL);
 				s_Quad->Unbind();
@@ -136,14 +142,15 @@ namespace Enigma {
 			m_DrawCalls.clear();
 
 			m_MainShader->Unbind();
-
 			m_FrameBuffer->Unbind();
 
+			// If the surface passed to the renderer has a frame then render to that frame with the output buffer
 			if (m_OutputBuffer != nullptr) {
 				m_OutputBuffer->Bind();
 				RenderAPI::Clear();
 			}
 
+			// Run the frame through the post process shader
 			m_PostProcShader->Bind();
 			Texture* frame = m_FrameBuffer->GetColorAttachment(0);
 			//Texture* frame = m_StencilTexture;
@@ -253,6 +260,45 @@ namespace Enigma {
 			m_DrawCalls.push_back({ m_CurrentCamera, texture, transform, tint, true, m_CurrentStencilID - 1 });
 		}
 
+		void Render2D::DrawText(Text* text, const glm::vec2& position, float scale, float rotation, int depth, const glm::vec4& tint)
+		{
+			// Create stencil, the vao with glyph bounding box info uses a different transform matrix from the main quad
+			glm::mat4 glyphTransform = glm::mat4(1.0f);
+			glyphTransform = glm::translate(glyphTransform, { position, depth - 1.0f });
+			glyphTransform = glm::rotate(glyphTransform, rotation, { 0.0f, 0.0f, 1.0f });
+			glyphTransform = glm::scale(glyphTransform, { scale, scale, 1.0f });
+			DrawTextStencil(text, glyphTransform);
+
+			// Transform the text bounding box into world space
+			glm::mat4 textTransform = glm::mat4(1.0f); 
+			glm::vec3 textPosition  = glyphTransform * glm::vec4(text->GetBoundingBox().position, 0, 1);
+			glm::vec3 textScale     = glyphTransform * glm::vec4(text->GetBoundingBox().size,     1, 1);
+			textTransform           = glm::translate(textTransform, textPosition);
+			textTransform           = glm::rotate(textTransform, rotation, { 0.0f, 0.0f, 1.0f });
+			textTransform           = glm::scale(textTransform, textScale);
+			// Push the draw call
+			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, textTransform, tint, true, m_CurrentStencilID - 1 });
+		}
+		void Render2D::DrawText(Text* text, const glm::vec2& position, float scale, float rotation, int depth, Texture* texture, const glm::vec4& tint)
+		{
+			// Create stencil, the vao with glyph bounding box info uses a different transform matrix from the main quad
+			glm::mat4 glyphTransform = glm::mat4(1.0f);
+			glyphTransform = glm::translate(glyphTransform, { position, depth - 1.0f });
+			glyphTransform = glm::rotate(glyphTransform, rotation, { 0.0f, 0.0f, 1.0f });
+			glyphTransform = glm::scale(glyphTransform, { scale, scale, 1.0f });
+			DrawTextStencil(text, glyphTransform);
+
+			// Transform the text bounding box into world space
+			glm::mat4 textTransform = glm::mat4(1.0f);
+			glm::vec3 textPosition = glyphTransform * glm::vec4(text->GetBoundingBox().position, 0, 1);
+			glm::vec3 textScale = glyphTransform * glm::vec4(text->GetBoundingBox().size, 1, 1);
+			textTransform = glm::translate(textTransform, textPosition);
+			textTransform = glm::rotate(textTransform, rotation, { 0.0f, 0.0f, 1.0f });
+			textTransform = glm::scale(textTransform, textScale);
+			// Push the draw call
+			m_DrawCalls.push_back({ m_CurrentCamera, texture, textTransform, tint, true, m_CurrentStencilID - 1 });
+		}
+
 		void Render2D::DrawStencil(Shader* stencilShader, const glm::mat4& transform)
 		{
 			m_FrameBuffer->Unbind();
@@ -270,6 +316,40 @@ namespace Enigma {
 			m_StencilBuffer->Unbind();
 			m_FrameBuffer->Bind();
 
+			m_CurrentStencilID += 1;
+		}
+		void Render2D::DrawTextStencil(Text* text, const glm::mat4& transform)
+		{
+			// Unbind frame buffer so that we can render to the stencil buffer
+			m_FrameBuffer->Unbind();
+
+			// Bind every thing
+			m_StencilBuffer->Bind();
+			m_TextStencilShader->Bind();
+			text->GetGlyphData()->Bind();
+
+			// Set uniforms
+			m_TextStencilShader->SetUniform("ViewProjection", (void*)&m_CurrentCamera->GetViewProjection());
+			m_TextStencilShader->SetUniform("Model", (void*)&transform);
+			m_TextStencilShader->SetUniform("StencilID", (void*)&m_CurrentStencilID);
+			m_TextStencilShader->SetUniform("TextData", (void*)text->GetGlyphData());
+
+			// Draw to stencil buffer
+			text->GetGlyphBoundsVAO()->Bind();
+			RenderAPI::DrawIndexed(
+				text->GetGlyphBoundsVAO()->GetIndexBuffer()->GetIndexCount(), 
+				text->GetGlyphBoundsVAO()->GetIndexBuffer()->GetIndexType(), 
+				NULL
+			);
+			text->GetGlyphBoundsVAO()->Unbind();
+
+			// unbind every thing
+			text->GetGlyphData()->Unbind();
+			m_TextStencilShader->Unbind();
+			m_StencilBuffer->Unbind();
+
+			// Rebind frame buffer
+			m_FrameBuffer->Bind();
 			m_CurrentStencilID += 1;
 		}
 	}

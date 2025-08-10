@@ -2,6 +2,8 @@
 #include "Enigma/Renderer/Shader.h"
 #include "Enigma/Renderer/Camera.h"
 #include "Enigma/Renderer/VertexArray.h"
+#include "Enigma/Renderer/Primitives/Vertex.h"
+#include "Enigma/Renderer/Primitives/Text.h"
 
 namespace Enigma {
 	namespace Renderer {
@@ -34,8 +36,13 @@ namespace Enigma {
 			void DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, const glm::vec4& tint);
 			void DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, Texture* texture, const glm::vec4& tint);
 
+			void DrawText(Text* text, const glm::vec2& position, float scale, float rotation, int depth, const glm::vec4& tint);
+			void DrawText(Text* text, const glm::vec2& position, float scale, float rotation, int depth, Texture* texture, const glm::vec4& tint);
+
 			Shader* GetMainShader() { return m_MainShader; }
 			Shader* GetPostProcShader() { return m_PostProcShader; }
+
+			Texture* GetBlankTexture() { return m_BlankTexture; }
 
 		private:
 			static Shader* LoadDefaultMainShader();
@@ -44,8 +51,10 @@ namespace Enigma {
 			static Shader* LoadCircleStencilShader();
 			static Shader* LoadLineCircleStencilShader();
 			static Shader* LoadLineQuadStencilShader();
+			static Shader* LoadTextStencilShader();
 
 			void DrawStencil(Shader* stencilShader, const glm::mat4& transform);
+			void DrawTextStencil(Text* text, const glm::mat4& transform);
 
 		private:
 			struct DrawCall {
@@ -68,6 +77,7 @@ namespace Enigma {
 			Shader* m_CircleStencilShader;
 			Shader* m_LineCircleStencilShader;
 			Shader* m_LineQuadStencilShader;
+			Shader* m_TextStencilShader;
 			Shader* m_PostProcShader;
 
 			Texture* m_BlankTexture; // Used for anything with no texture
@@ -81,16 +91,12 @@ namespace Enigma {
 			Engine::Surface m_Surface;
 
 		private:
-			struct Vertex {
-				glm::vec3 position;
-				glm::vec2 textureCoord;
-			};
 
 			inline static std::vector<DataType> s_VertexLayout = {
 				DataType::Float3,
 				DataType::Float2
 			};
-			inline static std::vector<Vertex> s_QuadVertices = {
+			inline static std::vector<PrimitiveVertex> s_QuadVertices = {
 				{ {  1.0f,  1.0f, 0.0f }, { 1.0f, 1.0f } },
 				{ {  1.0f, -1.0f, 0.0f }, { 1.0f, 0.0f } },
 				{ { -1.0f, -1.0f, 0.0f }, { 0.0f, 0.0f } },

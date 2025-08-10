@@ -63,5 +63,13 @@ namespace Enigma {
 			return Renderer::Shader::Create(config);
 		}
 
+		Shader* Render2D::LoadTextStencilShader()
+		{
+			Renderer::ShaderConfig config;
+			config.vertexPath = "../Enigma/DefaultShaders/TextStencilShader.vert";
+			config.pixelPath = "../Enigma/DefaultShaders/TextStencilShader.frag";
+			return Renderer::Shader::Create(config);
+		}
+
 	}
 }

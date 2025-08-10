@@ -1,10 +1,9 @@
 #include "Enigma/Platform/Windows/WindowsImGui.h"
+#include "Enigma/Platform/Windows/WindowsWindow.h"
+#include "Enigma/Platform/OpenGL/OpenGLTexture.h"
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-#include "Enigma/Platform/Windows/WindowsWindow.h"
-
-#include "Enigma/Platform/OpenGL/OpenGLTexture.h"
 
 namespace Enigma {
 

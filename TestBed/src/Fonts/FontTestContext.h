@@ -1,33 +1,21 @@
 #pragma once
 #include "TestBed.h"
+#include <Enigma/Core/Event/InputEvent.h>
 #include <Enigma/Renderer/Renderer2D/Render2D.h>
 #include <Enigma/Engine/Input.h>
 
-#include <EnigmaSerialization/Font.h>
+#include <EnigmaSerialization/Fonts/FontTTF.h>
+#include <EnigmaSerialization/Fonts/Font.h>
 using namespace Enigma::Serialization;
 
 #define CURRENT_TEST_CONTEXT FontTestContext
 #define CURRENT_TEST_CONTEXT_NAME "Font Test"
 
-struct Curve {
-	std::vector<uint32_t> points;
-	int resolution;
-};
-struct Text {
-	std::vector<glm::vec2> points;
-	//std::vector<Curve> curves;
-	std::vector<uint32_t> indices;
-	std::string text;
-	Font* font;
-
-	void SetText(const std::string& str);
-	Renderer::VertexArray* GenerateVAO();
-};
-
 class FontTestContext : public TestContext {
 public:
 	FontTestContext(Core::ID windowID);
 
+	void OnScroll(Core::MouseScroll& e);
 	void OnResize(int width, int height);
 	virtual void OnEvent(Core::Event& e) override;
 	virtual void Update(Engine::DeltaTime deltaTime) override;
@@ -35,22 +23,32 @@ public:
 	virtual void ImGui() override;
 
 private:
-	glm::vec2 lerp(const glm::vec2& p0, const glm::vec2& p1, float t);
+	void RenderBoundingBox(const Renderer::TextBoundingBox& boundingBox, const glm::vec2& position, float scale);
+	void RenderTextPoint(const Renderer::TextPoint& point, const glm::mat4& transform);
+	void RenderTextDebugElements(const glm::mat4& transform);
 
 private:
+	// Render
 	Renderer::OrthographicCamera* m_Camera;
-	Renderer::Shader* m_MainShader;
-
 	Renderer::Render2D* m_RenderContext;
 	Engine::Surface m_Surface;
 
+	// Input
 	Engine::Input* m_InputContext;
+	float m_CameraSpeed;
+	bool m_Controlling;
 
-	Renderer::VertexArray* m_TextVAO;
-	int m_CurveResolution;
-	bool m_ShowPoints;
-	Text m_Text;
-	glm::vec2 m_TextPosition;
+	// Debug values
+	float m_DebugElementsSize;
+	bool m_ShowCurvePoints;
+	bool m_ShowImpliedPoints;
+	bool m_ShowControlPoints;
+	bool m_ShowBounds;
+	bool m_ShowGlyph;
+	
+	// Text values
 	Font* m_Font;
-
+	std::string m_TextValue;
+	Renderer::Text* m_Text;
+	glm::vec3 m_TextColor;
 };
