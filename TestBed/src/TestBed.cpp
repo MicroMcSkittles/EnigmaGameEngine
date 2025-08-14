@@ -5,7 +5,7 @@
 
 #include "Fonts/FontTestContext.h"
 //#include "Primitives/PrimitiveTestContext.h"
-
+//#include "Audio/AudioTestContext.h"
 
 void TestBed::StartUp()
 {
@@ -14,6 +14,7 @@ void TestBed::StartUp()
 	windowConfig.height = 600;
 	windowConfig.title = CURRENT_TEST_CONTEXT_NAME;
 	windowConfig.renderAPI = Renderer::API::OpenGL;
+	windowConfig.vSync = true;
 
 	Core::ImGuiConfig imguiConfig;
 	imguiConfig.docking = false;
@@ -22,7 +23,7 @@ void TestBed::StartUp()
 	Core::Application::BindSubProcToWindow(this, m_WindowID);
 	Core::Application::GetWindow(m_WindowID)->AddEventCallback([&](Core::Event& e) { return OnEvent(e); });
   
-  LOG_MESSAGE("Test, hello!!", 5);
+	LOG_MESSAGE("Test, hello!!", 5);
 
 	m_TestContext = new CURRENT_TEST_CONTEXT(m_WindowID);
 }

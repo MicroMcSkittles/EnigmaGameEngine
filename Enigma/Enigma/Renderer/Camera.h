@@ -87,6 +87,7 @@ namespace Enigma {
 			virtual void CalculateProjection() override;
 
 			const ViewBox& GetViewBox() { return m_ViewBox; }
+			const ViewBox& GetZoomViewBox() { return m_ZoomViewBox; }
 			void SetViewBox(const ViewBox& view);
 
 			float GetZoom() { return m_Zoom; }

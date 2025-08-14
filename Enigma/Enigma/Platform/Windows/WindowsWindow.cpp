@@ -5,6 +5,8 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
 
 // TODO: terminat GLFW someware
 
@@ -118,6 +120,11 @@ namespace Enigma {
 		Renderer::API WindowsWindow::GetAPI()
 		{
 			return m_Config.renderAPI;
+		}
+
+		void* WindowsWindow::GetNativeWindow()
+		{
+			return (void*)glfwGetWin32Window((GLFWwindow*)m_Handle);
 		}
 
 		bool WindowsWindow::ShouldClose()

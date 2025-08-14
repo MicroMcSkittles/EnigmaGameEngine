@@ -17,6 +17,8 @@ namespace Enigma {
 
 			virtual Renderer::API GetAPI() override;
 
+			virtual void* GetNativeWindow() override;
+
 			virtual bool ShouldClose() override;
 			virtual void ShouldClose(bool shouldClose) override;
 

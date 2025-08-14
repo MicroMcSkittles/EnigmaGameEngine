@@ -66,13 +66,13 @@ namespace Enigma {
 
         std::string System::OpenFileDialog(const char* filter, Core::ID windowID)
         {
-            Platform::WindowsWindow* window = (Platform::WindowsWindow*)Application::GetWindow(windowID);
+            Window* window = Application::GetWindow(windowID);
 
             OPENFILENAMEA ofn;
             CHAR szFile[260] = { 0 };
             ZeroMemory(&ofn, sizeof(OPENFILENAME));
             ofn.lStructSize = sizeof(OPENFILENAME);
-            ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)window->GetHandle());
+            ofn.hwndOwner = (HWND)window->GetNativeWindow();
             ofn.lpstrFile = szFile;
             ofn.nMaxFile = sizeof(szFile);
             ofn.lpstrFilter = filter;

@@ -42,6 +42,8 @@ namespace Enigma {
 
 			virtual Renderer::API GetAPI() = 0;
 
+			virtual void* GetNativeWindow() = 0;
+
 			virtual bool ShouldClose() = 0;
 			virtual void ShouldClose(bool shouldClose) = 0;
 

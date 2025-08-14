@@ -10,11 +10,12 @@
 namespace Enigma {
 	namespace Core {
 
-		ProfilingTimer::ProfilingTimer(const char* function, const char* file, const char* description)
+		ProfilingTimer::ProfilingTimer(const char* function, const char* file, bool additive, const char* description)
 		{
 			m_Function    = function;
 			m_File        = file;
 			m_Description = description;
+			m_Additive    = additive;
 			m_StartPoint  = std::chrono::high_resolution_clock::now();
 		}
 		ProfilingTimer::~ProfilingTimer()
@@ -25,7 +26,7 @@ namespace Enigma {
 			long long end   = std::chrono::time_point_cast<std::chrono::microseconds>(endPoint).time_since_epoch().count();
 
 			float duration = (end - start) * 0.001f;
-			Profiler::Submit(m_Function, m_File, m_Description, duration);
+			Profiler::Submit(m_Function, m_File, m_Additive, m_Description, duration);
 		}
 
 		void Profiler::Init(uint8_t profileDepth)
@@ -82,7 +83,7 @@ namespace Enigma {
 				Profile& profile = s_Data->profiles[profileHash];
 
 				if (ImGui::TreeNode((profile.description == "") ? profile.function : profile.description)) {
-					if (profile.description == "") ImGui::Text(profile.function);
+					if (profile.description != "") ImGui::Text(profile.function);
 					// Display duration info
 					float lastMS = profile.durations[s_Data->profileDepth - 1];
 					ImGui::Text("Last MS: %.2f", lastMS);
@@ -109,9 +110,9 @@ namespace Enigma {
 			}
 		}
 		
-		void Profiler::Submit(const char* function, const char* file, const char* description, float duration)
+		void Profiler::Submit(const char* function, const char* file, bool additive, const char* description, float duration)
 		{
-			uint64_t profileHash = Hash(function, file);
+			uint64_t profileHash = Hash((description == "") ? function : description, file);
 
 			// If this is a new profile, then create a new entry in the profiles table
 			if (!s_Data->profiles.count(profileHash)) {
@@ -128,9 +129,22 @@ namespace Enigma {
 			}
 
 			// Shift new duration into the profiles durations
-			memmove(profile.durations, profile.durations + 1, sizeof(float) * (s_Data->profileDepth - 1));
-			profile.durations[s_Data->profileDepth - 1] = duration;
+			if (!additive || (additive && profile.SOF)) {
+				memmove(profile.durations, profile.durations + 1, sizeof(float) * (s_Data->profileDepth - 1));
+				profile.durations[s_Data->profileDepth - 1] = duration;
+				profile.SOF = false;
+			}
+			else if (additive && !profile.SOF) {
+				profile.durations[s_Data->profileDepth - 1] += duration;
+			}
 		}
+		void Profiler::EndFrame()
+		{
+			for (auto& [profileHash, profile] : s_Data->profiles) {
+				profile.SOF = true;
+			}
+		}
+
 		void Profiler::CreateProfileEntry(const char* function, const char* file, const char* description, float duration)
 		{
 			// Create profile
@@ -138,6 +152,7 @@ namespace Enigma {
 			profile.file        = file;
 			profile.function    = function;
 			profile.description = description;
+			profile.SOF         = true;
 
 			// Allocate memory for profile durations
 			profile.durations = (float*)malloc(sizeof(float) * s_Data->profileDepth);
@@ -153,7 +168,7 @@ namespace Enigma {
 			profile.durations[s_Data->profileDepth - 1] = duration;
 
 			// Store profile in table
-			uint64_t profileHash = Hash(function, file);
+			uint64_t profileHash = Hash((description == "") ? function : description, file);
 			s_Data->profiles.insert({ profileHash, profile });
 
 			// Store profile hash in the file table

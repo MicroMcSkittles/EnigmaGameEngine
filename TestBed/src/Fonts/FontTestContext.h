@@ -39,6 +39,7 @@ private:
 	bool m_Controlling;
 
 	// Debug values
+	float m_FPS;
 	float m_DebugElementsSize;
 	bool m_ShowCurvePoints;
 	bool m_ShowImpliedPoints;

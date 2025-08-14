@@ -84,18 +84,29 @@
 
 #ifdef ENABLE_PROFILING
 #    include "Enigma/Core/Utilities/Profiler.h"
-#    define INIT_PROFILER(profileDepth) Enigma::Core::Profiler::Init(profileDepth);
+#    define INIT_PROFILER(profileDepth) Enigma::Core::Profiler::Init(profileDepth)
 #    define SHOW_PROFILER_IMGUI()       Enigma::Core::Profiler::ImGui()
+#    define END_PROFILE_FRAME()         Enigma::Core::Profiler::EndFrame()
 
 #    ifdef PLATFORM_WINDOWS
-#        define PROFILE(...) Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)(__FUNCSIG__, __FILE__,   __VA_ARGS__)
+#        define PROFILE(...)          Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)(__FUNCSIG__, __FILE__, false,   __VA_ARGS__)
+#        define ADDITIVE_PROFILE(...) Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)(__FUNCSIG__, __FILE__, true,    __VA_ARGS__)
 #    elif PLATFORM_LINUX
-#        define PROFILE(...) Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)(__FUNCSIG__, __FILE__, ##__VA_ARGS__)
+#        define PROFILE(...)          Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)(__FUNCSIG__, __FILE__, false, ##__VA_ARGS__)
+#        define ADDITIVE_PROFILE(...) Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)(__FUNCSIG__, __FILE__, true,  ##__VA_ARGS__)
 #    endif
+
+#    define START_PROFILE(...) { PROFILE(__VA_ARGS__)
+#    define END_PROFILE() }
+
 #else
 #    define INIT_PROFILER(profileDepth)
-#    define ENIGMA_PROFILE()
 #    define SHOW_PROFILER_IMGUI()
+#    define END_PROFILE_FRAME()
+#    define PROFILE(...)
+#    define ADDITIVE_PROFILE(...)
+#    define START_PROFILE(...)
+#    define END_PROFILE()
 #endif
 
 #pragma endregion

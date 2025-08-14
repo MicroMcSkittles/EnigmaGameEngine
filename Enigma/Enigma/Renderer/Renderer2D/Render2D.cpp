@@ -89,18 +89,18 @@ namespace Enigma {
 			RenderAPI::SetViewport(width, height);
 			m_FrameBuffer->Resize(width, height);
 			m_StencilBuffer->Resize(width, height);
-			if (m_OutputBuffer != nullptr) m_OutputBuffer->Resize(width, height);
-			if(m_CurrentCamera != nullptr) m_CurrentCamera->Resize(width, height);
+			if (m_OutputBuffer != nullptr)  m_OutputBuffer->Resize(width, height);
+			if (m_CurrentCamera != nullptr) m_CurrentCamera->Resize(width, height);
 		}
 		void Render2D::StartFrame(OrthographicCamera* camera)
 		{
-			PROFILE();
 			Core::Application::UseRenderAPI(m_RenderAPI);
 			RenderAPI::Clear();
 
-			m_CurrentCamera = camera;
+			// Set global scene values
 			m_CurrentStencilID = 0;
-
+			SetCamera(camera);
+			
 			// Clear stencil buffer
 			m_StencilBuffer->Bind();
 			RenderAPI::Clear();
@@ -112,37 +112,84 @@ namespace Enigma {
 		}
 		void Render2D::EndFrame()
 		{
-			PROFILE();
+			// Switch to the stencil buffer
+			m_FrameBuffer->Unbind();
+			m_StencilBuffer->Bind();
+			s_Quad->Bind();
+
+			// Render all stencil data to the stencil buffer
+			OrthographicCamera* lastCamera = nullptr;
+
+			for (auto& [batchHash, batch] : m_Batches) {
+				if (batch.stencilType == StencilType::None) continue;
+				// Bind stencil shader
+				batch.stencilShader->Bind();
+				batch.stencilShader->SetUniform("ViewProjection", (void*)&batch.camera->GetViewProjection());
+				
+				// Loop through each stencil in the batch
+				for (void* stencil : batch.stencils) {
+					switch (batch.stencilType)
+					{
+					case StencilType::Circle:     DrawCircleStencil((CircleStencil*)stencil);         break;
+					case StencilType::LineCircle: DrawLineCircleStencil((LineCircleStencil*)stencil); break;
+					case StencilType::LineQuad:   DrawLineQuadStencil((LineQuadStencil*)stencil);     break;
+					case StencilType::Text: {
+						s_Quad->Unbind();
+						DrawTextStencil((TextStencil*)stencil);
+						s_Quad->Bind();
+					} break;
+					}
+					delete stencil;
+				}
+
+				// Unbind stencil shader
+				batch.stencilShader->Unbind();
+				batch.stencils.clear();
+			}
+
+			// Switch back to the frame buffer
+			m_StencilBuffer->Unbind();
+			m_FrameBuffer->Bind();
 			m_MainShader->Bind();
 
-			// Loop through all the draw calls
-			for (auto& call : m_DrawCalls) {
-				// Set uniforms
-				call.texture->Bind();
-				m_MainShader->SetUniform("TextureMap", (void*)call.texture);
-				m_MainShader->SetUniform("Tint", (void*)&call.tint);
-				m_MainShader->SetUniform("ViewProjection", (void*)&call.camera->GetViewProjection());
-				m_MainShader->SetUniform("Model", (void*)&call.model);
+			m_StencilTexture->Bind();
+			m_MainShader->SetUniform("StencilMap", (void*)m_StencilTexture);
 
-				// If the draw call is using a stencil then set the stencil uniforms
-				int stencilID = -1;
-				if (call.useStencil) {
-					m_StencilTexture->Bind();
-					m_MainShader->SetUniform("StencilMap", (void*)m_StencilTexture);
-					stencilID = call.stencilID;
+			// Render the scene
+			lastCamera = nullptr;
+			Texture* lastTexture = nullptr;
+			int i = 0;
+			for (auto& [batchHash, batch] : m_Batches) {
+				// Set Camera data if it is differant from the last batch
+				if (batch.camera != lastCamera) {
+					m_MainShader->SetUniform("ViewProjection", (void*)&batch.camera->GetViewProjection());
+					lastCamera = batch.camera;
 				}
-				m_MainShader->SetUniform("StencilID", (void*)&stencilID);
+				// Set texture data if it is differant from the last batch, and unbind last texture
+				if (batch.texture != lastTexture) {
+					if (lastTexture != nullptr) lastTexture->Unbind();
+					batch.texture->Bind();
+					m_MainShader->SetUniform("TextureMap", (void*)batch.texture);
+					lastTexture = batch.texture;
+					i += 1;
+				}
 
-				// Draw the thing
-				s_Quad->Bind();
-				RenderAPI::DrawIndexed(6, DataType::UnsignedInt, NULL);
-				s_Quad->Unbind();
+				// Loop through each draw call
+				for (DrawCall& drawCall : batch.drawCalls) {
+					m_MainShader->SetUniform("Model", (void*)&drawCall.transform);
+					m_MainShader->SetUniform("Tint", (void*)&drawCall.tint);
+					m_MainShader->SetUniform("StencilID", (void*)&drawCall.stencilID);
 
-				if (call.useStencil) m_StencilTexture->Unbind();
-				call.texture->Unbind();
+					RenderAPI::DrawIndexed(6, DataType::UnsignedInt, NULL);
+				}
+
+				batch.drawCalls.clear();
 			}
-			m_DrawCalls.clear();
 
+			// Unbind everything
+			if (lastTexture != nullptr) lastTexture->Unbind();
+			s_Quad->Unbind();
+			m_StencilTexture->Unbind();
 			m_MainShader->Unbind();
 			m_FrameBuffer->Unbind();
 
@@ -170,107 +217,120 @@ namespace Enigma {
 			if (m_OutputBuffer != nullptr) m_OutputBuffer->Unbind();
 		}
 
+		void Render2D::SetCamera(OrthographicCamera* camera)
+		{
+			m_CurrentCamera = camera;
+
+			// Find the cameras world space bounds, this will be used for culling
+			const glm::mat4& invViewProjection = glm::inverse(m_CurrentCamera->GetViewProjection());
+			const ViewBox& viewbox = m_CurrentCamera->GetZoomViewBox();
+
+			// Find/Transform the min and max points of the camera view
+			glm::vec2 min = invViewProjection * glm::vec4(-1.0f,  1.0f, 0.0f, 1.0f);
+			glm::vec2 max = invViewProjection * glm::vec4( 1.0f, -1.0f, 0.0f, 1.0f);
+
+			// Store the world space camera bounds
+			m_CameraWorldBounds.left   = min.x;
+			m_CameraWorldBounds.right  = max.x;
+			m_CameraWorldBounds.bottom = min.y;
+			m_CameraWorldBounds.top    = max.y;
+			m_CameraWorldBounds.near   = viewbox.near;
+			m_CameraWorldBounds.far    = viewbox.far;
+		}
+
 		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, const glm::vec4& tint)
 		{
+			if (!OnScreen(position, scale)) return;
+			
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth -1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
 			transform = glm::scale(transform, { scale, 1.0f });
 
-			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, transform, tint, false });
+			Submit(transform, tint, StencilType::None, nullptr, m_BlankTexture);
 		}
 		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, Texture* texture, const glm::vec4& tint)
 		{
+			if (!OnScreen(position, scale)) return;
+
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
 			transform = glm::scale(transform, { scale, 1.0f });
 
-			m_DrawCalls.push_back({ m_CurrentCamera, texture, transform, tint, false });
+			Submit(transform, tint, StencilType::None, nullptr, texture);
 		}
 		void Render2D::DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, float thickness, int depth, const glm::vec4& tint)
 		{
+			if (!OnScreen(position, scale)) return;
+
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
 			transform = glm::scale(transform, { scale, 1.0f });
 
-			glm::vec2 bounds;
-			bounds.x = (scale.x / scale.y) / 2;
-			bounds.y = 0.5;
-			m_LineQuadStencilShader->SetUniform("Thickness", (void*)&thickness);
-			m_LineQuadStencilShader->SetUniform("Bounds", (void*)&scale);
-			DrawStencil(m_LineQuadStencilShader, transform);
-
-			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, transform, tint, true, m_CurrentStencilID - 1 });
+			Submit(transform, tint, StencilType::LineQuad, new LineQuadStencil({ m_CurrentStencilID, transform, scale, thickness }), m_BlankTexture);
 		}
 		void Render2D::DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, float thickness, int depth, Texture* texture, const glm::vec4& tint)
 		{
+			if (!OnScreen(position, scale)) return;
+
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::rotate(transform, rotation, { 0.0f, 0.0f, 1.0f });
 			transform = glm::scale(transform, { scale, 1.0f });
 
-			glm::vec2 bounds = scale;
-			m_LineQuadStencilShader->SetUniform("Thickness", (void*)&thickness);
-			m_LineQuadStencilShader->SetUniform("Bounds", (void*)&bounds);
-			DrawStencil(m_LineQuadStencilShader, transform);
-
-			m_DrawCalls.push_back({ m_CurrentCamera, texture, transform, tint, true, m_CurrentStencilID - 1 });
+			Submit(transform, tint, StencilType::LineQuad, new LineQuadStencil({ m_CurrentStencilID, transform, scale, thickness }), texture);
 		}
 
 		void Render2D::DrawCircle(const glm::vec2& position, float radius, int depth, const glm::vec4& tint)
 		{
+			if (!OnScreen(position, { radius, radius })) return;
+
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::scale(transform, { radius, radius, 1.0f });
 
-			DrawStencil(m_CircleStencilShader, transform);
-
-			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, transform, tint, true, m_CurrentStencilID - 1 });
+			Submit(transform, tint, StencilType::Circle, new CircleStencil({ m_CurrentStencilID, transform }), m_BlankTexture);
 		}
 		void Render2D::DrawCircle(const glm::vec2& position, float radius, int depth, Texture* texture, const glm::vec4& tint)
 		{
+			if (!OnScreen(position, { radius, radius })) return;
+
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::scale(transform, { radius, radius, 1.0f });
 
-			DrawStencil(m_CircleStencilShader, transform);
-			
-			m_DrawCalls.push_back({ m_CurrentCamera, texture, transform, tint, true, m_CurrentStencilID - 1 });
+			Submit(transform, tint, StencilType::Circle, new CircleStencil({ m_CurrentStencilID, transform }), texture);
 		}
 		void Render2D::DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, const glm::vec4& tint)
 		{
+			if (!OnScreen(position, { radius, radius })) return;
+
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::scale(transform, { radius, radius, 1.0f });
 
-			m_LineCircleStencilShader->SetUniform("Thickness", (void*)&thickness);
-			DrawStencil(m_LineCircleStencilShader, transform);
-
-			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, transform, tint, true, m_CurrentStencilID - 1 });
+			Submit(transform, tint, StencilType::LineCircle, new LineCircleStencil({ m_CurrentStencilID, transform, thickness }), m_BlankTexture);
 		}
 		void Render2D::DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, Texture* texture, const glm::vec4& tint)
 		{
+			if (!OnScreen(position, { radius, radius })) return;
+			
 			glm::mat4 transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, { position, depth - 1.0f });
 			transform = glm::scale(transform, { radius, radius, 1.0f });
-			
-			m_LineCircleStencilShader->SetUniform("Thickness", (void*)&thickness);
-			DrawStencil(m_LineCircleStencilShader, transform);
 
-			m_DrawCalls.push_back({ m_CurrentCamera, texture, transform, tint, true, m_CurrentStencilID - 1 });
+			Submit(transform, tint, StencilType::LineCircle, new LineCircleStencil({ m_CurrentStencilID, transform, thickness }), texture);
 		}
 
 		void Render2D::DrawText(Text* text, const glm::vec2& position, float scale, float rotation, int depth, const glm::vec4& tint)
 		{
-			PROFILE();
 			// Create stencil, the vao with glyph bounding box info uses a different transform matrix from the main quad
 			glm::mat4 glyphTransform = glm::mat4(1.0f);
 			glyphTransform = glm::translate(glyphTransform, { position, depth - 1.0f });
 			glyphTransform = glm::rotate(glyphTransform, rotation, { 0.0f, 0.0f, 1.0f });
 			glyphTransform = glm::scale(glyphTransform, { scale, scale, 1.0f });
-			DrawTextStencil(text, glyphTransform);
 
 			// Transform the text bounding box into world space
 			glm::mat4 textTransform = glm::mat4(1.0f); 
@@ -280,17 +340,15 @@ namespace Enigma {
 			textTransform           = glm::rotate(textTransform, rotation, { 0.0f, 0.0f, 1.0f });
 			textTransform           = glm::scale(textTransform, textScale);
 			// Push the draw call
-			m_DrawCalls.push_back({ m_CurrentCamera, m_BlankTexture, textTransform, tint, true, m_CurrentStencilID - 1 });
+			Submit(textTransform, tint, StencilType::Text, new TextStencil({ m_CurrentStencilID, glyphTransform, text }), m_BlankTexture);
 		}
 		void Render2D::DrawText(Text* text, const glm::vec2& position, float scale, float rotation, int depth, Texture* texture, const glm::vec4& tint)
 		{
-			PROFILE();
 			// Create stencil, the vao with glyph bounding box info uses a different transform matrix from the main quad
 			glm::mat4 glyphTransform = glm::mat4(1.0f);
 			glyphTransform = glm::translate(glyphTransform, { position, depth - 1.0f });
 			glyphTransform = glm::rotate(glyphTransform, rotation, { 0.0f, 0.0f, 1.0f });
 			glyphTransform = glm::scale(glyphTransform, { scale, scale, 1.0f });
-			DrawTextStencil(text, glyphTransform);
 
 			// Transform the text bounding box into world space
 			glm::mat4 textTransform = glm::mat4(1.0f);
@@ -300,63 +358,96 @@ namespace Enigma {
 			textTransform = glm::rotate(textTransform, rotation, { 0.0f, 0.0f, 1.0f });
 			textTransform = glm::scale(textTransform, textScale);
 			// Push the draw call
-			m_DrawCalls.push_back({ m_CurrentCamera, texture, textTransform, tint, true, m_CurrentStencilID - 1 });
+			Submit(textTransform, tint, StencilType::Text, new TextStencil({ m_CurrentStencilID, glyphTransform, text }), texture);
 		}
 
-		void Render2D::DrawStencil(Shader* stencilShader, const glm::mat4& transform)
+		void Render2D::DrawLineQuadStencil(LineQuadStencil* stencil)
 		{
-			PROFILE();
-			m_FrameBuffer->Unbind();
-			m_StencilBuffer->Bind();
-			stencilShader->Bind();
-			stencilShader->SetUniform("ViewProjection", (void*)&m_CurrentCamera->GetViewProjection());
-			stencilShader->SetUniform("Model", (void*)&transform);
-			stencilShader->SetUniform("StencilID", (void*)&m_CurrentStencilID);
-
-			s_Quad->Bind();
+			m_LineQuadStencilShader->SetUniform("Model",     (void*)&stencil->transform);
+			m_LineQuadStencilShader->SetUniform("StencilID", (void*)&stencil->id);
+			m_LineQuadStencilShader->SetUniform("Thickness", (void*)&stencil->thickness);
+			m_LineQuadStencilShader->SetUniform("Bounds",    (void*)&stencil->bounds);
 			RenderAPI::DrawIndexed(6, DataType::UnsignedInt, NULL);
-			s_Quad->Unbind();
-
-			stencilShader->Unbind();
-			m_StencilBuffer->Unbind();
-			m_FrameBuffer->Bind();
-
-			m_CurrentStencilID += 1;
 		}
-		void Render2D::DrawTextStencil(Text* text, const glm::mat4& transform)
+		void Render2D::DrawCircleStencil(CircleStencil* stencil)
 		{
-			PROFILE();
-			// Unbind frame buffer so that we can render to the stencil buffer
-			m_FrameBuffer->Unbind();
+			m_CircleStencilShader->SetUniform("Model", (void*)&stencil->transform);
+			m_CircleStencilShader->SetUniform("StencilID", (void*)&stencil->id);
+			RenderAPI::DrawIndexed(6, DataType::UnsignedInt, NULL);
+		}
+		void Render2D::DrawLineCircleStencil(LineCircleStencil* stencil)
+		{
+			m_LineCircleStencilShader->SetUniform("Model", (void*)&stencil->transform);
+			m_LineCircleStencilShader->SetUniform("StencilID", (void*)&stencil->id);
+			m_LineCircleStencilShader->SetUniform("Thickness", (void*)&stencil->thickness);
+			RenderAPI::DrawIndexed(6, DataType::UnsignedInt, NULL);
+		}
+		void Render2D::DrawTextStencil(TextStencil* stencil)
+		{
+			stencil->text->GetGlyphData()->Bind();
+			m_TextStencilShader->SetUniform("Model", (void*)&stencil->transform);
+			m_TextStencilShader->SetUniform("StencilID", (void*)&stencil->id);
+			m_TextStencilShader->SetUniform("TextData", (void*)stencil->text->GetGlyphData());
 
-			// Bind every thing
-			m_StencilBuffer->Bind();
-			m_TextStencilShader->Bind();
-			text->GetGlyphData()->Bind();
+			VertexArray* vao = stencil->text->GetGlyphBoundsVAO();
+			vao->Bind();
+			RenderAPI::DrawIndexed(vao->GetIndexBuffer()->GetIndexCount(), vao->GetIndexBuffer()->GetIndexType(), NULL);
+			vao->Unbind();
 
-			// Set uniforms
-			m_TextStencilShader->SetUniform("ViewProjection", (void*)&m_CurrentCamera->GetViewProjection());
-			m_TextStencilShader->SetUniform("Model", (void*)&transform);
-			m_TextStencilShader->SetUniform("StencilID", (void*)&m_CurrentStencilID);
-			m_TextStencilShader->SetUniform("TextData", (void*)text->GetGlyphData());
+			stencil->text->GetGlyphData()->Unbind();
+		}
 
-			// Draw to stencil buffer
-			text->GetGlyphBoundsVAO()->Bind();
-			RenderAPI::DrawIndexed(
-				text->GetGlyphBoundsVAO()->GetIndexBuffer()->GetIndexCount(), 
-				text->GetGlyphBoundsVAO()->GetIndexBuffer()->GetIndexType(), 
-				NULL
+		void Render2D::Submit(const glm::mat4& transform, const glm::vec4& tint, StencilType stencilType, void* stencil, Texture* texture)
+		{
+			uint64_t batchHash = Batch::Hash({ m_CurrentCamera, texture, stencilType });
+
+			// If this batch hasn't been seen before then register it
+			if (!m_Batches.count(batchHash)) {
+				m_Batches.insert({ batchHash, { m_CurrentCamera, texture, stencilType } });
+				switch (stencilType)
+				{
+				case StencilType::Circle:     m_Batches[batchHash].stencilShader = m_CircleStencilShader;     break;
+				case StencilType::LineCircle: m_Batches[batchHash].stencilShader = m_LineCircleStencilShader; break;
+				case StencilType::LineQuad:   m_Batches[batchHash].stencilShader = m_LineQuadStencilShader;   break;
+				case StencilType::Text:       m_Batches[batchHash].stencilShader = m_TextStencilShader;       break;
+				}
+			}
+
+			// push draw call
+			DrawCall drawCall;
+			drawCall.transform = transform;
+			drawCall.tint      = tint;
+			if (stencilType != StencilType::None) {
+				drawCall.stencilID = m_CurrentStencilID;
+				m_Batches[batchHash].stencils.push_back(stencil);
+				m_CurrentStencilID += 1;
+			}
+			else {
+				drawCall.stencilID = -1;
+			}
+			m_Batches[batchHash].drawCalls.push_back(drawCall);
+		}
+
+		bool Render2D::OnScreen(const glm::vec2& position, const glm::vec2& scale)
+		{
+			glm::vec2 min = position - scale;
+			glm::vec2 max = position + scale;
+			return (
+				(max.x >= m_CameraWorldBounds.left && m_CameraWorldBounds.right  >= min.x) &&
+				(max.y >= m_CameraWorldBounds.top  && m_CameraWorldBounds.bottom >= min.y)
 			);
-			text->GetGlyphBoundsVAO()->Unbind();
+		}
 
-			// unbind every thing
-			text->GetGlyphData()->Unbind();
-			m_TextStencilShader->Unbind();
-			m_StencilBuffer->Unbind();
-
-			// Rebind frame buffer
-			m_FrameBuffer->Bind();
-			m_CurrentStencilID += 1;
+		uint64_t Render2D::Batch::Hash(const Batch& batch)
+		{
+			// No clue how well this will work
+			uint64_t p1 = (uint64_t)batch.camera;
+			uint64_t p2 = (uint64_t)batch.texture;
+			uint8_t t   = (uint8_t)batch.stencilType;
+			p1 = p1 << (3 + t);
+			p2 = p2 >> (4 - t);
+			uint64_t rslt = p1 & p2;
+			return rslt;
 		}
 	}
 }

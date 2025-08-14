@@ -23,6 +23,7 @@ namespace Enigma {
 
 			void StartFrame(OrthographicCamera* camera);
 			void EndFrame();
+			void SetCamera(OrthographicCamera* camera);
 
 			void DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, const glm::vec4& tint);
 			void DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, Texture* texture, const glm::vec4& tint);
@@ -45,6 +46,35 @@ namespace Enigma {
 			Texture* GetBlankTexture() { return m_BlankTexture; }
 
 		private:
+			enum class StencilType {
+				None = 0,
+				LineQuad,
+				Circle,
+				LineCircle,
+				Text
+			};
+			struct LineQuadStencil {
+				int id;
+				glm::mat4 transform;
+				glm::vec2 bounds;
+				float thickness;
+			};
+			struct CircleStencil {
+				int id;
+				glm::mat4 transform;
+			};
+			struct LineCircleStencil {
+				int id;
+				glm::mat4 transform;
+				float thickness;
+			};
+			struct TextStencil {
+				int id;
+				glm::mat4 transform;
+				Text* text;
+			};
+
+		private:
 			static Shader* LoadDefaultMainShader();
 			static Shader* LoadDefaultPostProcShader();
 
@@ -53,26 +83,46 @@ namespace Enigma {
 			static Shader* LoadLineQuadStencilShader();
 			static Shader* LoadTextStencilShader();
 
-			void DrawStencil(Shader* stencilShader, const glm::mat4& transform);
-			void DrawTextStencil(Text* text, const glm::mat4& transform);
+			void DrawLineQuadStencil(LineQuadStencil* stencil);
+			void DrawCircleStencil(CircleStencil* stencil);
+			void DrawLineCircleStencil(LineCircleStencil* stencil);
+			void DrawTextStencil(TextStencil* stencil);
+
+			void Submit(const glm::mat4& transform, const glm::vec4& tint, StencilType stencilType, void* stencil, Texture* texture);
+
+			// Checks if a quad is on the render target, used for culling
+			bool OnScreen(const glm::vec2& position, const glm::vec2& scale);
 
 		private:
+		public:
+
 			struct DrawCall {
-				OrthographicCamera* camera;
-				Texture* texture;
-
-				glm::mat4 model;
+				glm::mat4 transform;
 				glm::vec4 tint;
-				bool useStencil;
-				int stencilID;
+				int       stencilID;
 			};
+			struct Batch {
+				OrthographicCamera* camera;
+				Texture*            texture;
+				StencilType         stencilType;
+				Shader*             stencilShader;
 
+				std::vector<DrawCall> drawCalls;
+				std::vector<void*> stencils;
+
+				static uint64_t Hash(const Batch& batch);
+			};	
+
+			// Camera variables
 			OrthographicCamera* m_CurrentCamera;
+			ViewBox             m_CameraWorldBounds;
 
+			// Framebuffers
 			FrameBuffer* m_FrameBuffer;
 			FrameBuffer* m_StencilBuffer;
 			FrameBuffer* m_OutputBuffer;
 
+			// Shaders
 			Shader* m_MainShader;
 			Shader* m_CircleStencilShader;
 			Shader* m_LineCircleStencilShader;
@@ -80,18 +130,19 @@ namespace Enigma {
 			Shader* m_TextStencilShader;
 			Shader* m_PostProcShader;
 
+			// Default Textures
 			Texture* m_BlankTexture; // Used for anything with no texture
 			Texture* m_StencilTexture;
 
 			int m_CurrentStencilID;
+			std::map<uint64_t, Batch> m_Batches;
 
-			std::vector<DrawCall> m_DrawCalls;
-
+			// Other
 			API m_RenderAPI;
 			Engine::Surface m_Surface;
 
 		private:
-
+			// Default Quad
 			inline static std::vector<DataType> s_VertexLayout = {
 				DataType::Float3,
 				DataType::Float2

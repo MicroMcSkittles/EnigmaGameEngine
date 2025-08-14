@@ -74,6 +74,7 @@ void FontTestContext::OnEvent(Core::Event& e)
 
 void FontTestContext::Update(Engine::DeltaTime deltaTime)
 {
+	m_FPS = 1.0f / deltaTime;
 	PROFILE();
 	Engine::Input::MakeCurrent(m_InputContext);
 
@@ -99,8 +100,9 @@ void FontTestContext::Update(Engine::DeltaTime deltaTime)
 
 void FontTestContext::Render()
 {
-	PROFILE();
+	START_PROFILE("Start Frame");
 	m_RenderContext->StartFrame(m_Camera);
+	END_PROFILE();
 
 	// Render Text
 	float textSize = 1;
@@ -110,11 +112,15 @@ void FontTestContext::Render()
 	glm::mat4 transform = glm::scale(glm::mat4(1.0f), { textSize, textSize, 1 });
 	RenderTextDebugElements(transform);
 
+	START_PROFILE("End Frame");
 	m_RenderContext->EndFrame();
+	END_PROFILE();
+
+	END_PROFILE_FRAME();
 }
 void FontTestContext::RenderBoundingBox(const Renderer::TextBoundingBox& boundingBox, const glm::vec2& position, float scale)
 {
-	PROFILE();
+	ADDITIVE_PROFILE("Render Bounding Box");
 	// Transform text bounding box
 	glm::mat4 transform(1.0f);
 	transform = glm::translate(transform, { position,0 });
@@ -133,7 +139,7 @@ void FontTestContext::RenderBoundingBox(const Renderer::TextBoundingBox& boundin
 }
 void FontTestContext::RenderTextPoint(const Renderer::TextPoint& point, const glm::mat4& transform)
 {
-	PROFILE();
+	ADDITIVE_PROFILE("Render Text Point");
 	glm::vec4 tint = { 1,1,1,1 };
 	bool control = point.type & Renderer::TextPointType::TextPointType_Control;
 	bool implied = point.type & Renderer::TextPointType::TextPointType_Implied;
@@ -151,7 +157,7 @@ void FontTestContext::RenderTextPoint(const Renderer::TextPoint& point, const gl
 }
 void FontTestContext::RenderTextDebugElements(const glm::mat4& transform)
 {
-	PROFILE();
+	PROFILE("Render Text Debug Elements");
 	bool showPoints = m_ShowCurvePoints || m_ShowImpliedPoints || m_ShowControlPoints;
 	if (!showPoints && !m_ShowBounds) return;
 
@@ -214,6 +220,8 @@ void FontTestContext::ImGui()
 	ImGui::Text("Font Test");
 	ImGui::TextWrapped("Text Rendering From Fonts Demo");
 
+	ImGui::Text("FPS: %f", m_FPS);
+
 	if (ImGui::TreeNode("Text")) {
 		if (ImGui::Button("Open Font...")) {
 			std::string rslt = Core::System::OpenFileDialog("Font Files (*.ttf)\0", m_WindowID);
@@ -245,7 +253,7 @@ void FontTestContext::ImGui()
 		ImGui::Checkbox("Show Glyph", &m_ShowGlyph);
 		ImGui::Checkbox("Show Bounds", &m_ShowBounds);
 		ImGui::SeparatorText("Points");
-		ImGui::TextWrapped("Showing all the points at once can be very laggy (at least for right now)");
+		ImGui::TextWrapped("Showing all the points at once can be very laggy (at least for right now). Note, The debug elements function is the bottle neck not the Renderer.");
 		ImGui::Checkbox("Show Curve Points", &m_ShowCurvePoints);
 		ImGui::Checkbox("Show Implied Points", &m_ShowImpliedPoints);
 		ImGui::Checkbox("Show Control Points", &m_ShowControlPoints);
