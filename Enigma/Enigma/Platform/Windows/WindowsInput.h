@@ -10,6 +10,8 @@ namespace Enigma {
 		public:
 			WindowsInput(const Engine::InputConfig& config);
 
+			static int ConvertWindowsKeyCode(int keycode);
+
 		protected:
 			virtual bool IsKeyPressedImpl(int key) override;
 			virtual bool IsMouseButtonPressedImpl(int button) override;

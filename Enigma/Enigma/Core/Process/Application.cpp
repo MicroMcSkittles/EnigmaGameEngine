@@ -8,7 +8,7 @@ namespace Enigma {
 
 		Application::Application(int argc, char** argv)
 		{
-      // Call an error if an instance of application exists
+			// Call an error if an instance of application exists
 			if (s_Instance) {
 				LOG_SOFT_ERROR("Application Instance already exists");
 				return;
@@ -25,7 +25,7 @@ namespace Enigma {
 			Core::LoggerConfig loggerConfig;
 			loggerConfig.flags = Core::LoggerFunction | Core::LoggerTime | Core::LoggerShort;
 			loggerConfig.priorityLevel = 5;
-      INIT_LOGGER(loggerConfig);
+			INIT_LOGGER(loggerConfig);
 
 			s_Data->isRunning = true;
 		}
@@ -161,10 +161,6 @@ namespace Enigma {
 				s_Data->subProcStack.Update(s_Data->deltaTime);
 				s_Data->subProcStack.Render();
 
-				/*for (auto& instance : s_Data->engineInstances.GetData()) {
-					instance->Update(s_Data->deltaTime);
-				}*/
-
 				std::vector<WindowHandler*>& windows = s_Data->windows.GetData();
 				for (int i = 0; i < windows.size(); ++i) {
 					WindowHandler* windowHandler = windows[i];
@@ -182,9 +178,6 @@ namespace Enigma {
 						ImGuiHandler::MakeCurrent(windowHandler->imgui);
 						ImGuiHandler::StartFrame();
 
-						/*for (auto& instanceID : windowHandler->engineInstances) {
-							s_Data->engineInstances.Get(instanceID)->ImGui();
-						}*/
 						for (auto& processID : windowHandler->subProcesses) {
 							s_Data->subProcStack.GetProcess(processID)->ImGui();
 						}

@@ -6,6 +6,7 @@
 #include "Fonts/FontTestContext.h"
 //#include "Primitives/PrimitiveTestContext.h"
 //#include "Audio/AudioTestContext.h"
+//#include "Window/WindowTestContext.h"
 
 void TestBed::StartUp()
 {
@@ -20,10 +21,9 @@ void TestBed::StartUp()
 	imguiConfig.docking = false;
 
 	m_WindowID = Core::Application::CreateWindow(windowConfig, imguiConfig);
+	//m_WindowID = Core::Application::CreateWindow(windowConfig);
 	Core::Application::BindSubProcToWindow(this, m_WindowID);
 	Core::Application::GetWindow(m_WindowID)->AddEventCallback([&](Core::Event& e) { return OnEvent(e); });
-  
-	LOG_MESSAGE("Test, hello!!", 5);
 
 	m_TestContext = new CURRENT_TEST_CONTEXT(m_WindowID);
 }

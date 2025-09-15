@@ -2,7 +2,8 @@
 #include "Enigma/Platform/Windows/WindowsWindow.h"
 #include "Enigma/Platform/OpenGL/OpenGLTexture.h"
 
-#include <backends/imgui_impl_glfw.h>
+#include <Windows.h>
+#include <backends/imgui_impl_win32.h>
 #include <backends/imgui_impl_opengl3.h>
 
 namespace Enigma {
@@ -37,11 +38,9 @@ namespace Enigma {
 			//if (m_EnableDocking) io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 			ImGui::StyleColorsDark();
-
-			GLFWwindow* window = (GLFWwindow*)((Platform::WindowsWindow*)m_WindowInstance)->GetHandle();
 			
 			if (!s_InitGLFW) {
-				ImGui_ImplGlfw_InitForOpenGL(window, true);
+				ImGui_ImplWin32_InitForOpenGL(m_WindowInstance->GetNativeWindow());
 				ImGui_ImplOpenGL3_Init("#version 460");
 				s_InitGLFW = true;
 			}
@@ -78,8 +77,8 @@ namespace Enigma {
 
 		void WindowsImGuiContext::StartFrameImpl()
 		{
+			ImGui_ImplWin32_NewFrame();
 			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
 
 			if (m_EnableDocking) StartDocking();
@@ -88,6 +87,9 @@ namespace Enigma {
 		{
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+			//ImGui::UpdatePlatformWindows();
+			//ImGui::RenderPlatformWindowsDefault();
 		}
 
 

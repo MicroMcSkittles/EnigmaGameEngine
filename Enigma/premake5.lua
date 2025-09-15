@@ -39,7 +39,6 @@ project "Enigma"
     }
     includedirs {
         "./",
-        rootdir .. "Vendor/GLFW/GLFW/include",
         rootdir .. "Vendor/GLAD/GLAD/include",
         rootdir .. "Vendor/GLM/GLM",
         rootdir .. "Vendor/ImGui/ImGui",
@@ -53,7 +52,6 @@ project "Enigma"
 
     links {
         "GLAD",
-        "GLFW",
         "ImGui"
     }
 
@@ -75,6 +73,11 @@ project "Enigma"
             "PLATFORM_WINDOWS"
         }
 
+        links {
+            "Opengl32.lib",
+            "Opengl32.dll"
+        }
+
 -- Linux ============================
     filter "system:linux"
 
@@ -84,6 +87,13 @@ project "Enigma"
             "Enigma/Platform/Linux/**.h",
             "Enigma/Platform/Linux/**.cpp",
             "Enigma/Platform/Linux/**.hpp"
+        }
+
+        includedirs {
+            rootdir .. "Vendor/GLFW/GLFW/include",
+        }
+        links {
+            "GLFW"
         }
 
         defines {

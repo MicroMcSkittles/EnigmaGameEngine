@@ -3,7 +3,7 @@
 #include "Enigma/Core/Window.h"
 
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
+//#include <GLFW/glfw3.h>
 
 namespace Enigma {
     namespace Platform {
@@ -180,11 +180,12 @@ namespace Enigma {
 
             OpenGLRenderAPI::OpenGLRenderAPI() {
 
-                if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+				//if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+				if (!gladLoadGLLoader((GLADloadproc)Core::Window::GetGLProcAddress)) {
                     LOG_ERROR("Failed to initialize GLAD");
                     return;
                 }
-
+				
 				glEnable(GL_DEPTH_TEST); // TODO: add an enable function to RenderAPI
 				glLineWidth(1.f);
 

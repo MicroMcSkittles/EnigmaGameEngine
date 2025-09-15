@@ -122,11 +122,12 @@ namespace Enigma {
 			constexpr int KeyLeftControl      = 341;
 			constexpr int KeyLeftAlt          = 342;
 			constexpr int KeyLeftSuper        = 343;
-			constexpr int KeyRIGHT_SHIFT      = 344;
-			constexpr int KeyRIGHT_CONTROL    = 345;
-			constexpr int KeyRIGHT_ALT        = 346;
-			constexpr int KeyRIGHT_SUPER      = 347;
-			constexpr int KeyMENU             = 348;
+			constexpr int KeyRightShift       = 344;
+			constexpr int KeyRightControl     = 345;
+			constexpr int KeyRightAlt         = 346;
+			constexpr int KeyRightSuper       = 347;
+			constexpr int KeyMenu             = 348;
+			constexpr int KeyLast             = KeyMenu;
 
 			constexpr int MouseButton1        = 0;
 			constexpr int MouseButton2        = 1;

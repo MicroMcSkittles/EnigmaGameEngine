@@ -1,7 +1,5 @@
 #include "Enigma/Platform/Windows/WindowsInput.h"
-
-
-#include <GLFW/glfw3.h>
+#include "Enigma/Engine/InputCodes.h"
 
 namespace Enigma {
 
@@ -17,28 +15,28 @@ namespace Enigma {
 			m_Surface = config.surface;
 		}
 
+		int WindowsInput::ConvertWindowsKeyCode(int keycode)
+		{
+			int result = 0;
+			if (keycode >= Engine::KeyCode::KeySpace && keycode <= Engine::KeyCode::KeyGraveAccent) result = keycode;
+			return result;
+		}
+
 		bool WindowsInput::IsKeyPressedImpl(int key)
 		{
-			GLFWwindow* window = (GLFWwindow*)m_Window->GetHandle();
-			int rslt = glfwGetKey(window, key);
-			return rslt == GLFW_PRESS || rslt == GLFW_REPEAT;
+			int rslt = m_Window->GetInputData().keyboardStates[key];
+			return rslt == Engine::KeyCode::KeyPress || rslt == Engine::KeyCode::KeyRepeat;
 			return false;
 		}
 		bool WindowsInput::IsMouseButtonPressedImpl(int button)
 		{
-			GLFWwindow* window = (GLFWwindow*)m_Window->GetHandle();
-			int rslt = glfwGetMouseButton(window, button);
-			return rslt == GLFW_PRESS || rslt == GLFW_REPEAT;
-			return false;
+			int rslt = m_Window->GetInputData().mouseButtonStates[button];
+			return rslt == Engine::KeyCode::KeyPress || rslt == Engine::KeyCode::KeyRepeat;
 		}
 
 		glm::vec2 WindowsInput::GetMousePositionImpl()
 		{
-			GLFWwindow* window = (GLFWwindow*)m_Window->GetHandle();
-			double x;
-			double y;
-			glfwGetCursorPos(window, &x, &y);
-			glm::vec2 rslt = { (float)x, (float)y };
+			glm::vec2 rslt = m_Window->GetInputData().mousePosition;
 			rslt -= m_Surface->position;
 			return rslt;
 		}

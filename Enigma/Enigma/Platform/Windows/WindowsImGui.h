@@ -1,5 +1,6 @@
 #pragma once
 #include "Enigma/ImGui/ImGuiHandler.h"
+#include "Enigma/Core/Event/Event.h"
 
 #include <imgui.h>
 

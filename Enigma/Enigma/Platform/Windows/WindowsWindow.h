@@ -1,8 +1,16 @@
 #pragma once
 #include "Enigma/Core/Window.h"
 
+#include <glm/glm.hpp>
+
 namespace Enigma {
 	namespace Platform {
+
+		struct WindowsInputData {
+			glm::vec2 mousePosition;
+			int* mouseButtonStates;
+			int* keyboardStates;
+		};
 
 		class WindowsWindow : public Core::Window {
 		public:
@@ -28,16 +36,28 @@ namespace Enigma {
 
 			void* GetHandle() { return m_Handle; }
 
-		private:
-			struct WindowData {
-				int width = NULL;
-				int height = NULL;
+			const WindowsInputData& GetInputData() { return m_InputData; }
 
-				std::vector<std::function<void(Core::Event&)>> callbacks;
-			};
-			WindowData m_Data;
+		public:
+			void CloseEvent();
+			void ResizeEvent(int width, int height);
+			void MouseMovedEvent(int x, int y);
+			void MouseScrollEvent(int x, int y);
+			void MouseClickEvent(int button, int mods, int action);
+			void KeyboardEvent(int keycode, int scancode, int mods, int action);
+
+		private:
 			Core::WindowConfig m_Config;
+			WindowsInputData m_InputData;
+
 			void* m_Handle;
+			void* m_RenderingContext;
+			void* m_DeviceContext;
+
+			bool m_ShouldClose;
+			int m_Width;
+			int m_Height;
+			std::vector<std::function<void(Core::Event&)>> m_Callbacks;
 		};
 
 	}

@@ -50,6 +50,9 @@ namespace Enigma {
 			virtual void Update() = 0;
 
 			virtual void SetVSync(bool vSync) = 0;
+
+			static void* GetGLProcAddress(const char* procName);
+
 		};
 
 	}

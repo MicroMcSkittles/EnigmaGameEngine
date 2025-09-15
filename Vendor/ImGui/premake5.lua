@@ -44,8 +44,8 @@ project "ImGui"
     -- Include windows specific files
         files
 		{
-			"ImGui/backends/imgui_impl_glfw.cpp",
-			"ImGui/backends/imgui_impl_glfw.h",
+			"ImGui/backends/imgui_impl_win32.cpp",
+			"ImGui/backends/imgui_impl_win32.h",
 			"ImGui/backends/imgui_impl_opengl3.cpp",
 			"ImGui/backends/imgui_impl_opengl3.h",
 			"ImGui/backends/imgui_impl_opengl3_loader.h",
