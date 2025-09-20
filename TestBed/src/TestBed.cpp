@@ -3,10 +3,11 @@
 #include <Enigma/Core/Process/Application.h>
 #include <Enigma/Core/Event/WindowEvent.h>
 
-#include "Fonts/FontTestContext.h"
+//#include "Fonts/FontTestContext.h"
 //#include "Primitives/PrimitiveTestContext.h"
 //#include "Audio/AudioTestContext.h"
 //#include "Window/WindowTestContext.h"
+#include "ECS/ECSTestContext.h"
 
 void TestBed::StartUp()
 {
