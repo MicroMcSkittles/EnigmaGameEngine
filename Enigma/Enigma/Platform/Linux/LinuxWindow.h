@@ -26,6 +26,8 @@ namespace Enigma {
 
 			virtual void SetVSync(bool vSync) override;
 
+      virtual void* GetNativeWindow() override;
+
 			void* GetHandle() { return m_Handle; }
 
 		private:

@@ -5,10 +5,13 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
 // TODO: terminat GLFW someware
 
 namespace Enigma {
+
+  void* Core::Window::GetGLProcAddress(const char* procName) {
+    return (void*)glfwGetProcAddress(procName);
+  }
 
 	Core::Window* Core::Window::Create(const Core::WindowConfig& config) {
 		return new Platform::LinuxWindow(config);
@@ -22,7 +25,7 @@ namespace Enigma {
 			m_Data.width = m_Config.width;
 			m_Data.height = m_Config.height;
 
-			// Configure GLFW for OpenGL
+      // Configure GLFW for OpenGL
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -139,5 +142,9 @@ namespace Enigma {
 			if (vSync) glfwSwapInterval(1);
 			else	   glfwSwapInterval(0);
 		}
+
+    void* LinuxWindow::GetNativeWindow() {
+      return m_Handle;
+    }
 	}
 }

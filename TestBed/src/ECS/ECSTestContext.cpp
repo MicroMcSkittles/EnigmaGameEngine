@@ -9,6 +9,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 #include <random>
+#include <iostream>
 
 constexpr double PI = 3.14159265359;
 

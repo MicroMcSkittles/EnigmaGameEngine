@@ -203,7 +203,7 @@ namespace Enigma::Engine::ECS {
 			};
 		}
 		template <typename Tuple>
-		auto MakeGetters(Tuple& t) {
+		auto MakeGetters(Tuple t) {
 			return MakeGettersImpl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>{});
 		}
 

@@ -35,7 +35,6 @@ project "TestBed"
         "Enigma",
         "EnigmaSerialization",
         "ImGui",
-        "winmm.lib"
     }
 
 -- Windows ==========================

@@ -6,6 +6,7 @@
 #include <sstream>
 #include <filesystem>
 #include <imgui.h>
+#include <chrono>
 
 namespace Enigma {
 	namespace Core {
@@ -16,17 +17,17 @@ namespace Enigma {
 			m_File        = file;
 			m_Description = description;
 			m_Additive    = additive;
-			m_StartPoint  = std::chrono::high_resolution_clock::now();
+			//m_StartPoint  = std::chrono::high_resolution_clock::now();
 		}
 		ProfilingTimer::~ProfilingTimer()
 		{
-			std::chrono::time_point<std::chrono::steady_clock> endPoint = std::chrono::high_resolution_clock::now();
+			//auto endPoint = std::chrono::high_resolution_clock::now();
 
-			long long start = std::chrono::time_point_cast<std::chrono::microseconds>(m_StartPoint).time_since_epoch().count();
-			long long end   = std::chrono::time_point_cast<std::chrono::microseconds>(endPoint).time_since_epoch().count();
+			//long long start = std::chrono::time_point_cast<std::chrono::microseconds>(m_StartPoint).time_since_epoch().count();
+			//long long end   = std::chrono::time_point_cast<std::chrono::microseconds>(endPoint).time_since_epoch().count();
 
-			float duration = (end - start) * 0.001f;
-			Profiler::Submit(m_Function, m_File, m_Additive, m_Description, duration);
+			//float duration = (end - start) * 0.001f;
+			Profiler::Submit(m_Function, m_File, m_Additive, m_Description, 0.0f);
 		}
 
 		void Profiler::Init(uint8_t profileDepth)

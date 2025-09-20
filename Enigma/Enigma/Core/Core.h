@@ -54,7 +54,7 @@
 #        define LOG_MESSAGE(msg, priority, ...)   Enigma::Core::Logger::Log(msg, { Enigma::Core::LogType::Message,   priority, __FILE__, __func__, __LINE__ },   __VA_ARGS__)
 #        define LOG_ASSERT(condition, msg, ...)   if(condition) LOG_ERROR(msg, __VA_ARGS__);
 #    elif PLATFORM_LINUX
-#        define LOG_ERROR(msg, ...) { DEBUG_BREAK Enigma::Core::Logger::Log(msg, { Enigma::Core::LogType::Error,     0,        __FILE__, __func__, __LINE__ }, ##__VA_ARGS__); }
+#        define LOG_ERROR(msg, ...) {  Enigma::Core::Logger::Log(msg, { Enigma::Core::LogType::Error,     0,        __FILE__, __func__, __LINE__ }, ##__VA_ARGS__); }
 #        define LOG_SOFT_ERROR(msg, ...)          Enigma::Core::Logger::Log(msg, { Enigma::Core::LogType::SoftError, 0,        __FILE__, __func__, __LINE__ }, ##__VA_ARGS__)
 #        define LOG_WARNING(msg, ...)             Enigma::Core::Logger::Log(msg, { Enigma::Core::LogType::Warning,   1,        __FILE__, __func__, __LINE__ }, ##__VA_ARGS__)
 #        define LOG_MESSAGE(msg, priority, ...)   Enigma::Core::Logger::Log(msg, { Enigma::Core::LogType::Message,   priority, __FILE__, __func__, __LINE__ }, ##__VA_ARGS__)
@@ -92,8 +92,10 @@
 #        define PROFILE(...)          Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)(__FUNCSIG__, __FILE__, false,   __VA_ARGS__)
 #        define ADDITIVE_PROFILE(...) Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)(__FUNCSIG__, __FILE__, true,    __VA_ARGS__)
 #    elif PLATFORM_LINUX
-#        define PROFILE(...)          Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)(__FUNCSIG__, __FILE__, false, ##__VA_ARGS__)
-#        define ADDITIVE_PROFILE(...) Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)(__FUNCSIG__, __FILE__, true,  ##__VA_ARGS__)
+//#        define PROFILE(...)          Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)("G++ doesn't support __FUNCSIG__", __FILE__, false, ##__VA_ARGS__)
+//#        define ADDITIVE_PROFILE(...) Enigma::Core::ProfilingTimer MACRO_COMBINE(ENIGMA_PROFILING_TIMER_, __LINE__)("G++ doesn't support __FUNCSIG__", __FILE__, true,  ##__VA_ARGS__)
+#          define PROFILE(...)
+#          define ADDITIVE_PROFILE(...)
 #    endif
 
 #    define START_PROFILE(...) { PROFILE(__VA_ARGS__)
