@@ -1,9 +1,6 @@
 #pragma once
 #include "Enigma/Core/Window.h"
 #include "Enigma/Renderer/RenderEnum.h"
-#include "Enigma/Renderer/Texture.h"
-
-#include <map>
 
 namespace Enigma {
 	namespace Core {
@@ -16,6 +13,9 @@ namespace Enigma {
 
 		class ImGuiHandler{
 		public:
+
+      virtual ~ImGuiHandler() { }
+
 			static ImGuiHandler* Create(const ImGuiConfig& config);
 
 			static void MakeCurrent(ImGuiHandler* context) {

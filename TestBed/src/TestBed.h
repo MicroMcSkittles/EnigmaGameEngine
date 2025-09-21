@@ -24,7 +24,7 @@ public:
 
 	void OnClose();
 	virtual bool OnEvent(Core::Event& e) override;
-	virtual void Update(Engine::DeltaTime deltaTime);
+	virtual void Update(Engine::DeltaTime deltaTime) override;
 	virtual void Render() override;
 	virtual void ImGui() override;
 

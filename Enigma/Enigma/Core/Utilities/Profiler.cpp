@@ -3,10 +3,10 @@
 #include "Enigma/Core/Core.h"
 
 #include <cstring>
-#include <sstream>
 #include <filesystem>
 #include <imgui.h>
-#include <chrono>
+
+// TODO: fix this time point stuff
 
 namespace Enigma {
 	namespace Core {
@@ -83,8 +83,8 @@ namespace Enigma {
 				ImGui::PushID(profileHash);
 				Profile& profile = s_Data->profiles[profileHash];
 
-				if (ImGui::TreeNode((profile.description == "") ? profile.function : profile.description)) {
-					if (profile.description != "") ImGui::Text(profile.function);
+				if (ImGui::TreeNode((strlen(profile.description) == 0) ? profile.function : profile.description)) {
+					if (strlen(profile.description) != 0) ImGui::Text("%s", profile.function);
 					// Display duration info
 					float lastMS = profile.durations[s_Data->profileDepth - 1];
 					ImGui::Text("Last MS: %.2f", lastMS);
@@ -113,7 +113,7 @@ namespace Enigma {
 		
 		void Profiler::Submit(const char* function, const char* file, bool additive, const char* description, float duration)
 		{
-			uint64_t profileHash = Hash((description == "") ? function : description, file);
+			uint64_t profileHash = Hash((strlen(description) == 0) ? function : description, file);
 
 			// If this is a new profile, then create a new entry in the profiles table
 			if (!s_Data->profiles.count(profileHash)) {
@@ -169,7 +169,7 @@ namespace Enigma {
 			profile.durations[s_Data->profileDepth - 1] = duration;
 
 			// Store profile in table
-			uint64_t profileHash = Hash((description == "") ? function : description, file);
+			uint64_t profileHash = Hash((strlen(description) == 0) ? function : description, file);
 			s_Data->profiles.insert({ profileHash, profile });
 
 			// Store profile hash in the file table

@@ -15,7 +15,7 @@ public:
 
 	void OnResize(Core::WindowResize& e);
 	virtual void OnEvent(Core::Event& e) override;
-	virtual void Update(Engine::DeltaTime deltaTime) { }
+	virtual void Update(Engine::DeltaTime deltaTime) override { }
 	virtual void Render() override;
 	virtual void ImGui() override;
 

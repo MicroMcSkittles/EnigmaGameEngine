@@ -1,12 +1,13 @@
 workspace "EnigmaGameEngine"
     architecture "x64"
-
+    
     configurations {
         "Debug",
         "Release"
     }
 
-    startproject "SpaceSim"
+    filter "system:linux"
+      toolset "clang"
 
 -- Directory final files will be placed into
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"

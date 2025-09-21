@@ -22,7 +22,7 @@ namespace Enigma {
 						static uint64_t StaticGetType() { return EventType::type; } \
 						virtual std::string GetName() override { return #type; }
 
-#define EVENT_CATEGORY(category) virtual uint32_t GetCategory() { return category; }
+#define EVENT_CATEGORY(category) virtual uint32_t GetCategory() override { return category; }
 
 		class EventHandler;
 

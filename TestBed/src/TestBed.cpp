@@ -9,8 +9,6 @@
 //#include "Window/WindowTestContext.h"
 #include "ECS/ECSTestContext.h"
 
-#include <iostream>
-
 void TestBed::StartUp()
 {
 	Core::WindowConfig windowConfig;

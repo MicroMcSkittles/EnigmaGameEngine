@@ -106,7 +106,7 @@ namespace Enigma {
 			int GetMods() { return m_Mods; }
 
 			bool IsShortcut(int key, int mods) {
-				if (!m_Action != Engine::KeyCode::KeyPress) return false;
+				if (m_Action != Engine::KeyCode::KeyPress) return false;
 				if (m_Mods != mods) return false;
 				if (m_Key != key) return false;
 				return true;

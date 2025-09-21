@@ -26,6 +26,9 @@ namespace Enigma::Engine::ECS {
 
 	class IComponentPool {
 	public:
+
+    virtual ~IComponentPool() { }
+
 		virtual void Create(EntityID entityID) = 0;
 		virtual void Remove(EntityID entityID) = 0;
 		virtual bool Has(EntityID entityID) = 0; // returns true if the entity has a component in the component pool
@@ -36,7 +39,7 @@ namespace Enigma::Engine::ECS {
 	template<typename T>
 	class ComponentPool : public IComponentPool {
 	public:
-		
+
 		virtual void Create(EntityID entityID) override { m_Components.Create(entityID); }
 		virtual void Remove(EntityID entityID) override { m_Components.Remove(entityID); }
 		virtual bool Has(EntityID entityID) override { return m_Components.Contains(entityID); }
