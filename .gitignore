@@ -12,3 +12,8 @@
 bin
 bin-int
 Makefile
+
+# Linux
+build.sh
+compile_commands.json
+.cache
