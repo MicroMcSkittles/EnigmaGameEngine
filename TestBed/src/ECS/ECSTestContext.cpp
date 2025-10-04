@@ -66,7 +66,7 @@ void ECSTestContext::UpdateTest(Engine::DeltaTime deltaTime)
 {
 	if (!m_Running) return;
 
-	auto view = m_ECS->GetView<Transform, Physics>();
+	Engine::ECS::View<Transform, Physics> view(m_ECS);
 	view.ForEach([&](Engine::ECS::EntityID entityID, Transform& transform, Physics& physics) {
 		transform.position += physics.direction * physics.speed * (float)deltaTime;
 		float dist = glm::length(transform.position);
@@ -87,7 +87,7 @@ void ECSTestContext::Render()
 	if (!m_Running) return;
 	m_RenderContext->StartFrame(m_Camera);
 
-	auto view = m_ECS->GetView<Transform, Color>();
+	Engine::ECS::View<Transform, Color> view(m_ECS);
 	view.ForEach([&](Transform& transform, Color& color) {
 		m_RenderContext->DrawQuad(transform.position, transform.scale, transform.rotation, 0, { color.color, 1 });
 	});

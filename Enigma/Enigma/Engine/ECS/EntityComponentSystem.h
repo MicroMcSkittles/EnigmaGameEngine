@@ -26,12 +26,11 @@ namespace Enigma::Engine::ECS {
 
 	class IComponentPool {
 	public:
-
-    virtual ~IComponentPool() { }
+		virtual ~IComponentPool() { }
 
 		virtual void Create(EntityID entityID) = 0;
 		virtual void Remove(EntityID entityID) = 0;
-		virtual bool Has(EntityID entityID) = 0; // returns true if the entity has a component in the component pool
+		virtual bool Contains(EntityID entityID) = 0; // returns true if the entity has a component in the component pool
 		virtual size_t Size() = 0;
 		virtual std::vector<size_t>& GetIDs() = 0;
 	};
@@ -42,7 +41,7 @@ namespace Enigma::Engine::ECS {
 
 		virtual void Create(EntityID entityID) override { m_Components.Create(entityID); }
 		virtual void Remove(EntityID entityID) override { m_Components.Remove(entityID); }
-		virtual bool Has(EntityID entityID) override { return m_Components.Contains(entityID); }
+		virtual bool Contains(EntityID entityID) override { return m_Components.Contains(entityID); }
 		virtual size_t Size() override { return m_Components.Size(); }
 		virtual std::vector<size_t>& GetIDs() override { return m_Components.GetIDs(); }
 
@@ -59,10 +58,19 @@ namespace Enigma::Engine::ECS {
 	private:
 		template<typename...>
 		friend class View;
+
+		// Used to generate a unique number for component types
+		template<typename T>
+		class ComponentHasher {
+		public:
+			static size_t Hash() { return reinterpret_cast<size_t>(&s_ID); }
+		private:
+			inline static char s_ID;
+		};
+		
 		using ComponentMask = std::bitset<MaxComponentPoolCount>;
 
 	public:
-
 		ECS() {
 			m_EntityCount = 0;
 		}
@@ -76,18 +84,14 @@ namespace Enigma::Engine::ECS {
 			return m_EntityCount;
 		}
 
-		template<typename... Types> 
-		View<Types...> GetView() {
-			return View<Types...>(this);
-		}
 		template<typename T>
 		ComponentPool<T>* GetComponentPool() {
 			// Make sure component pool exists
-			std::string componentType = typeid(T).name();
-			LOG_ASSERT(!m_ComponentPools.count(componentType), "Failed to get component pool");
+			size_t componentHash = ComponentHasher<T>::Hash();
+			LOG_ASSERT(!m_ComponentPools.count(componentHash), "Failed to get component pool");
 
 			// Get the pool
-			return (ComponentPool<T>*)m_ComponentPools[componentType];
+			return (ComponentPool<T>*)m_ComponentPools[componentHash];
 		}
 		template<typename T>
 		T& GetComponent(EntityID entityID) {
@@ -97,12 +101,12 @@ namespace Enigma::Engine::ECS {
 
 		template<typename T>
 		T& CreateComponent(EntityID entityID) {
-			std::string componentType = typeid(T).name();
+			size_t componentHash = ComponentHasher<T>::Hash();
 
-			// If component pool for component type doesn't exist than create one
-			if (!m_ComponentPools.count(componentType)) {
-				m_ComponentPoolBits.insert({ componentType, m_ComponentPools.size() });
-				m_ComponentPools.insert({ componentType, new ComponentPool<T>() });
+			// If component pool for component hash doesn't exist than create one
+			if (!m_ComponentPools.count(componentHash)) {
+				m_ComponentPoolBits.insert({ componentHash, m_ComponentPools.size() });
+				m_ComponentPools.insert({ componentHash, new ComponentPool<T>() });
 			}
 
 			// Update bit mask and entity groups
@@ -110,38 +114,44 @@ namespace Enigma::Engine::ECS {
 			if (m_EntityGroups.count(mask) && m_EntityGroups[mask].Contains(entityID)) {
 				m_EntityGroups[mask].Remove(entityID);
 			}
-			mask[m_ComponentPoolBits[componentType]] = true;
+			mask[m_ComponentPoolBits[componentHash]] = true;
 			if (!m_EntityGroups.count(mask)) m_EntityGroups.insert({ mask, {} });
 			m_EntityGroups[mask].Create(entityID, entityID);
 
 			// Get the component pool
-			ComponentPool<T>* pool = (ComponentPool<T>*)m_ComponentPools[componentType];
+			ComponentPool<T>* pool = (ComponentPool<T>*)m_ComponentPools[componentHash];
 			pool->Create(entityID);
 			return pool->GetComponent(entityID);
 		}
 		template<typename T>
 		void RemoveComponent(EntityID entityID) {
-			std::string componentType = typeid(T).name();
+			size_t componentHash = ComponentHasher<T>::Hash();
+			LOG_ASSERT(!m_ComponentPools.count(componentHash), "Failed to remove component");
 
-			LOG_ASSERT(!m_ComponentPools.count(componentType), "Failed to remove component");
-
-			// Update bit mask and entity group
+			// Get the entity's component mask
 			ComponentMask& mask = m_EntityComponentMasks.Get(entityID);
+
+			// Move the entity to the new group
 			m_EntityGroups[mask].Remove(entityID);
-			mask[m_ComponentPoolBits[componentType]] = false;
 			if (!m_EntityGroups.count(mask)) m_EntityGroups.insert({ mask, {} });
 			m_EntityGroups[mask].Create(entityID, entityID);
 
+			// Update bit mask
+			mask[m_ComponentPoolBits[componentHash]] = false;
+
 			// Get the component pool
-			ComponentPool<T>* pool = (ComponentPool<T>*)m_ComponentPools[componentType];
+			ComponentPool<T>* pool = (ComponentPool<T>*)m_ComponentPools[componentHash];
 			pool->Remove(entityID);
 		}
 
 		template<typename T>
 		bool HasComponent(EntityID entityID) {
-			std::string componentType = typeid(T).name();
-			if (!m_ComponentPools.count(componentType)) return false;
+			size_t componentHash = ComponentHasher<T>::Hash();
+			// Make sure the entity exitsts
 			if (!m_EntityComponentMasks.Contains(entityID)) return false;
+			// Check if component pool exists
+			if (!m_ComponentPools.count(componentType)) return false;
+			// Make sure the entity has that component
 			if (!m_EntityComponentMasks.Get(entityID)[m_ComponentPoolBits[componentType]]) return false;
 			return true;
 		}
@@ -160,11 +170,10 @@ namespace Enigma::Engine::ECS {
 				}
 			}
 			// If there where no available entity ids then create a new one
-			else {
-				availableID = m_EntityCount;
-			}
+			else availableID = m_EntityCount;
 			m_EntityCount += 1;
 
+			// Create a component mask for the new entity
 			m_EntityComponentMasks.Create(availableID);
 
 			return availableID;
@@ -172,78 +181,90 @@ namespace Enigma::Engine::ECS {
 		void RemoveEntity(EntityID entityID) {
 			// Remove all the components that made up entity id
 			for (auto& [type, pool] : m_ComponentPools) {
-				if (!pool->Has(entityID)) continue;
+				if (!pool->Contains(entityID)) continue;
 				pool->Remove(entityID);
 			}
 
-			ComponentMask& mask = m_EntityComponentMasks.Get(entityID);
-			m_EntityGroups[mask].Remove(entityID);
+			// Remove the entity id from the group
+			m_EntityGroups[m_EntityComponentMasks.Get(entityID)].Remove(entityID);
+			// Remove the mask
 			m_EntityComponentMasks.Remove(entityID);
 
-			m_AvailableEntityIDs.push_back(entityID);
+			// Add the id to the available ids so it can be reused
 			m_EntityCount -= 1;
+			if (entityID == m_EntityCount) return;
+			m_AvailableEntityIDs.push_back(entityID);
 		}
 
 	private:
-		size_t m_EntityCount;
-		std::vector<EntityID> m_AvailableEntityIDs;
+		std::unordered_map<size_t, IComponentPool*> m_ComponentPools; // Maps component hashes to component pools
+		std::unordered_map<size_t, size_t> m_ComponentPoolBits; // Maps component hashes to a bit in a component mask
 
-		std::unordered_map<std::string, IComponentPool*> m_ComponentPools;
-		std::unordered_map<std::string, size_t> m_ComponentPoolBits;
-
-		Core::SparseSet<ComponentMask> m_EntityComponentMasks;
-		std::unordered_map<ComponentMask, Core::SparseSet<EntityID>> m_EntityGroups;
+		size_t m_EntityCount; // The number of entities
+		std::vector<EntityID> m_AvailableEntityIDs; // All unused entity ids
+		Core::SparseSet<ComponentMask> m_EntityComponentMasks; // Component masks for each entity
+		std::unordered_map<ComponentMask, Core::SparseSet<EntityID>> m_EntityGroups; // Maps a component mask to a list of entities that have that mask
 	};
 
 	template<typename... Types>
 	class View {
 	private:
-		// ??? huh, this is black magic
+		// Used for calling static asserts, this makes the static asserts evaluate at compile time
+		template<class T>
+		struct DependentFalse : std::false_type { };
+
+		// Required for the function of the MakeGetters function
 		template <typename Tuple, size_t... Indices>
 		auto MakeGettersImpl(Tuple& t, std::index_sequence<Indices...>) {
-			return std::vector<std::function<std::string()>> {
-				[&t]() { return std::string(typeid(std::get<Indices>(t)).name()); }...
+			return std::vector<std::function<size_t()>> {
+				[&t]() { return ECS::ComponentHasher<std::tuple_element_t<Indices, std::tuple<Types...>>>::Hash(); }...
 			};
 		}
+		// Returns a list of lamda functions that each return the hash of each element in the tuple
 		template <typename Tuple>
 		auto MakeGetters(Tuple t) {
 			return MakeGettersImpl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>{});
 		}
 
+		// Returns a pointer to the component pool at Types Index
 		template<size_t Index>
 		auto GetPoolAt() {
 			return static_cast<ComponentPool<std::tuple_element_t<Index, std::tuple<Types...>>>*>(m_ComponentPools[Index]);
 		}
+		// Returns a tuple that contains the components at id from the component pools at Indices
 		template<size_t... Indices>
 		auto MakeComponentTuple(EntityID id, std::index_sequence<Indices...>) {
 			return std::make_tuple((std::ref(GetPoolAt<Indices>()->GetComponent(id)))...);
 		}
+
+		// Runs a function lamda for each entity in the view
 		template<typename Func>
 		void ForEachImpl(Func func) {
 			constexpr auto inds = std::make_index_sequence<sizeof...(Types)>{};
-			for (EntityID& entityID : m_Smallest->GetIDs()) {
-				if constexpr (std::is_invocable_v<Func, EntityID, Types&...>) {
-					std::apply(func, std::tuple_cat(std::make_tuple(entityID), MakeComponentTuple(entityID, inds)));
-				}
-				else if constexpr (std::is_invocable_v<Func, Types&...>) {
-					std::apply(func, MakeComponentTuple(entityID, inds));
-				}
-				else LOG_ERROR("Invalid for each function");
-			}
+
+			// Check if the function has the parameters (EntityID, Types&...), call it if it does
+			if constexpr (std::is_invocable_v<Func, EntityID, Types&...>)
+				for (EntityID& entityID : m_Smallest->GetIDs()) { std::apply(func, std::tuple_cat(std::make_tuple(entityID), MakeComponentTuple(entityID, inds))); }
+			
+			// Check if the function has the parameters (Types&...), call it if it does
+			else if constexpr (std::is_invocable_v<Func, Types&...>) 
+				for (EntityID& entityID : m_Smallest->GetIDs()) { std::apply(func, MakeComponentTuple(entityID, inds)); }
+			
+			else static_assert(DependentFalse<Func>::value, "Invalid for each function");
 		}
 
 	public:
 
-		View(ECS* ecs)
+		View(ECS* ecs) : m_ECS(ecs)
 		{
-			auto getters = MakeGetters(std::tuple<Types...>());
-			m_ECS = ecs;
+			// Get a list of lambas that each return the name of a component type
+			auto hashLamdas = MakeGetters(std::tuple<Types...>());
 
 			// Get the mask and pools
-			for (size_t i = 0; i < getters.size(); ++i) {
-				std::string type = getters[i]();
-				m_ComponentPools[i] = m_ECS->m_ComponentPools[type];
-				m_ComponentMask.set(m_ECS->m_ComponentPoolBits[type], true);
+			for (size_t i = 0; i < hashLamdas.size(); ++i) {
+				size_t hash = hashLamdas[i]();
+				m_ComponentPools[i] = m_ECS->m_ComponentPools[hash];
+				m_ComponentMask.set(m_ECS->m_ComponentPoolBits[hash], true);
 			}
 
 			// Find the smallest pool
@@ -252,18 +273,14 @@ namespace Enigma::Engine::ECS {
 			);
 		}
 
-		void ForEach(std::function<void(Types&...)> func) {
-			ForEachImpl(func);
-		}
-		void ForEach(std::function<void(EntityID, Types&...)> func) {
-			ForEachImpl(func);
-		}
+		void ForEach(std::function<void(Types&...)> func) { ForEachImpl(func); }
+		void ForEach(std::function<void(EntityID, Types&...)> func) { ForEachImpl(func); }
 
 	private:
-		ECS::ComponentMask m_ComponentMask;
 		ECS* m_ECS;
-		std::array<IComponentPool*, sizeof...(Types)> m_ComponentPools;
-		IComponentPool* m_Smallest;
+		ECS::ComponentMask m_ComponentMask; // What components the view is looking at
+		std::array<IComponentPool*, sizeof...(Types)> m_ComponentPools; // Pointers to the component pools
+		IComponentPool* m_Smallest; // Pointer component pool with the fewest components
 	};
 
 }

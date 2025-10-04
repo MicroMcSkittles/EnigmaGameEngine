@@ -2,8 +2,7 @@
  #include "Enigma/Core/Process/Application.h"
 
  #include "Enigma/Engine/ECS/EntityComponentSystem.h"
- #include "Enigma/Engine/ECS/Component.h"
- #include "Enigma/Engine/ECS/RenderComponent.h"
+
 
  namespace Enigma {
  	namespace Engine {

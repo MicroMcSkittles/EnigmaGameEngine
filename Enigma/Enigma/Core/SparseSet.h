@@ -59,6 +59,7 @@ namespace Enigma::Core {
 			return m_Dense[index];
 		}
 
+		bool Empty() { return m_Dense.empty(); }
 		size_t Size() { return m_Dense.size(); }
 		std::vector<size_t>& GetIDs() { return m_IDMap; }
 		std::vector<T>& GetData() { return m_Dense; }

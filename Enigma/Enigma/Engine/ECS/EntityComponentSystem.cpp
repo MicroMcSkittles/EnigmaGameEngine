@@ -3,7 +3,7 @@
 namespace Enigma {
 	namespace Engine {
 		namespace ECS {
-			
+
 		}
 	}
 }
