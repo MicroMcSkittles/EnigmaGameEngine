@@ -15,6 +15,7 @@ namespace Enigma::Core {
 	public:
 
 		SparseSet() { }
+		~SparseSet() { Clear(); }
 
 		void Create(size_t id) {
 			SetDenseIndex(id, m_Dense.size());
@@ -57,6 +58,12 @@ namespace Enigma::Core {
 			LOG_ASSERT(index == InvalidIndex, "Failed to get value from sparse set, invalid id ( %d )", (int)id);
 
 			return m_Dense[index];
+		}
+
+		void Clear() {
+			m_Dense.clear();
+			m_IDMap.clear();
+			m_SparsePages.clear();
 		}
 
 		bool Empty() { return m_Dense.empty(); }

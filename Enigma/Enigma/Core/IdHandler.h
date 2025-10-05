@@ -1,27 +1,18 @@
 #pragma once
 #include "Enigma/Core/Core.h"
+#include "Enigma/Core/SparseSet.h"
 
 #include <vector>
-#include <map>
+#include <algorithm>
 
 // TODO: update docs
-// TODO: make the better version of this that's described in the docs
 
 namespace Enigma {
 	namespace Core {
 
 		struct ID {
-			uint32_t index = (uint32_t)-1;
-			uint32_t generation = (uint32_t)-1;
-
-			// Creates an invalid id
-			// Sets index and generation to the largest possible 32 bit int
-			static ID InvalidID() {
-				return {
-					(uint32_t)-1,
-					(uint32_t)-1
-				};
-			}
+			size_t index = (size_t)-1;
+			size_t generation = (size_t)-1;
 
 			bool operator < (const ID other) const {
 				return index < other.index;
@@ -36,133 +27,95 @@ namespace Enigma {
 				return "( " + std::to_string(index) + ", " + std::to_string(generation) + " )";
 			}
 		};
-		
+		constexpr ID InvalidID = { (size_t)-1, (size_t)-1 };
+
 		template<class T>
 		class IDHandler {
 		public:
-			IDHandler() = default;
+			IDHandler() { }
+			~IDHandler() { Clear(); }
 
-			std::vector<T>& GetData() { return m_Data; }
+			std::vector<T>& GetData() { 
+				return m_Data.GetData();
+			};
 
-			bool IsValid(ID id) {
-				// Make sure id is registered in m_IDs
-				if (!m_IDs.count(id)) return false;
-				// Make sure id is in the same generation as the registered id
-				if (m_IDs[id].second != id.generation) return false;
-				// Make sure id has a valid index into m_Data
-				return (m_IDs[id].first != -1);
+			bool Contains(ID id) {
+				if (id.index == InvalidID.index) return false;
+				if (id.index >= m_LargestID) return false;
+				if (m_Generations.Get(id.index) != id.generation) return false;
+				return m_Data.Contains(id.index);
 			}
 			ID Create(T value) {
-
-				// see if there are any open slots, then use the first open slot
-				if (!m_Slots.empty()) {
-					// Get first open slot
-					ID slot = m_Slots[0];
-					slot.generation += 1;
-
-					// Remove slot from m_Slots
-					m_Slots.erase(m_Slots.begin());
-
-					m_IDs[slot].first = (uint32_t)m_Data.size();
-					m_IDs[slot].second += 1;
-					m_Data.push_back(value);
-					return slot;
+				// Find an available id
+				size_t availableID;
+				if (!m_AvailableIDs.empty()) {
+					availableID = *std::min_element(m_AvailableIDs.begin(), m_AvailableIDs.end());
+				}
+				else {
+					availableID = m_LargestID;
+					m_LargestID += 1;
+					// Create a new generation entry
+					m_Generations.Create(availableID, (size_t)-1);
 				}
 
-				// Create new id then return
-				ID id = { (uint32_t)m_IDs.size(), 0 };
-				int dataId = m_Data.size();
-				m_Data.push_back(value);
-				m_IDs.insert({ id, { dataId, 0 } });
+				m_Generations.Get(availableID) += 1;
+				m_Data.Create(availableID, value);
+
+				ID id;
+				id.index = availableID;
+				id.generation = m_Generations.Get(availableID);
+
 				return id;
 			}
 			void Delete(ID id) {
-				// Make sure id is valid
-				if (!IsValid(id)) return;
+				LOG_ASSERT(!Contains(id), "Failed to delete ID %s", ((std::string)id).c_str());
 
-				// find where the id points to in m_Data then remove that index from m_Data
-				int index = m_IDs[id].first;
-				m_Data.erase(m_Data.begin() + index);
-				m_IDs[id].first = -1;
-				
-				// Find every id that points to some where in m_Data after the removed 
-				// index then update their pointer
-				for (auto& [id, dataEntry] : m_IDs) {
-					if (dataEntry.first >= index) {
-						dataEntry.first -= 1;
-					}
-				}
-
-				// Push id to m_Slots so id can be reused
-				m_Slots.push_back(id);
+				m_Data.Remove(id.index);
+				m_AvailableIDs.push_back(id.index);
 			}
 
 			// Returns the value at id
 			T& Get(ID id) {
-				// Make sure id is valid
-				if (!IsValid(id)) {
-					LOG_ERROR("Invalid ID %s", ((std::string)id).c_str());
-				}
-
-				// Get id
-				return m_Data[m_IDs[id].first];
+				LOG_ASSERT(!Contains(id), "Failed to get ID %s", ((std::string)id).c_str());
+				return m_Data.Get(id.index);
 			}
 
-			// Gets the id to a position in m_Data
-			// This is fairly slow, so beware
-			ID Get(int index) {
-				// Make sure index is in bounds
-				if (index < 0 || index >= m_Data.size()) {
-					LOG_ERROR("Index ( %i ) is out of bounds", index);
-				}
-
-				// Find id, this is the slow part ( it's not even that slow )
-				for (auto& [id, dataIndex] : m_IDs) {
-					if (index == dataIndex.first) {
+			// Returns the id of an element
+			ID Get(T& value) {
+				for (size_t index : m_Data.GetIDs()) {
+					if (m_Data.Get(index) == value) {
+						ID id;
+						id.index = index;
+						id.generation = m_Generations.Get(index);
 						return id;
 					}
 				}
-
-				return ID::InvalidID();
+				return InvalidID;
 			}
-			// Returns the id of a value if it's registered
-			ID Get(T value) {
 
-				// find the location of value in m_Data
-				int location = -1;
-				for (int i = 0; i < m_Data.size(); ++i) {
-					if (value == m_Data[i]) {
-						location = i;
-						break;
-					}
-				}
+			// Returns the id of a element at index
+			ID Get(size_t index) {
+				LOG_ASSERT(index >= m_Generations.GetIDs().size(), "Failed to get id at index ( %ull )", (unsigned long long)index);
+				
+				ID id;
+				id.index = m_Generations.GetIDs()[index];
+				id.generation = m_Generations.Get(id.index);
 
-				// make sure value is in m_Data
-				if (location == -1) {
-					LOG_WARNING("Value does not exist");
-					return ID::InvalidID();
-				}
-
-				return Get(location);
+				return id;
 			}
 
 			void Clear() {
-
-				// Delete every pointer
-				/*for (auto d : m_Data) {
-					delete d;
-				}*/
-				
-				// Clear all lists
-				m_Data.clear();
-				m_IDs.clear();
-				m_Slots.clear();
+				m_AvailableIDs.clear();
+				m_Data.Clear();
+				m_Generations.Clear();
 			}
 
 		private:
-			std::vector<T> m_Data;
-			std::map<ID, std::pair<int, uint32_t>> m_IDs;
-			std::vector<ID> m_Slots;
+			size_t m_LargestID;
+			std::vector<size_t> m_AvailableIDs;
+
+			SparseSet<T> m_Data;
+			SparseSet<size_t> m_Generations;
 		};
 
 	}

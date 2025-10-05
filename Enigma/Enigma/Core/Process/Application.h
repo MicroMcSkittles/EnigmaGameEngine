@@ -1,6 +1,7 @@
 #pragma once
 #include "Enigma/Engine/DeltaTime.h"
-#include "Enigma/Core/IdHandler.h"
+//#include "Enigma/Core/IdHandler.h"
+#include "Enigma/Core/SparseSet.h"
 #include "Enigma/Core/Window.h"
 #include "Enigma/Core/Event/Event.h"
 #include "Enigma/ImGui/ImGuiHandler.h"
@@ -13,6 +14,8 @@
 
 namespace Enigma {
 	namespace Core {
+
+		//typedef size_t ID;
 
 		class Application {
 		public:

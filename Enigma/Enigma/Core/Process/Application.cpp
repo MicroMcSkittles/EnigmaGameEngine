@@ -63,7 +63,7 @@ namespace Enigma {
 
 		void Application::BindSubProcToWindow(SubProcess* proc, ID windowID)
 		{
-			if (!s_Data->windows.IsValid(windowID)) {
+			if (!s_Data->windows.Contains(windowID)) {
 				LOG_ERROR("Failed to create sub process. Window does not exist");
 			}
 			ID procID = s_Data->subProcStack.GetProcessID(proc);
@@ -102,7 +102,7 @@ namespace Enigma {
 		}
 		Window* Application::GetWindow(ID id)
 		{
-			if (!s_Data->windows.IsValid(id)) {
+			if (!s_Data->windows.Contains(id)) {
 				LOG_WARNING("Window with id %s doesn't exist", ((std::string)id).c_str());
 				return nullptr;
 			}
@@ -117,11 +117,11 @@ namespace Enigma {
 				}
 			}
 			LOG_WARNING("Window isn't registered");
-			return Core::ID::InvalidID();
+			return Core::InvalidID;
 		}
 		ImGuiHandler* Application::GetImGui(ID id)
 		{
-			if (!s_Data->windows.IsValid(id)) {
+			if (!s_Data->windows.Contains(id)) {
 				LOG_WARNING("ImGui context with id %s doesn't exist", ((std::string)id).c_str());
 				return nullptr;
 			}
@@ -161,21 +161,21 @@ namespace Enigma {
 				s_Data->subProcStack.Update(s_Data->deltaTime);
 				s_Data->subProcStack.Render();
 
-    std::vector<WindowHandler*>& windows = s_Data->windows.GetData();
-    for (int i = 0; i < windows.size(); ++i) {
-      WindowHandler* windowHandler = windows[i];
+				std::vector<WindowHandler*>& windows = s_Data->windows.GetData();
+				for (int i = 0; i < windows.size(); ++i) {
+					WindowHandler* windowHandler = windows[i];
 
-      windowHandler->window->MakeCurrent();
-      if (windowHandler->window->ShouldClose()) {
-        delete windowHandler->window;
-        if (windowHandler->imgui != nullptr) delete windowHandler->imgui;
-        s_Data->windows.Delete(s_Data->windows.Get(i));
-        i -= 1;
-        continue;
-      }
+					windowHandler->window->MakeCurrent();
+					if (windowHandler->window->ShouldClose()) {
+					  delete windowHandler->window;
+					  if (windowHandler->imgui != nullptr) delete windowHandler->imgui;
+					  s_Data->windows.Delete(s_Data->windows.Get(i));
+					  i -= 1;
+					  continue;
+					}
 
-      if (windowHandler->imgui != nullptr && (!windowHandler->engineInstances.empty() || !windowHandler->subProcesses.empty())) {
-        ImGuiHandler::MakeCurrent(windowHandler->imgui);
+					if (windowHandler->imgui != nullptr && (!windowHandler->engineInstances.empty() || !windowHandler->subProcesses.empty())) {
+						ImGuiHandler::MakeCurrent(windowHandler->imgui);
 						ImGuiHandler::StartFrame();
 
 						for (auto& processID : windowHandler->subProcesses) {
