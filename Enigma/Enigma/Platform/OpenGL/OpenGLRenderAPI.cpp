@@ -3,7 +3,6 @@
 #include "Enigma/Core/Window.h"
 
 #include <glad/glad.h>
-//#include <GLFW/glfw3.h>
 
 namespace Enigma {
     namespace Platform {
@@ -178,14 +177,26 @@ namespace Enigma {
 				}
 			}
 
-            OpenGLRenderAPI::OpenGLRenderAPI() {
+			void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+			{
+				
+				if (severity == GL_DEBUG_SEVERITY_LOW) return;
+				if (severity == GL_DEBUG_SEVERITY_MEDIUM) return;
+				if (type == GL_DEBUG_TYPE_ERROR) {
+					LOG_WARNING("OpenGL error, Type: 0x%x ( %s )", type, message);
+					return;
+				}
+			}
 
-				//if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+            OpenGLRenderAPI::OpenGLRenderAPI() {
 				if (!gladLoadGLLoader((GLADloadproc)Core::Window::GetGLProcAddress)) {
                     LOG_ERROR("Failed to initialize GLAD");
                     return;
                 }
 				
+				//glEnable(GL_DEBUG_OUTPUT);
+				//glDebugMessageCallback(MessageCallback, nullptr);
+
 				glEnable(GL_DEPTH_TEST); // TODO: add an enable function to RenderAPI
 				glLineWidth(1.f);
 
@@ -222,6 +233,7 @@ namespace Enigma {
             void OpenGLRenderAPI::DrawArraysImpl(int first, int count) {
 				glDrawArrays(m_Data.drawMode, first, count);
             }
-        }
+			
+		}
     }
 }

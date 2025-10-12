@@ -76,8 +76,8 @@ namespace Enigma {
 			}
 			void OpenGLTexture::Bind()
 			{
-				int maxSlots;
-				glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxSlots);
+				int maxSlots = 32;
+				//glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxSlots);
 				if (s_OccupiedSlotCount >= maxSlots) {
 					LOG_SOFT_ERROR("To many textures binded at once, the max is ( %i )", maxSlots);
 					return;

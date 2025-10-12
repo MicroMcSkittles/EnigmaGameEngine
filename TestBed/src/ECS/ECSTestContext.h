@@ -5,6 +5,7 @@
 #include <Enigma/Engine/Input.h>
 
 #include <Enigma/Engine/ECS/EntityComponentSystem.h>
+#include <Enigma/Engine/ECS/RenderSystem2D.h>
 
 #define CURRENT_TEST_CONTEXT ECSTestContext
 #define CURRENT_TEST_CONTEXT_NAME "Entity Component System Test"
@@ -29,6 +30,8 @@ private:
 	Renderer::Render2D* m_RenderContext;
 	Engine::Surface m_Surface;
 
+	Engine::ECS::RenderSystem2D* m_RenderECS;
+
 	// Input
 	Engine::Input* m_InputContext;
 	float m_CameraSpeed;
@@ -36,6 +39,7 @@ private:
 
 	// Test variables
 	Engine::ECS::ECS* m_ECS;
+	Renderer::Texture* m_Texture;
 	bool m_Running;
 	int m_EntityCount;
 	float m_FPS;

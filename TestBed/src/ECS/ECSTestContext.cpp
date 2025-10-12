@@ -3,6 +3,7 @@
 #include <Enigma/Core/Window.h>
 #include <Enigma/Core/Event/WindowEvent.h>
 #include <Enigma/Engine/InputCodes.h>
+#include <EnigmaSerialization/Image.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
@@ -12,17 +13,9 @@
 
 constexpr double PI = 3.14159265359;
 
-struct Transform {
-	glm::vec2 position;
-	float rotation;
-	glm::vec2 scale;
-};
 struct Physics {
 	glm::vec2 direction;
 	float speed;
-};
-struct Color {
-	glm::vec3 color;
 };
 
 std::random_device rd;
@@ -33,18 +26,45 @@ void ECSTestContext::NewEntity()
 {
 	Engine::ECS::EntityID entityID = m_ECS->CreateEntity();
 
-	Transform& transform = m_ECS->CreateComponent<Transform>(entityID);
-	transform.position = { (float)distrib(gen) / 1000.0f, (float)distrib(gen) / 1000.0f };
-	transform.scale = { (float)distrib(gen) / 4000.0f, (float)distrib(gen) / 4000.0f };
-	transform.rotation = (float)distrib(gen) / 1000.0f;
+	// Create a random transform component
+	Engine::ECS::Transform& transform = m_ECS->CreateComponent<Engine::ECS::Transform>(entityID);
+	transform.position = { (float)distrib(gen) / 1000.0f, (float)distrib(gen) / 1000.0f, -1.0f - (float)distrib(gen) / 1000.0f };
+	transform.scale = { (float)distrib(gen) / 4000.0f, (float)distrib(gen) / 4000.0f, 1 };
+	float rotation = (float)distrib(gen) / 1000.0f;
+	transform.rotation = glm::rotate(glm::quat(), { 0, 0, rotation });
 
-	Color& color = m_ECS->CreateComponent<Color>(entityID);
-	color.color = { (float)distrib(gen) / 1000.0f, (float)distrib(gen) / 1000.0f, 1 };
+	// Create a random render component
+	glm::vec3 tint = { (float)distrib(gen) / 1000.0f, (float)distrib(gen) / 1000.0f, 1 };
+	switch (rand() % 4) {
+	case 0: {
+		Engine::ECS::ColoredQuad& quad = m_ECS->CreateComponent<Engine::ECS::ColoredQuad>(entityID);
+		quad.tint = tint;
+		break;
+	}
+	case 1: {
+		Engine::ECS::TexturedQuad& quad = m_ECS->CreateComponent<Engine::ECS::TexturedQuad>(entityID);
+		quad.tint = tint;
+		quad.texture = m_Texture;
+		break;
+	}
+	case 2: {
+		Engine::ECS::ColoredCircle& circle = m_ECS->CreateComponent<Engine::ECS::ColoredCircle>(entityID);
+		circle.tint = tint;
+		break;
+	}
+	case 3: {
+		Engine::ECS::TexturedCircle& circle = m_ECS->CreateComponent<Engine::ECS::TexturedCircle>(entityID);
+		circle.tint = tint;
+		circle.texture = m_Texture;
+		break;
+	}
+	}
 
+	// Create a random physics component
 	Physics& physics = m_ECS->CreateComponent<Physics>(entityID);
 	physics.direction = {
-		cos(transform.rotation - PI),
-		sin(transform.rotation - PI)
+		cos(rotation - PI),
+		sin(rotation - PI)
 	};
 	if (rand() % 2) physics.direction.x *= -1.0f;
 	if (rand() % 2) physics.direction.y *= -1.0f;
@@ -57,6 +77,16 @@ void ECSTestContext::StartTest()
 	if (m_ECS != nullptr) delete m_ECS;
 	m_ECS = new Engine::ECS::ECS();
 
+	if (m_RenderECS != nullptr) delete m_RenderECS;
+	Engine::ECS::RenderSystem2DConfig renderConfig;
+	renderConfig.surface = m_Surface;
+	renderConfig.renderAPI = Core::Application::GetWindow(m_WindowID)->GetAPI();
+	m_RenderECS = new Engine::ECS::RenderSystem2D(renderConfig, m_ECS);
+
+	if (m_Texture != nullptr) delete m_Texture;
+	Serialization::ImageConfig textureConfig;
+	m_Texture = Serialization::ImageLoader::Load("assets/test.png", textureConfig);
+
 	for (size_t i = 0; i < m_EntityCount; ++i) {
 		NewEntity();
 	}
@@ -66,24 +96,25 @@ void ECSTestContext::UpdateTest(Engine::DeltaTime deltaTime)
 {
 	if (!m_Running) return;
 
-	Engine::ECS::View<Transform, Physics> view(m_ECS);
-	view.ForEach([&](Engine::ECS::EntityID entityID, Transform& transform, Physics& physics) {
-		transform.position += physics.direction * physics.speed * (float)deltaTime;
+	Engine::ECS::View<Engine::ECS::Transform, Physics> view(m_ECS);
+
+	view.ForEach([&](Engine::ECS::EntityID entityID, Engine::ECS::Transform& transform, Physics& physics) {
+		transform.position += glm::vec3(physics.direction * physics.speed * (float)deltaTime, 0);
 		float dist = glm::length(transform.position);
 		if (dist >= 4) {
-			Transform t = transform;
-			t.position = { 0,0 };
-			Physics p = physics;
-			m_ECS->RemoveEntity(entityID);
-			Engine::ECS::EntityID id = m_ECS->CreateEntity();
-			m_ECS->CreateComponent<Transform>(id) = t;
-			m_ECS->CreateComponent<Physics>(id) = p;
+			transform.position.x = 0;
+			transform.position.y = 1;
 		}
 	});
 }
 
 void ECSTestContext::Render()
 {
+	m_RenderECS->StartFrame(m_Camera);
+
+	m_RenderECS->EndFrame();
+
+	/*return;
 	if (!m_Running) return;
 	m_RenderContext->StartFrame(m_Camera);
 
@@ -92,7 +123,7 @@ void ECSTestContext::Render()
 		m_RenderContext->DrawQuad(transform.position, transform.scale, transform.rotation, 0, { color.color, 1 });
 	});
 
-	m_RenderContext->EndFrame();
+	m_RenderContext->EndFrame();*/
 }
 
 void ECSTestContext::ImGui()
@@ -122,10 +153,10 @@ ECSTestContext::ECSTestContext(Core::ID windowID) : TestContext(windowID)
 	m_Surface.scale.y = window->GetHeight();
 
 	// Setup renderer
-	Renderer::Render2DConfig renderConfig;
-	renderConfig.surface = m_Surface;
-	renderConfig.renderAPI = window->GetAPI();
-	m_RenderContext = new Renderer::Render2D(renderConfig);
+	//Renderer::Render2DConfig renderConfig;
+	//renderConfig.surface = m_Surface;
+	//renderConfig.renderAPI = window->GetAPI();
+	//m_RenderContext = new Renderer::Render2D(renderConfig);
 
 	// Create camera
 	Renderer::ViewBox viewBox = Renderer::ViewBox::SurfaceViewBox(m_Surface);
@@ -141,13 +172,16 @@ ECSTestContext::ECSTestContext(Core::ID windowID) : TestContext(windowID)
 	m_Running = true;
 	m_EntityCount = 1000;
 	m_ECS = nullptr;
+	m_RenderECS = nullptr;
+	m_Texture = nullptr;
 
 	StartTest();
 }
 
 void ECSTestContext::OnResize(int width, int height)
 {
-	m_RenderContext->Resize(width, height);
+	//m_RenderContext->Resize(width, height);
+	m_RenderECS->Resize(width, height);
 	m_Surface.Resize(width, height);
 }
 void ECSTestContext::OnEvent(Core::Event& e)

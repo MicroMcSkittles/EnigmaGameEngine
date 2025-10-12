@@ -1,4 +1,5 @@
 #include "Enigma/Renderer/Renderer2D/Render2D.h"
+#include "Enigma/Renderer/DefaultShaders.h"
 #include "Enigma/Core/Process/Application.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,8 +17,8 @@ namespace Enigma {
 			// Load all shaders
 			m_MainShader     = config.mainShader;
 			m_PostProcShader = config.postProcShader;
-			if (!config.mainShader)     m_MainShader     = LoadDefaultMainShader();
-			if (!config.postProcShader) m_PostProcShader = LoadDefaultPostProcShader();
+			if (!config.mainShader)     m_MainShader     = DefaultShaders::LoadMainShader();
+			if (!config.postProcShader) m_PostProcShader = DefaultShaders::LoadPostProcShader();
 
 			m_CircleStencilShader     = LoadCircleStencilShader();
 			m_LineCircleStencilShader = LoadLineCircleStencilShader();

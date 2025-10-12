@@ -75,8 +75,6 @@ namespace Enigma {
 			};
 
 		private:
-			static Shader* LoadDefaultMainShader();
-			static Shader* LoadDefaultPostProcShader();
 
 			static Shader* LoadCircleStencilShader();
 			static Shader* LoadLineCircleStencilShader();

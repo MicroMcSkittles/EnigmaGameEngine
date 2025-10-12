@@ -35,6 +35,8 @@ namespace Enigma {
                 uint32_t TexWrapMode(Renderer::TexWrapMode mode);
             }
 
+            //void OpenGLErrorCheck();
+
             class OpenGLRenderAPI : public Renderer::RenderAPI {
             public:
                 OpenGLRenderAPI();

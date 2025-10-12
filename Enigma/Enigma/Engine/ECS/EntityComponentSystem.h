@@ -240,6 +240,7 @@ namespace Enigma::Engine::ECS {
 		// Runs a function lamda for each entity in the view
 		template<typename Func>
 		void ForEachImpl(Func func) {
+			if (m_Empty) return;
 			constexpr auto inds = std::make_index_sequence<sizeof...(Types)>{};
 
 			// Check if the function has the parameters (EntityID, Types&...), call it if it does
@@ -255,7 +256,7 @@ namespace Enigma::Engine::ECS {
 
 	public:
 
-		View(ECS* ecs) : m_ECS(ecs)
+		View(ECS* ecs) : m_ECS(ecs), m_Empty(false)
 		{
 			// Get a list of lambas that each return the name of a component type
 			auto hashLamdas = MakeGetters(std::tuple<Types...>());
@@ -263,6 +264,10 @@ namespace Enigma::Engine::ECS {
 			// Get the mask and pools
 			for (size_t i = 0; i < hashLamdas.size(); ++i) {
 				size_t hash = hashLamdas[i]();
+				if (!m_ECS->m_ComponentPools.count(hash)) {
+					m_Empty = true;
+					return;
+				}
 				m_ComponentPools[i] = m_ECS->m_ComponentPools[hash];
 				m_ComponentMask.set(m_ECS->m_ComponentPoolBits[hash], true);
 			}
@@ -276,11 +281,15 @@ namespace Enigma::Engine::ECS {
 		void ForEach(std::function<void(Types&...)> func) { ForEachImpl(func); }
 		void ForEach(std::function<void(EntityID, Types&...)> func) { ForEachImpl(func); }
 
+		size_t Count() { return m_Smallest->Size(); }
+		bool Empty() { return m_Empty; }
+
 	private:
 		ECS* m_ECS;
 		ECS::ComponentMask m_ComponentMask; // What components the view is looking at
 		std::array<IComponentPool*, sizeof...(Types)> m_ComponentPools; // Pointers to the component pools
 		IComponentPool* m_Smallest; // Pointer component pool with the fewest components
+		bool m_Empty; // Set to true if any of the component pools are empty/dont exist
 	};
 
 }
