@@ -3,6 +3,7 @@
 #include "Enigma/Core/Core.h"
 
 #include <cstring>
+#include <limits>
 #include <filesystem>
 #include <imgui.h>
 
@@ -43,7 +44,7 @@ namespace Enigma {
 
 			int inputProfileDepth = s_Data->profileDepth;
 			if (ImGui::InputInt("Profile Depth", &inputProfileDepth, 1, 5)) {
-				s_Data->profileDepth = inputProfileDepth % ((uint8_t)-1);
+				s_Data->profileDepth = inputProfileDepth % std::numeric_limits<uint8_t>::max();
 				if (s_Data->profileDepth == 0) s_Data->profileDepth = 1;
 				UpdateProfileDepth();
 			}
@@ -51,11 +52,13 @@ namespace Enigma {
 				s_Data->files.clear();
 				for (auto& [profileHash, profile] : s_Data->profiles) {
 					// Make sure memory was allocated properly
-					if (!profile.durations) {
+					if (profile.durations == nullptr) {
 						LOG_ERROR("Failed to allocate memory for profile duration ( %s, %s )", profile.function, profile.file);
 						return;
 					}
-					else free(profile.durations);
+					else {
+						free(profile.durations);
+					}
 				}
 				s_Data->profiles.clear();
 			}
@@ -102,10 +105,13 @@ namespace Enigma {
 			std::map<uint64_t, Profile> profiles = s_Data->profiles;
 			for (auto& [profileHash, profile] : profiles) {
 				// Make sure memory was allocated properly
-				if (!profile.durations) {
+				if (profile.durations == nullptr) {
 					LOG_ERROR("Failed to allocate memory for profile duration ( %s, %s )", profile.function, profile.file);
 					return;
-				} else free(profile.durations);
+				}
+				else {
+					free(profile.durations);
+				}
 				s_Data->profiles.erase(profileHash);
 				CreateProfileEntry(profile.function, profile.file, profile.description, 0.0);
 			}

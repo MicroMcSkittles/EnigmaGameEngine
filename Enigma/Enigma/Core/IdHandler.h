@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <limits>
 
 // TODO: update docs
 
@@ -11,20 +12,15 @@ namespace Enigma {
 	namespace Core {
 
 		struct ID {
-			size_t index = (size_t)-1;
-			size_t generation = (size_t)-1;
+			size_t index = std::numeric_limits<size_t>::max();
+			size_t generation = std::numeric_limits<size_t>::max();
 
-			bool operator < (const ID other) const {
-				return index < other.index;
-			}
-			bool operator == (const ID other) const {
-				return (index == other.index) && (generation == other.generation);
-			}
-			bool operator != (const ID other) const {
-				return !(*this == other);
-			}
-			operator std::string() const {
-				return "( " + std::to_string(index) + ", " + std::to_string(generation) + " )";
+			bool operator <  (const ID other) const { return index < other.index; }
+			bool operator == (const ID other) const { return (index == other.index) && (generation == other.generation); }
+			bool operator != (const ID other) const { return !(*this == other); }
+			
+			std::string ToString() { 
+				return std::string("( " + std::to_string(index) + ", " + std::to_string(generation) + " )"); 
 			}
 		};
 		constexpr ID InvalidID = { (size_t)-1, (size_t)-1 };
@@ -55,7 +51,7 @@ namespace Enigma {
 					availableID = m_LargestID;
 					m_LargestID += 1;
 					// Create a new generation entry
-					m_Generations.Create(availableID, (size_t)-1);
+					m_Generations.Create(availableID, std::numeric_limits<size_t>::max());
 				}
 
 				m_Generations.Get(availableID) += 1;
@@ -68,7 +64,7 @@ namespace Enigma {
 				return id;
 			}
 			void Delete(ID id) {
-				LOG_ASSERT(!Contains(id), "Failed to delete ID %s", ((std::string)id).c_str());
+				LOG_ASSERT(!Contains(id), "Failed to delete ID %s", id.ToString().c_str());
 
 				m_Data.Remove(id.index);
 				m_AvailableIDs.push_back(id.index);
@@ -76,12 +72,12 @@ namespace Enigma {
 
 			// Returns the value at id
 			T& Get(ID id) {
-				LOG_ASSERT(!Contains(id), "Failed to get ID %s", ((std::string)id).c_str());
+				LOG_ASSERT(!Contains(id), "Failed to get ID %s", id.ToString().c_str());
 				return m_Data.Get(id.index);
 			}
 
 			// Returns the id of an element
-			ID Get(T& value) {
+			ID Get(const T& value) {
 				for (size_t index : m_Data.GetIDs()) {
 					if (m_Data.Get(index) == value) {
 						ID id;
@@ -95,7 +91,7 @@ namespace Enigma {
 
 			// Returns the id of a element at index
 			ID Get(size_t index) {
-				LOG_ASSERT(index >= m_Generations.GetIDs().size(), "Failed to get id at index ( %ull )", (unsigned long long)index);
+				LOG_ASSERT(index >= m_Generations.GetIDs().size(), "Failed to get id at index ( %ull )", static_cast<unsigned long long>(index));
 				
 				ID id;
 				id.index = m_Generations.GetIDs()[index];

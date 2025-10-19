@@ -41,8 +41,8 @@ namespace Enigma {
 			if (e.Handled()) return;
 			// Loop through each sub process from front to back and
 			std::vector<SubProcess*>& processes = m_SubProcesses.GetData();
-			for (int i = processes.size() - 1; i >= 0; i--) {
-				auto proc = processes[i];
+			for (size_t i = processes.size(); i > 0; i--) {
+				auto proc = processes[i - 1];
 				e.Handled(proc->OnEvent(e));
 				if (e.Handled()) break;
 			}
@@ -50,7 +50,7 @@ namespace Enigma {
 
 		void SubProcStack::Update(Engine::DeltaTime deltaTime)
 		{
-			for (int i = 0; i < m_SubProcesses.GetData().size(); ++i) {
+			for (size_t i = 0; i < m_SubProcesses.GetData().size(); ++i) {
 				SubProcess* proc = m_SubProcesses.GetData()[i];
 				if (!proc->m_Started) {
 					proc->StartUp();

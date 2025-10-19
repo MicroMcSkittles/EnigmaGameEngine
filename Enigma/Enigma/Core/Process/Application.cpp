@@ -38,7 +38,7 @@ namespace Enigma {
 		{
 			return s_Data->arguments;
 		}
-		const std::string& Application::GetArgument(int id)
+		const std::string& Application::GetArgument(size_t id)
 		{
 			// Check if id is valid
 			if (id < 0 || id >= s_Data->arguments.size()) {
@@ -103,7 +103,7 @@ namespace Enigma {
 		Window* Application::GetWindow(ID id)
 		{
 			if (!s_Data->windows.Contains(id)) {
-				LOG_WARNING("Window with id %s doesn't exist", ((std::string)id).c_str());
+				LOG_WARNING("Window with id %s doesn't exist", id.ToString().c_str());
 				return nullptr;
 			}
 
@@ -122,13 +122,13 @@ namespace Enigma {
 		ImGuiHandler* Application::GetImGui(ID id)
 		{
 			if (!s_Data->windows.Contains(id)) {
-				LOG_WARNING("ImGui context with id %s doesn't exist", ((std::string)id).c_str());
+				LOG_WARNING("ImGui context with id %s doesn't exist", id.ToString().c_str());
 				return nullptr;
 			}
 
 			ImGuiHandler* context = s_Data->windows.Get(id)->imgui;
 			if (context == nullptr) {
-				LOG_WARNING("ImGui context with id %s doesn't exist", ((std::string)id).c_str());
+				LOG_WARNING("ImGui context with id %s doesn't exist", id.ToString().c_str());
 			}
 
 			return context;
@@ -162,7 +162,7 @@ namespace Enigma {
 				s_Data->subProcStack.Render();
 
 				std::vector<WindowHandler*>& windows = s_Data->windows.GetData();
-				for (int i = 0; i < windows.size(); ++i) {
+				for (size_t i = 0; i < windows.size(); ++i) {
 					WindowHandler* windowHandler = windows[i];
 
 					windowHandler->window->MakeCurrent();

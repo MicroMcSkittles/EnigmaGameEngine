@@ -18,13 +18,13 @@ namespace Enigma {
 
 			Renderer::API renderAPI = Renderer::API::OpenGL;
 
-			WindowConfig(const std::string& title = "Window", 
+			WindowConfig(
+				const std::string& title = "Window", 
 				int width = 800, int height = 600, 
-				bool resizable = true, bool vSync = true,
-				Renderer::API renderAPI = Renderer::API::OpenGL)
-				: title(title), width(width), height(height), 
-				 resizable(resizable), vSync(vSync),
-				renderAPI(renderAPI) { }
+				bool resizable = true, 
+				bool vSync = true,
+				Renderer::API renderAPI = Renderer::API::OpenGL
+			): title(title), width(width), height(height), resizable(resizable), vSync(vSync), renderAPI(renderAPI) { }
 		};
 
 		// TODO: add remove event callback function
@@ -44,13 +44,16 @@ namespace Enigma {
 
 			virtual void* GetNativeWindow() = 0;
 
+			// Returns if the window should close
 			virtual bool ShouldClose() = 0;
+			// Tells the window if it should close
 			virtual void ShouldClose(bool shouldClose) = 0;
 
 			virtual void Update() = 0;
 
 			virtual void SetVSync(bool vSync) = 0;
 
+			// Returns the address of a OpenGL function
 			static void* GetGLProcAddress(const char* procName);
 
 		};

@@ -15,7 +15,7 @@ namespace Enigma {
 		{
 			// Plus 1 for null terminator
 			size_t length = strlen(str1) + strlen(str2) + 1;
-			char* concatStr = (char*)malloc(length);
+			char* concatStr = static_cast<char*>(malloc(length));
 
 			// Make sure the memory allocation was successful
 			if (!concatStr) {

@@ -1,6 +1,5 @@
 #pragma once
 #include "Enigma/Engine/DeltaTime.h"
-//#include "Enigma/Core/IdHandler.h"
 #include "Enigma/Core/SparseSet.h"
 #include "Enigma/Core/Window.h"
 #include "Enigma/Core/Event/Event.h"
@@ -15,8 +14,6 @@
 namespace Enigma {
 	namespace Core {
 
-		//typedef size_t ID;
-
 		class Application {
 		public:
 			Application(int argc, char** argv);
@@ -26,7 +23,7 @@ namespace Enigma {
 			// Argument 0 should always be a path to the exe file
 			static std::vector<std::string>& GetArguments();
 			// Argument 0 should always be a path to the exe file
-			static const std::string& GetArgument(int id);
+			static const std::string& GetArgument(size_t id);
 
 			// Finishes the rest of the current frame then closes the application
 			static void Close();
@@ -43,11 +40,6 @@ namespace Enigma {
 				return proc;
 			}
 			static void BindSubProcToWindow(SubProcess* proc, ID windowID);
-
-			/*static ID CreateEngineInstance(const Engine::EngineConfig& config);
-			static void DeleteEngineInstance(Engine::Engine* instance);
-			static Engine::Engine* GetEngineInstance(ID id);
-			static ID GetEngineInstanceID(Engine::Engine* instance);*/
 
 			static ID CreateWindow(const WindowConfig& config);
 			static ID CreateWindow(const WindowConfig& windowConfig, const ImGuiConfig& imguiConfig);
@@ -78,7 +70,6 @@ namespace Enigma {
 				SubProcStack subProcStack;
 
 				IDHandler<WindowHandler*> windows;
-				//IDHandler<Engine::Engine*> engineInstances;
 				std::map<Renderer::API, Renderer::RenderAPI*> renderAPIs;
 			};
 

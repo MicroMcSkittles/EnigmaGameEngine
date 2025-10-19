@@ -30,7 +30,7 @@ namespace Enigma::Core {
 
 		void Remove(size_t id) {
 			size_t index = GetDenseIndex(id);
-			LOG_ASSERT(index == InvalidIndex, "Failed to remove value from sparse set, invalid id ( %d )", (int)index);
+			LOG_ASSERT(index == InvalidIndex, "Failed to remove value from sparse set, invalid id ( %d )", static_cast<int>(index));
 
 			// Update indices
 			SetDenseIndex(m_IDMap.back(), index);
@@ -52,10 +52,10 @@ namespace Enigma::Core {
 		}
 
 		T& Get(size_t id) {
-			LOG_ASSERT(m_SparsePages.size() * PageSize <= id, "Failed to get value from sparse set, id out of sparse list bounds ( %d )", (int)id);
+			LOG_ASSERT(m_SparsePages.size() * PageSize <= id, "Failed to get value from sparse set, id out of sparse list bounds ( %d )", static_cast<int>(id));
 
 			size_t index = GetDenseIndex(id);
-			LOG_ASSERT(index == InvalidIndex, "Failed to get value from sparse set, invalid id ( %d )", (int)id);
+			LOG_ASSERT(index == InvalidIndex, "Failed to get value from sparse set, invalid id ( %d )", static_cast<int>(id));
 
 			return m_Dense[index];
 		}

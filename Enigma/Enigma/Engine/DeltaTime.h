@@ -21,9 +21,8 @@ namespace Enigma {
 				m_LastFrame = currentTime;
 			}
 
-			operator float() {
-				return m_DeltaTime;
-			}
+			operator float() { return m_DeltaTime; }
+			operator float() const { return m_DeltaTime; }
 
 		private:
 			float m_DeltaTime;

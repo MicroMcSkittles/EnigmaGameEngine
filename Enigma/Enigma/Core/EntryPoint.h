@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
 
 	Enigma::Core::Application* app = new Enigma::Core::Application(argc, argv);
 
-  Enigma::Core::ApplicationMain(nullptr);
+	Enigma::Core::ApplicationMain(nullptr);
 
 	app->Run();
 

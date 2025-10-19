@@ -7,7 +7,8 @@
 //#include "Primitives/PrimitiveTestContext.h"
 //#include "Audio/AudioTestContext.h"
 //#include "Window/WindowTestContext.h"
-#include "ECS/ECSTestContext.h"
+//#include "ECS/ECSTestContext.h"
+#include "Physics/PhysicsTestContext.h"
 
 void TestBed::StartUp()
 {

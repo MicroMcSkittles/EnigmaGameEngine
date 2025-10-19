@@ -52,7 +52,7 @@ namespace Enigma {
 			struct Data {
 				std::map<uint64_t, Profile> profiles;
 				std::map<std::string, std::vector<uint64_t>> files; // Maps each file to the its functions
-				uint8_t profileDepth;
+				uint8_t profileDepth = 25;
 			};
 			inline static Data* s_Data;
 		};

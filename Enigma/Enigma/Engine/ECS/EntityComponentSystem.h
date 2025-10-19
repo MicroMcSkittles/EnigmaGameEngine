@@ -6,7 +6,7 @@
 #include <bitset>
 
 // Times writen: 3
-// I'm going insaine
+// I'm going insane
 // I am like a room full of monkies. I am destined to type for a infinite amount
 // of time to get any kind of result with this system
 
