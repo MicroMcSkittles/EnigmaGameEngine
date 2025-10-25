@@ -13,12 +13,12 @@ PhysicsTestContext::PhysicsTestContext(Core::ID windowID) : TestContext(windowID
 	LOG_MESSAGE("Started Entity Component System Test Context", 5);
 
 	// Setup surface
-	Core::Window* window = Core::Application::GetWindow(m_WindowID);
+	ref<Core::Window> window = Core::Application::GetWindow(m_WindowID);
 	m_Surface.scale.x = window->GetWidth();
 	m_Surface.scale.y = window->GetHeight();
 
-	m_ECS = new Engine::ECS::ECS();
-	m_PhysicsEngine = new Engine::Physics::PhysicsEngine2D(m_ECS);
+	m_ECS = Engine::ECS::ECS::Create();
+	m_PhysicsEngine = Engine::Physics::PhysicsEngine2D::Create(m_ECS);
 	m_FPS = 0;
 	m_Running = true;
 	m_InputQuaternion = false;
@@ -28,15 +28,15 @@ PhysicsTestContext::PhysicsTestContext(Core::ID windowID) : TestContext(windowID
 	Engine::ECS::RenderSystem2DConfig renderConfig;
 	renderConfig.surface = m_Surface;
 	renderConfig.renderAPI = window->GetAPI();
-	m_RenderContext = new Engine::ECS::RenderSystem2D(renderConfig, m_ECS);
+	m_RenderContext = Engine::ECS::RenderSystem2D::Create(renderConfig, m_ECS);
 
 	// Create camera
 	Renderer::ViewBox viewBox = Renderer::ViewBox::SurfaceViewBox(m_Surface);
-	m_Camera = new Renderer::OrthographicCamera(viewBox, 8);
+	m_Camera = Renderer::OrthographicCamera::Create(viewBox, 8);
 
 	// Create input context
 	Engine::InputConfig inputConfig;
-	inputConfig.surface = &m_Surface;
+	inputConfig.surface = ref<Engine::Surface>(&m_Surface);
 	inputConfig.window = window;
 	m_InputContext = Engine::Input::Create(inputConfig);
 

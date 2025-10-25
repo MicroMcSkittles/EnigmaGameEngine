@@ -1,7 +1,7 @@
 #pragma once
+#include "Enigma/Core/Types.h"
 #include "Enigma/Renderer/RenderEnum.h"
 
-#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -23,7 +23,7 @@ namespace Enigma {
 		};
 
 		struct ShaderConfig{
-			uint32_t flags = VertexShader | PixelShader;
+			u32 flags = VertexShader | PixelShader;
 			std::string vertexPath;
 			std::string pixelPath;
 			std::string geomatryPath;
@@ -31,7 +31,7 @@ namespace Enigma {
 
 		class Shader {
 		public:
-			static Shader* Create(const ShaderConfig& config);
+			static ref<Shader> Create(const ShaderConfig& config);
 
 			virtual const std::vector<Uniform>& GetActiveUniforms() = 0;
 			virtual Uniform& GetUniform(const std::string& name) = 0;

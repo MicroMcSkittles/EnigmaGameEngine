@@ -8,8 +8,8 @@
 
 namespace Enigma {
 
-	Core::ImGuiHandler* Core::ImGuiHandler::Create(const Core::ImGuiConfig& config) {
-		return new Platform::WindowsImGuiContext(config);
+	ref<Core::ImGuiHandler> Core::ImGuiHandler::Create(const Core::ImGuiConfig& config) {
+		return CreateRef<Platform::WindowsImGuiContext>(config);
 	}
 
 	namespace Platform {
@@ -31,7 +31,7 @@ namespace Enigma {
 		{
 			IMGUI_CHECKVERSION();
 
-			m_Context = ImGui::CreateContext();
+			m_Context = ref<ImGuiContext>(ImGui::CreateContext());
 
 			ImGuiIO& io = ImGui::GetIO(); (void)io;
 			if (m_EnableDocking) io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -72,7 +72,7 @@ namespace Enigma {
 
 		void WindowsImGuiContext::MadeCurrent()
 		{
-			ImGui::SetCurrentContext(m_Context);
+			ImGui::SetCurrentContext(m_Context.get());
 		}
 
 		void WindowsImGuiContext::StartFrameImpl()

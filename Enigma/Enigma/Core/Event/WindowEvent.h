@@ -6,8 +6,8 @@ namespace Enigma {
 	namespace Core {
 
 		namespace EventType {
-			const uint64_t WindowClose  = Hash("WindowClose");
-			const uint64_t WindowResize = Hash("WindowResize");
+			const u64 WindowClose  = Hash("WindowClose");
+			const u64 WindowResize = Hash("WindowResize");
 		}
 
 		class WindowClose : public Event {
@@ -26,7 +26,7 @@ namespace Enigma {
 			EVENT_TYPE(WindowResize);
 			EVENT_CATEGORY(EventCategory::WindowEvent);
 
-			WindowResize(int width, int height)
+			WindowResize(i32 width, i32 height)
 				:m_Width(width), m_Height(height) { }
 
 			virtual std::string ToString() override {
@@ -35,12 +35,12 @@ namespace Enigma {
 				return ss.str();
 			}
 
-			int GetWidth() { return m_Width; }
-			int GetHeight() { return m_Height; }
+			i32 GetWidth() { return m_Width; }
+			i32 GetHeight() { return m_Height; }
 
 		private:
-			int m_Width;
-			int m_Height;
+			i32 m_Width;
+			i32 m_Height;
 		};
 
 	}

@@ -8,10 +8,10 @@ namespace Enigma {
 	namespace Core {
 
 		namespace EventType {
-			const uint64_t MouseMoved  = Hash("MouseMoved");
-			const uint64_t MouseButton = Hash("MouseButton");
-			const uint64_t MouseScroll = Hash("MouseScroll");
-			const uint64_t Keyboard    = Hash("Keyboard");
+			const u64 MouseMoved  = Hash("MouseMoved");
+			const u64 MouseButton = Hash("MouseButton");
+			const u64 MouseScroll = Hash("MouseScroll");
+			const u64 Keyboard    = Hash("Keyboard");
 		}
 
 		class MouseMoved : public Event {
@@ -19,7 +19,7 @@ namespace Enigma {
 			EVENT_TYPE(MouseMoved);
 			EVENT_CATEGORY(EventCategory::InputEvent | EventCategory::MouseEvent);
 
-			MouseMoved(float x, float y)
+			MouseMoved(f32 x, f32 y)
 				: m_X(x), m_Y(y) { }
 
 			virtual std::string ToString() override {
@@ -32,8 +32,8 @@ namespace Enigma {
 			float GetY() { return m_Y; }
 
 		private:
-			float m_X;
-			float m_Y;
+			f32 m_X;
+			f32 m_Y;
 		};
 
 		class MouseScroll : public Event {
@@ -41,7 +41,7 @@ namespace Enigma {
 			EVENT_TYPE(MouseScroll);
 			EVENT_CATEGORY(EventCategory::InputEvent | EventCategory::MouseEvent);
 
-			MouseScroll(float x, float y)
+			MouseScroll(f32 x, f32 y)
 				: m_X(x), m_Y(y) { }
 
 			virtual std::string ToString() override {
@@ -50,12 +50,12 @@ namespace Enigma {
 				return ss.str();
 			}
 
-			float GetX() { return m_X; }
-			float GetY() { return m_Y; }
+			f32 GetX() { return m_X; }
+			f32 GetY() { return m_Y; }
 
 		private:
-			float m_X;
-			float m_Y;
+			f32 m_X;
+			f32 m_Y;
 		};
 
 		class MouseButton : public Event {
@@ -63,7 +63,7 @@ namespace Enigma {
 			EVENT_TYPE(MouseScroll);
 			EVENT_CATEGORY(EventCategory::InputEvent |EventCategory::MouseEvent);
 
-			MouseButton(int button, int action, int mods)
+			MouseButton(i32 button, i32 action, i32 mods)
 				: m_Button(button), m_Action(action), m_Mods(mods) { }
 
 			virtual std::string ToString() override {
@@ -74,14 +74,14 @@ namespace Enigma {
 				return ss.str();
 			}
 
-			int GetButton() { return m_Button; }
-			int GetAction() { return m_Action; }
-			int GetMods() { return m_Mods; }
+			i32 GetButton() { return m_Button; }
+			i32 GetAction() { return m_Action; }
+			i32 GetMods() { return m_Mods; }
 
 		private:
-			int m_Button;
-			int m_Action;
-			int m_Mods;
+			i32 m_Button;
+			i32 m_Action;
+			i32 m_Mods;
 		};
 
 		class Keyboard : public Event {
@@ -89,7 +89,7 @@ namespace Enigma {
 			EVENT_TYPE(Keyboard);
 			EVENT_CATEGORY(EventCategory::InputEvent | EventCategory::KeyboardEvent);
 
-			Keyboard(int key, int scancode, int action, int mods)
+			Keyboard(i32 key, i32 scancode, i32 action, i32 mods)
 				: m_Key(key), m_Scancode(scancode), m_Action(action), m_Mods(mods) { }
 
 			virtual std::string ToString() override {
@@ -101,11 +101,11 @@ namespace Enigma {
 				return ss.str();
 			}
 
-			int GetKey() { return m_Key; }
-			int GetAction() { return m_Action; }
-			int GetMods() { return m_Mods; }
+			i32 GetKey() { return m_Key; }
+			i32 GetAction() { return m_Action; }
+			i32 GetMods() { return m_Mods; }
 
-			bool IsShortcut(int key, int mods) {
+			bool IsShortcut(i32 key, i32 mods) {
 				if (m_Action != Engine::KeyCode::KeyPress) return false;
 				if (m_Mods != mods) return false;
 				if (m_Key != key) return false;
@@ -113,10 +113,10 @@ namespace Enigma {
 			}
 
 		private:
-			int m_Key;
-			int m_Scancode;
-			int m_Action;
-			int m_Mods;
+			i32 m_Key;
+			i32 m_Scancode;
+			i32 m_Action;
+			i32 m_Mods;
 		};
 	}
 }

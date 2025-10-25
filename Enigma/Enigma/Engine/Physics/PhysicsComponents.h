@@ -1,4 +1,5 @@
 #pragma once
+#include "Enigma/Core/Types.h"
 #include "Enigma/Engine/ECS/Components.h"
 #include <vector>
 #include <math.h>
@@ -10,7 +11,7 @@ namespace Enigma::Engine::Physics {
 		glm::vec2 linearVelocity;
 		
 		glm::mat3 rotationMatrix; // TODO: fix the quaturnion stuff to remove this
-		float angularVelocity;
+		f32 angularVelocity;
 	};
 
 }

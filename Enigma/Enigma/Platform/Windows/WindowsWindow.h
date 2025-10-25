@@ -8,8 +8,8 @@ namespace Enigma {
 
 		struct WindowsInputData {
 			glm::vec2 mousePosition;
-			int* mouseButtonStates;
-			int* keyboardStates;
+			i32* mouseButtonStates;
+			i32* keyboardStates;
 		};
 
 		class WindowsWindow : public Core::Window {
@@ -20,8 +20,8 @@ namespace Enigma {
 			virtual void AddEventCallback(std::function<void(Core::Event&)> callback) override;
 			virtual void MakeCurrent() override;
 
-			virtual int GetWidth() override;
-			virtual int GetHeight() override;
+			virtual i32 GetWidth() override;
+			virtual i32 GetHeight() override;
 
 			virtual Renderer::API GetAPI() override;
 
@@ -40,11 +40,11 @@ namespace Enigma {
 
 		public:
 			void CloseEvent();
-			void ResizeEvent(int width, int height);
-			void MouseMovedEvent(int x, int y);
-			void MouseScrollEvent(int x, int y);
-			void MouseClickEvent(int button, int mods, int action);
-			void KeyboardEvent(int keycode, int scancode, int mods, int action);
+			void ResizeEvent(i32 width, i32 height);
+			void MouseMovedEvent(i32 x, i32 y);
+			void MouseScrollEvent(i32 x, i32 y);
+			void MouseClickEvent(i32 button, i32 mods, i32 action);
+			void KeyboardEvent(i32 keycode, i32 scancode, i32 mods, i32 action);
 
 		private:
 			Core::WindowConfig m_Config;
@@ -55,8 +55,8 @@ namespace Enigma {
 			void* m_DeviceContext;
 
 			bool m_ShouldClose;
-			int m_Width;
-			int m_Height;
+			i32 m_Width;
+			i32 m_Height;
 			std::vector<std::function<void(Core::Event&)>> m_Callbacks;
 		};
 

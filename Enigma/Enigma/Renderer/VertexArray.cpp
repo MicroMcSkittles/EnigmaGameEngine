@@ -5,11 +5,11 @@
 
 namespace Enigma {
 	namespace Renderer {
-		VertexArray* VertexArray::Create()
+		ref<VertexArray> VertexArray::Create()
 		{
 			switch (RenderAPI::GetAPI())
 			{
-			case API::OpenGL: return new Platform::OpenGL::OpenGLVertexArray(); break;
+			case API::OpenGL: return CreateRef<Platform::OpenGL::OpenGLVertexArray>(); break;
 			default:
 				LOG_ERROR("Can't create vertex array, API not supported");
 			}

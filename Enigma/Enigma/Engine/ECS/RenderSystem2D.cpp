@@ -2,11 +2,12 @@
 #include "Enigma/Renderer/DefaultShaders.h"
 #include "Enigma/Core/Process/Application.h"
 
-// TODO: delete this
-#include <glad/glad.h>
-
 namespace Enigma::Engine::ECS {
-	RenderSystem2D::RenderSystem2D(const RenderSystem2DConfig& config, ECS* ecs) : m_ECS(ecs), m_Config(config)
+	ref<RenderSystem2D> RenderSystem2D::Create(const RenderSystem2DConfig& config, ref<ECS> ecs)
+	{
+		return CreateRef<RenderSystem2D>(config, ecs);
+	}
+	RenderSystem2D::RenderSystem2D(const RenderSystem2DConfig& config, ref<ECS> ecs) : m_ECS(ecs), m_Config(config)
 	{
 		Core::Application::UseRenderAPI(m_Config.renderAPI);
 
@@ -36,7 +37,7 @@ namespace Enigma::Engine::ECS {
 		Renderer::TextureConfig blankTextureConfig;
 		blankTextureConfig.width = 1;
 		blankTextureConfig.height = 1;
-		blankTextureConfig.data = (uint8_t*)malloc(3);
+		blankTextureConfig.data = static_cast<uint8_t*>(malloc(3));
 		if (blankTextureConfig.data) memset(blankTextureConfig.data, 255, 3);
 		m_BlankTexture = Renderer::Texture::Create(blankTextureConfig);
 		free(blankTextureConfig.data);
@@ -45,12 +46,12 @@ namespace Enigma::Engine::ECS {
 		s_Quad = Renderer::VertexArray::Create();
 		s_Quad->Bind();
 
-		Renderer::VertexBuffer* vertexBuffer = Renderer::VertexBuffer::Create(s_VertexLayout, Renderer::Usage::StaticDraw);
+		ref<Renderer::VertexBuffer> vertexBuffer = Renderer::VertexBuffer::Create(s_VertexLayout, Renderer::Usage::StaticDraw);
 		vertexBuffer->SetData(&s_QuadVertices[0], s_QuadVertices.size() * sizeof(s_QuadVertices[0]));
 		vertexBuffer->InitAttribs();
 		s_Quad->AttachBuffer(vertexBuffer);
 
-		Renderer::IndexBuffer* indexBuffer = Renderer::IndexBuffer::Create(Renderer::DataType::UnsignedInt, Renderer::Usage::StaticDraw);
+		ref<Renderer::IndexBuffer> indexBuffer = Renderer::IndexBuffer::Create(Renderer::DataType::UnsignedInt, Renderer::Usage::StaticDraw);
 		indexBuffer->SetData(&s_QuadIndices[0], s_QuadIndices.size() * sizeof(s_QuadIndices[0]));
 		s_Quad->AttachBuffer(indexBuffer);
 
@@ -65,17 +66,10 @@ namespace Enigma::Engine::ECS {
 	}
 	RenderSystem2D::~RenderSystem2D()
 	{
-		// Delete the shaders if they are managed by the renderer
-		if (m_Config.mainShader == nullptr) delete m_MainShader;
-		if (m_Config.postProcShader == nullptr) delete m_PostProcShader;
 
-		delete m_FrameBuffer;
-		delete m_OutputBuffer;
-
-		delete m_BlankTexture;
 	}
 
-	void RenderSystem2D::Resize(int width, int height)
+	void RenderSystem2D::Resize(i32 width, i32 height)
 	{
 		Renderer::RenderAPI::SetViewport(width, height);
 		m_FrameBuffer->Resize(width, height);
@@ -83,7 +77,7 @@ namespace Enigma::Engine::ECS {
 		if (m_CurrentCamera != nullptr) m_CurrentCamera->Resize(width, height);
 	}
 
-	void RenderSystem2D::StartFrame(Renderer::OrthographicCamera* camera)
+	void RenderSystem2D::StartFrame(ref<Renderer::OrthographicCamera> camera)
 	{
 		Core::Application::UseRenderAPI(m_Config.renderAPI);
 		Renderer::RenderAPI::Clear();
@@ -106,7 +100,7 @@ namespace Enigma::Engine::ECS {
 		View<Transform, ColoredQuad> coloredQuadView(m_ECS);
 		if (!coloredQuadView.Empty()) {
 			m_BlankTexture->Bind();
-			m_MainShader->SetUniform("TextureMap", (void*)m_BlankTexture);
+			m_MainShader->SetUniform("TextureMap", (void*)&m_BlankTexture);
 			coloredQuadView.ForEach([&](Transform& transform, ColoredQuad& quad) { ColoredQuadSystem(transform, quad); });
 			m_BlankTexture->Unbind();
 		}
@@ -126,7 +120,7 @@ namespace Enigma::Engine::ECS {
 		View<Transform, ColoredCircle> coloredCircleView(m_ECS);
 		if (!coloredCircleView.Empty()) {
 			m_BlankTexture->Bind();
-			m_CircleShader->SetUniform("TextureMap", (void*)m_BlankTexture);
+			m_CircleShader->SetUniform("TextureMap", (void*)&m_BlankTexture);
 			coloredCircleView.ForEach([&](Transform& transform, ColoredCircle& circle) { ColoredCircleSystem(transform, circle); });
 			m_BlankTexture->Unbind();
 		}
@@ -148,10 +142,10 @@ namespace Enigma::Engine::ECS {
 
 		// Run the frame through the post process shader
 		m_PostProcShader->Bind();
-		Renderer::Texture* frame = m_FrameBuffer->GetColorAttachment(0);
+		ref<Renderer::Texture> frame = m_FrameBuffer->GetColorAttachment(0);
 
 		frame->Bind();
-		m_PostProcShader->SetUniform("FrameTexture", (void*)frame);
+		m_PostProcShader->SetUniform("FrameTexture", (void*)&frame);
 
 		Renderer::RenderAPI::DrawIndexed(6, Renderer::DataType::UnsignedInt, NULL);
 
@@ -193,7 +187,7 @@ namespace Enigma::Engine::ECS {
 
 		// Draw quad
 		quad.texture->Bind();
-		m_MainShader->SetUniform("TextureMap", (void*)quad.texture);
+		m_MainShader->SetUniform("TextureMap", (void*)&quad.texture);
 		m_MainShader->SetUniform("Model", (void*)&model);
 		m_MainShader->SetUniform("Tint", (void*)&tint);
 		Renderer::RenderAPI::DrawIndexed(6, Renderer::DataType::UnsignedInt, NULL);
@@ -228,7 +222,7 @@ namespace Enigma::Engine::ECS {
 
 		// Draw quad
 		circle.texture->Bind();
-		m_CircleShader->SetUniform("TextureMap", (void*)circle.texture);
+		m_CircleShader->SetUniform("TextureMap", (void*)&circle.texture);
 		m_CircleShader->SetUniform("Model", (void*)&model);
 		m_CircleShader->SetUniform("Tint", (void*)&tint);
 		Renderer::RenderAPI::DrawIndexed(6, Renderer::DataType::UnsignedInt, NULL);

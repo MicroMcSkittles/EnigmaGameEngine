@@ -18,7 +18,7 @@ namespace Enigma {
 		};
 		struct TextPoint {
 			glm::vec2 position;
-			uint8_t type;
+			u8 type;
 		};
 
 		struct TextBoundingBox {
@@ -28,29 +28,29 @@ namespace Enigma {
 			glm::vec2 max;
 		};
 		struct GlyphContour {
-			int start;
-			int end;
+			i32 start;
+			i32 end;
 		};
 		struct Glyph {
 			std::vector<TextPoint> points;
 			std::vector<GlyphContour> contours;
 
 			TextBoundingBox boundingBox;
-			int horizontalAdvance;
+			i32 horizontalAdvance;
 		};
 
 		class Text {
 		public:
-			Text(VertexArray* glyphBoundsVAO, Texture* glyphData, const TextBoundingBox& boundingBox);
-			~Text();
+			Text(ref<VertexArray> glyphBoundsVAO, ref<Texture> glyphData, const TextBoundingBox& boundingBox);
+			~Text() { }
 
-			VertexArray*     GetGlyphBoundsVAO() { return m_GlyphBoundsVAO; }
-			Texture*         GetGlyphData()      { return m_GlyphData;      }
+			ref<VertexArray> GetGlyphBoundsVAO() { return m_GlyphBoundsVAO; }
+			ref<Texture>     GetGlyphData()      { return m_GlyphData;      }
 			TextBoundingBox& GetBoundingBox()    { return m_BoundingBox;    }
 
 		private:
-			VertexArray*    m_GlyphBoundsVAO;
-			Texture*        m_GlyphData;
+			ref<VertexArray>    m_GlyphBoundsVAO;
+			ref<Texture>        m_GlyphData;
 			TextBoundingBox m_BoundingBox;
 		};
 

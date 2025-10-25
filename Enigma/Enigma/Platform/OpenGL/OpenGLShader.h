@@ -25,16 +25,16 @@ namespace Enigma {
 				void FindUniforms();
 
 			private:
-				uint32_t m_Handle;
-				uint32_t m_VertexHandle;
-				uint32_t m_PixelHandle;
-				uint32_t m_GeometryHandle;
+				u32 m_Handle;
+				u32 m_VertexHandle;
+				u32 m_PixelHandle;
+				u32 m_GeometryHandle;
 
 				Renderer::ShaderConfig m_Config;
 
 				std::vector<Renderer::Uniform> m_Uniforms;
-				std::vector<uint32_t> m_UniformLocations;
-				std::map<std::string, uint32_t> m_UniformLookup;
+				std::vector<u32> m_UniformLocations;
+				std::map<std::string, u32> m_UniformLookup;
 			};
 
 		}

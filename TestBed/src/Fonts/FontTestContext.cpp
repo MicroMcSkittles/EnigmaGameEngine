@@ -15,7 +15,7 @@ FontTestContext::FontTestContext(Core::ID windowID) : TestContext(windowID)
 	INIT_PROFILER(25);
 
 	// Setup surface
-	Core::Window* window = Core::Application::GetWindow(m_WindowID);
+	ref<Core::Window> window = Core::Application::GetWindow(m_WindowID);
 	m_Surface.scale.x = window->GetWidth();
 	m_Surface.scale.y = window->GetHeight();
 
@@ -27,11 +27,11 @@ FontTestContext::FontTestContext(Core::ID windowID) : TestContext(windowID)
 
 	// Create camera
 	Renderer::ViewBox viewBox = Renderer::ViewBox::SurfaceViewBox(m_Surface);
-	m_Camera = new Renderer::OrthographicCamera(viewBox, 3, {1.5,1.5,0});
+	m_Camera = Renderer::OrthographicCamera::Create(viewBox, 3, {1.5,1.5,0});
 
 	// Create input context
 	Engine::InputConfig inputConfig;
-	inputConfig.surface = &m_Surface;
+	inputConfig.surface = ref<Engine::Surface>(&m_Surface);
 	inputConfig.window = window;
 	m_InputContext = Engine::Input::Create(inputConfig);
 

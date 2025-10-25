@@ -1,8 +1,11 @@
 #include "Enigma/Engine/Physics/PhysicsEngine2D.h"
 
 namespace Enigma::Engine::Physics {
-
-	PhysicsEngine2D::PhysicsEngine2D(ECS::ECS* ecs, const PhysicsEngine2DConfig& config) : m_ECS(ecs), m_Config(config)
+	ref<PhysicsEngine2D> PhysicsEngine2D::Create(ref<ECS::ECS> ecs, const PhysicsEngine2DConfig& config)
+	{
+		return CreateRef<PhysicsEngine2D>(ecs, config);
+	}
+	PhysicsEngine2D::PhysicsEngine2D(ref<ECS::ECS> ecs, const PhysicsEngine2DConfig& config) : m_ECS(ecs), m_Config(config)
 	{
 		m_AccumulatedTime = 0.0f;
 	}

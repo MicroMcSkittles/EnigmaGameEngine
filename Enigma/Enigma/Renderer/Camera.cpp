@@ -39,9 +39,9 @@ namespace Enigma {
 			m_InvProjection = glm::inverse(m_Projection);
 			CalculateView();
 		}
-		void PerspectiveCamera::Resize(uint32_t width, uint32_t height)
+		void PerspectiveCamera::Resize(u32 width, u32 height)
 		{
-			m_Frustum.aspectRatio = (float)width / (float)height;
+			m_Frustum.aspectRatio = static_cast<f32>(width) / static_cast<f32>(height);
 			CalculateProjection();
 		}
 		void PerspectiveCamera::CalculateView()
@@ -57,7 +57,7 @@ namespace Enigma {
 			m_ViewProjection = m_Projection * m_View;
 		}
 
-		ViewBox ViewBox::Zoom(float zoom) const
+		ViewBox ViewBox::Zoom(f32 zoom) const
 		{
 			ViewBox view;
 			view.top = top * zoom;
@@ -74,7 +74,7 @@ namespace Enigma {
 		{
 			ViewBox view;
 
-			float aspectRatio = (float)surface.scale.x / (float)surface.scale.y;
+			f32 aspectRatio = static_cast<f32>(surface.scale.x) / static_cast<f32>(surface.scale.y);
 
 			view.left = -aspectRatio;
 			view.right = aspectRatio;
@@ -87,7 +87,12 @@ namespace Enigma {
 			return view;
 		}
 
-		OrthographicCamera::OrthographicCamera(const ViewBox& viewBox, float zoom, const glm::vec3& position, const glm::vec3& direction)
+		ref<OrthographicCamera> OrthographicCamera::Create(const ViewBox& viewBox, f32 zoom, const glm::vec3& position, const glm::vec3& direction)
+		{
+			return CreateRef<OrthographicCamera>(viewBox, zoom, position, direction);
+		}
+
+		OrthographicCamera::OrthographicCamera(const ViewBox& viewBox, f32 zoom, const glm::vec3& position, const glm::vec3& direction)
 			:Camera(position, direction)
 		{
 			m_Zoom = zoom;
@@ -98,9 +103,9 @@ namespace Enigma {
 			CalculateView();
 		}
 
-		void OrthographicCamera::Resize(uint32_t width, uint32_t height)
+		void OrthographicCamera::Resize(u32 width, u32 height)
 		{
-			float aspectRatio = (float)width / (float)height;
+			f32 aspectRatio = static_cast<f32>(width) / static_cast<f32>(height);
 			m_ViewBox.left = -aspectRatio;
 			m_ViewBox.right = aspectRatio;
 			m_ZoomViewBox = m_ViewBox.Zoom(m_Zoom);
@@ -124,7 +129,7 @@ namespace Enigma {
 			m_ZoomViewBox = m_ViewBox.Zoom(m_Zoom);
 			CalculateProjection();
 		}
-		void OrthographicCamera::SetZoom(float zoom)
+		void OrthographicCamera::SetZoom(f32 zoom)
 		{
 			m_Zoom = zoom;
 			m_ZoomViewBox = m_ViewBox.Zoom(m_Zoom);

@@ -12,15 +12,15 @@ namespace Enigma {
 
 				virtual void InitAttribs() override;
 
-				virtual void SetData(void* vertices, int size) override;
-				virtual void SetSubData(void* vertices, int size, int offset) override;
+				virtual void SetData(void* vertices, i32 size) override;
+				virtual void SetSubData(void* vertices, i32 size, i32 offset) override;
 
 				virtual void Bind() override;
 				virtual void Unbind() override;
 
 			private:
-				uint32_t m_Handle;
-				int m_Usage;
+				u32 m_Handle;
+				i32 m_Usage;
 				std::vector<Renderer::DataType> m_Layout;
 			};
 
@@ -29,20 +29,20 @@ namespace Enigma {
 				OpenGLIndexBuffer(Renderer::DataType type, Renderer::Usage usage);
 				~OpenGLIndexBuffer();
 
-				virtual int GetIndexCount() override;
+				virtual i32 GetIndexCount() override;
 				virtual Renderer::DataType GetIndexType() override;
 
-				virtual void SetData(void* indices, int size) override;
-				virtual void SetSubData(void* indices, int size, int offset) override;
+				virtual void SetData(void* indices, i32 size) override;
+				virtual void SetSubData(void* indices, i32 size, i32 offset) override;
 
 				virtual void Bind() override;
 				virtual void Unbind() override;
 
 			private:
-				uint32_t m_Handle;
+				u32 m_Handle;
 				Renderer::DataType m_Type;
-				int m_IndicesCount;
-				int m_Usage;
+				i32 m_IndicesCount;
+				i32 m_Usage;
 			};
 			
 			class OpenGLFrameBuffer : public Renderer::FrameBuffer {
@@ -50,29 +50,29 @@ namespace Enigma {
 				OpenGLFrameBuffer(const Renderer::FrameBufferConfig& config);
 				~OpenGLFrameBuffer();
 
-				virtual void Resize(int width, int height) override;
+				virtual void Resize(i32 width, i32 height) override;
 
 				virtual void Bind() override;
 				virtual void Unbind() override;
 
-				virtual std::vector<Renderer::Texture*> GetAttachments() override { return m_Attachments; }
-				virtual Renderer::Texture* GetColorAttachment(int index) override;
-				virtual Renderer::Texture* SeverColorAttachment(int index) override;
-				virtual Renderer::Texture* GetDepthAttachment() override;
+				virtual std::vector<ref<Renderer::Texture>> GetAttachments() override { return m_Attachments; }
+				virtual ref<Renderer::Texture> GetColorAttachment(i32 index) override;
+				virtual ref<Renderer::Texture> SeverColorAttachment(i32 index) override;
+				virtual ref<Renderer::Texture> GetDepthAttachment() override;
 
 			private:
 				Renderer::FrameBufferConfig m_Config;
 
-				uint32_t m_Handle;
-				uint32_t m_RBO;
-
-				uint32_t m_Width;
-				uint32_t m_Height;
-
-				uint32_t m_ColorAttachmentCount;
-				uint32_t m_DepthAttachmentID;
-				uint32_t* m_Buffers;
-				std::vector<Renderer::Texture*> m_Attachments;
+				u32 m_Handle;
+				u32 m_RBO;
+				
+				u32 m_Width;
+				u32 m_Height;
+				
+				u32 m_ColorAttachmentCount;
+				u32 m_DepthAttachmentID;
+				u32* m_Buffers;
+				std::vector<ref<Renderer::Texture>> m_Attachments;
 			};
 		}
 	}

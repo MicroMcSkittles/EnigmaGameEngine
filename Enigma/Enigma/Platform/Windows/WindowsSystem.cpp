@@ -76,7 +76,7 @@ namespace Enigma {
 
         std::string System::OpenFileDialog(const char* filter, Core::ID windowID)
         {
-            Window* window = Application::GetWindow(windowID);
+            ref<Window> window = Application::GetWindow(windowID);
 
             OPENFILENAMEA ofn;
             CHAR szFile[260] = { 0 };
@@ -97,13 +97,13 @@ namespace Enigma {
 
         std::string System::SaveFileDialog(const char* filter, Core::ID windowID)
         {
-            Platform::WindowsWindow* window = (Platform::WindowsWindow*)Application::GetWindow(windowID);
+            ref<Platform::WindowsWindow> window = CastRef<Platform::WindowsWindow>(Application::GetWindow(windowID));
 
             OPENFILENAMEA ofn;
             CHAR szFile[260] = { 0 };
             ZeroMemory(&ofn, sizeof(OPENFILENAME));
             ofn.lStructSize = sizeof(OPENFILENAME);
-            //ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)window->GetHandle());
+            ofn.hwndOwner = (HWND)window->GetNativeWindow();
             ofn.lpstrFile = szFile;
             ofn.nMaxFile = sizeof(szFile);
             ofn.lpstrFilter = filter;
@@ -116,22 +116,8 @@ namespace Enigma {
             return std::string();
         }
 
-        std::string System::GetKeyName(int key)
+        std::string System::GetKeyName(i32 key)
         {
-            //std::string name = "Unknown Key";
-            //switch (key)
-            //{
-            //case GLFW_KEY_LEFT_CONTROL: name = "Left Control"; break;
-            //case GLFW_KEY_RIGHT_CONTROL: name = "Right Control"; break;
-            //case GLFW_KEY_LEFT_SHIFT: name = "Left Shift"; break;
-            //case GLFW_KEY_RIGHT_SHIFT: name = "Right Shift"; break;
-            //case GLFW_KEY_LEFT_ALT: name = "Left Alt"; break;
-            //case GLFW_KEY_RIGHT_ALT: name = "Right Alt"; break;
-            //default:
-                //int scancode = glfwGetKeyScancode(key);
-                //if (scancode == -1) return name;
-                //name = glfwGetKeyName(key, scancode);
-            //}
             switch (key)
             {
             case Engine::KeyCode::KeyLeftShift:    return "Left Shift";

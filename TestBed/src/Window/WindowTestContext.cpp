@@ -18,7 +18,7 @@ WindowTestContext::WindowTestContext(Core::ID windowID) : TestContext(windowID)
 
 	Engine::InputConfig inputConfig;
 	inputConfig.window = Core::Application::GetWindow(m_WindowID);
-	inputConfig.surface = &m_Surface;
+	inputConfig.surface = ref<Engine::Surface>(&m_Surface);
 	m_InputContext = Engine::Input::Create(inputConfig);
 }
 

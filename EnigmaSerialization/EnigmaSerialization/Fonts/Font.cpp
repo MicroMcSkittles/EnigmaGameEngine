@@ -96,15 +96,15 @@ namespace Enigma {
 			};
 
 			// Create text vao, this contains the bounding boxes for all the glyphs
-			Renderer::VertexArray* glyphBoundsVAO = Renderer::VertexArray::Create();
+			ref<Renderer::VertexArray> glyphBoundsVAO = Renderer::VertexArray::Create();
 			glyphBoundsVAO->Bind();
 
-			Renderer::VertexBuffer* vbo = Renderer::VertexBuffer::Create(s_VertexLayout, Renderer::Usage::StaticDraw);
+			ref<Renderer::VertexBuffer> vbo = Renderer::VertexBuffer::Create(s_VertexLayout, Renderer::Usage::StaticDraw);
 			vbo->SetData(&vertices[0], sizeof(Vertex) * vertices.size());
 			vbo->InitAttribs();
 			glyphBoundsVAO->AttachBuffer(vbo);
 
-			Renderer::IndexBuffer* ebo = Renderer::IndexBuffer::Create(Renderer::DataType::UnsignedInt, Renderer::Usage::StaticDraw);
+			ref<Renderer::IndexBuffer> ebo = Renderer::IndexBuffer::Create(Renderer::DataType::UnsignedInt, Renderer::Usage::StaticDraw);
 			ebo->SetData(&indices[0], 4 * indices.size());
 			glyphBoundsVAO->AttachBuffer(ebo);
 
@@ -174,7 +174,7 @@ namespace Enigma {
 			textureConfig.data = glyphData.data();
 
 			// Create glyph data texture
-			Renderer::Texture* glyphDataTexture = Renderer::Texture::Create(textureConfig);
+			ref<Renderer::Texture> glyphDataTexture = Renderer::Texture::Create(textureConfig);
 
 			// Create text object
 			Renderer::Text* textObject = new Renderer::Text(glyphBoundsVAO, glyphDataTexture, boundingBox);

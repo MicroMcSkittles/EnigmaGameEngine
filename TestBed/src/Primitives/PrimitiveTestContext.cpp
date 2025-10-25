@@ -5,7 +5,7 @@
 
 PrimitiveTestContext::PrimitiveTestContext(Core::ID windowID) : TestContext(windowID)
 {
-	Core::Window* window = Core::Application::GetWindow(m_WindowID);
+	ref<Core::Window> window = Core::Application::GetWindow(m_WindowID);
 
 	m_Surface.scale = {
 		window->GetWidth(),
@@ -18,7 +18,7 @@ PrimitiveTestContext::PrimitiveTestContext(Core::ID windowID) : TestContext(wind
 	m_RenderContext = new Renderer::Render2D(renderConfig);
 
 	Renderer::ViewBox viewBox = Renderer::ViewBox::SurfaceViewBox(m_Surface);
-	m_Camera = new Renderer::OrthographicCamera(viewBox, 2);
+	m_Camera = Renderer::OrthographicCamera::Create(viewBox, 2);
 
 	m_Position = { -0.1,-0.6 };
 	m_Radius = 1;

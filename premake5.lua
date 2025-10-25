@@ -22,5 +22,4 @@ include "Enigma"
 include "EnigmaSerialization"
 
 --include "EnigmaEditor" -- Enigma Editor Project
---include "SpaceSim" -- The space simulation project
 include "TestBed" -- A project used for testing new features in the engine

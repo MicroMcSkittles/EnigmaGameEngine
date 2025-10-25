@@ -1,4 +1,5 @@
 #pragma once
+#include "Enigma/Core/Types.h"
 #include "Enigma/Core/Window.h"
 #include "Enigma/Renderer/RenderEnum.h"
 
@@ -6,7 +7,7 @@ namespace Enigma {
 	namespace Core {
 
 		struct ImGuiConfig {
-			Window* window; // set automaticaly
+			ref<Window> window; // set automaticaly
 			Renderer::API renderAPI; // set automaticaly
 			bool docking;
 		};
@@ -16,9 +17,9 @@ namespace Enigma {
 
       virtual ~ImGuiHandler() { }
 
-			static ImGuiHandler* Create(const ImGuiConfig& config);
+			static ref<ImGuiHandler> Create(const ImGuiConfig& config);
 
-			static void MakeCurrent(ImGuiHandler* context) {
+			static void MakeCurrent(ref<ImGuiHandler> context) {
 				s_CurrentContext = context; 
 				s_CurrentContext->MadeCurrent();
 			}
@@ -34,7 +35,7 @@ namespace Enigma {
 			virtual void EndFrameImpl() = 0;
 
 		private:
-			inline static ImGuiHandler* s_CurrentContext;
+			inline static ref<ImGuiHandler> s_CurrentContext;
 		};
 
 	}

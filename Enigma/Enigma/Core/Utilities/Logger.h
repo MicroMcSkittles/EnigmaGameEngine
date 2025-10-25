@@ -1,8 +1,9 @@
 #pragma once
-#include <stdint.h>
 #include <string>
 #include <functional>
 #include <iostream>
+
+#include "Enigma/Core/Types.h"
 
 namespace Enigma {
 	namespace Core {
@@ -32,15 +33,15 @@ namespace Enigma {
 
 		struct LogInfo {
 			LogType type;
-			uint8_t priority;
+			u8 priority;
 			std::string file;
 			std::string function;
 			long line;
 		};
 
 		struct LoggerConfig {
-			uint32_t flags;
-			uint32_t priorityLevel = 5; // Tells the logger what to keep and ignore, the higher the number the lower the priority
+			u32 flags;
+			u32 priorityLevel = 5; // Tells the logger what to keep and ignore, the higher the number the lower the priority
 
 			// For when I add the ability to save logs to a file
 			bool saveToFile = false; // Tells the logger to save logs to a file.
@@ -60,7 +61,7 @@ namespace Enigma {
 		class Logger {
 		public:
 			static void Init(const LoggerConfig& config);
-			static LoggerConfig* GetConfig() { return s_Config; }
+			static unique<LoggerConfig>& GetConfig() { return s_Config; }
 
 			// Proccesses all logs
 			static void Log(const std::string& message, LogInfo info, ...);
@@ -75,7 +76,7 @@ namespace Enigma {
 			static std::string Format(std::string str, ...);
 
 		private:
-			inline static LoggerConfig* s_Config;
+			inline static unique<LoggerConfig> s_Config;
 		};
 	}
 };

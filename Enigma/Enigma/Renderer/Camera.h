@@ -9,7 +9,7 @@ namespace Enigma {
 			Camera(const glm::vec3& position, const glm::vec3& direction)
 				: m_Position(position), m_Direction(direction) { }
 
-			virtual void Resize(uint32_t width, uint32_t height) = 0;
+			virtual void Resize(u32 width, u32 height) = 0;
 
 			virtual void CalculateView() = 0;
 			virtual void CalculateProjection() = 0;
@@ -41,10 +41,10 @@ namespace Enigma {
 		};
 
 		struct Frustum {
-			float fov;
-			float aspectRatio;
-			float near;
-			float far;
+			f32 fov;
+			f32 aspectRatio;
+			f32 near;
+			f32 far;
 
 			static Frustum SurfaceFrustum(Engine::Surface surface);
 		};
@@ -53,7 +53,7 @@ namespace Enigma {
 		public:
 			PerspectiveCamera(const Frustum& frustum, const glm::vec3& position, const glm::vec3& direction);
 
-			virtual void Resize(uint32_t width, uint32_t height) override;
+			virtual void Resize(u32 width, u32 height) override;
 
 			virtual void CalculateView() override;
 			virtual void CalculateProjection() override;
@@ -65,23 +65,24 @@ namespace Enigma {
 		};
 
 		struct ViewBox {
-			float top;
-			float bottom;
-			float left;
-			float right;
-			float near;
-			float far;
+			f32 top;
+			f32 bottom;
+			f32 left;
+			f32 right;
+			f32 near;
+			f32 far;
 
-			ViewBox Zoom(float zoom) const;
+			ViewBox Zoom(f32 zoom) const;
 
 			static ViewBox SurfaceViewBox(Engine::Surface surface);
 		};
 
 		class OrthographicCamera : public Camera {
 		public:
-			OrthographicCamera(const ViewBox& viewBox, float zoom = 1.0f, const glm::vec3& position = { 0,0,0 }, const glm::vec3& direction = { 0,0,-1 });
+			static ref<OrthographicCamera> Create(const ViewBox& viewBox, f32 zoom = 1.0f, const glm::vec3& position = { 0,0,0 }, const glm::vec3& direction = { 0,0,-1 });
+			OrthographicCamera(const ViewBox& viewBox, f32 zoom, const glm::vec3& position, const glm::vec3& direction);
 
-			virtual void Resize(uint32_t width, uint32_t height) override;
+			virtual void Resize(u32 width, u32 height) override;
 
 			virtual void CalculateView() override;
 			virtual void CalculateProjection() override;
@@ -90,13 +91,13 @@ namespace Enigma {
 			const ViewBox& GetZoomViewBox() { return m_ZoomViewBox; }
 			void SetViewBox(const ViewBox& view);
 
-			float GetZoom() { return m_Zoom; }
-			void SetZoom(float zoom);
+			f32 GetZoom() { return m_Zoom; }
+			void SetZoom(f32 zoom);
 
 		private:
 			ViewBox m_ViewBox;
 			ViewBox m_ZoomViewBox;
-			float m_Zoom;
+			f32 m_Zoom;
 		};
 	}
 }

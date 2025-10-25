@@ -8,32 +8,24 @@ namespace Enigma {
 			OpenGLVertexArray::OpenGLVertexArray()
 			{
 				glCreateVertexArrays(1, &m_Handle);
-				m_VertexBuffer = nullptr;
-				m_IndexBuffer = nullptr;
 			}
 			OpenGLVertexArray::~OpenGLVertexArray()
 			{
-				delete m_VertexBuffer;
-				m_VertexBuffer = nullptr;
-
-				delete m_IndexBuffer;
-				m_IndexBuffer = nullptr;
-				
 				glDeleteVertexArrays(1, &m_Handle);
 			}
-			Renderer::VertexBuffer* OpenGLVertexArray::GetVertexBuffer()
+			ref<Renderer::VertexBuffer> OpenGLVertexArray::GetVertexBuffer()
 			{
 				return m_VertexBuffer;
 			}
-			Renderer::IndexBuffer* OpenGLVertexArray::GetIndexBuffer()
+			ref<Renderer::IndexBuffer> OpenGLVertexArray::GetIndexBuffer()
 			{
 				return m_IndexBuffer;
 			}
-			void OpenGLVertexArray::AttachBuffer(Renderer::VertexBuffer* vertexBuffer)
+			void OpenGLVertexArray::AttachBuffer(ref<Renderer::VertexBuffer> vertexBuffer)
 			{
 				m_VertexBuffer = vertexBuffer;
 			}
-			void OpenGLVertexArray::AttachBuffer(Renderer::IndexBuffer* indexBuffer)
+			void OpenGLVertexArray::AttachBuffer(ref<Renderer::IndexBuffer> indexBuffer)
 			{
 				m_IndexBuffer = indexBuffer;
 			}

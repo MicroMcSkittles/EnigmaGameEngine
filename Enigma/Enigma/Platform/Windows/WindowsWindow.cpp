@@ -21,8 +21,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 namespace Enigma {
 
-	Core::Window* Core::Window::Create(const Core::WindowConfig& config) {
-		return new Platform::WindowsWindow(config);
+	ref<Core::Window> Core::Window::Create(const Core::WindowConfig& config) {
+		return CreateRef<Platform::WindowsWindow>(config);
 	}
 	void* Core::Window::GetGLProcAddress(const char* procName) {
 		void* proc = (void*)wglGetProcAddress(procName);
@@ -39,7 +39,7 @@ namespace Enigma {
 
 	namespace Platform {
 
-		int VKToEnigma(int vk) {
+		i32 VKToEnigma(i32 vk) {
 			using namespace Engine::KeyCode;
 			if (vk >= 'A' && vk <= 'Z') return vk;
 			if (vk >= '0' && vk <= '9') return vk;
@@ -58,7 +58,7 @@ namespace Enigma {
 				NULL
 			);
 
-			int messageSize = WideCharToMultiByte(CP_UTF8, 0, errorMessage, -1, NULL, 0, NULL, NULL);
+			i32 messageSize = WideCharToMultiByte(CP_UTF8, 0, errorMessage, -1, NULL, 0, NULL, NULL);
 			std::string message(messageSize, '\0');
 			WideCharToMultiByte(CP_UTF8, 0, errorMessage, -1, &message[0], messageSize, NULL, NULL);
 			return message;
@@ -81,30 +81,30 @@ namespace Enigma {
 				if (!window->ShouldClose())window->CloseEvent();
 			} break;
 			case WM_SIZE: {
-				int width  = LOWORD(lParam);
-				int height = HIWORD(lParam);
+				i32 width  = LOWORD(lParam);
+				i32 height = HIWORD(lParam);
 				window->ResizeEvent(width, height);
 			} return 0;
 			case WM_MOUSEMOVE: {
-				int x = GET_X_LPARAM(lParam);
-				int y = GET_Y_LPARAM(lParam);
+				i32 x = GET_X_LPARAM(lParam);
+				i32 y = GET_Y_LPARAM(lParam);
 				window->MouseMovedEvent(x, y);
 			} break;
 			case WM_MOUSEWHEEL: {
-				int delta = GET_WHEEL_DELTA_WPARAM(wParam) / 120;
+				i32 delta = GET_WHEEL_DELTA_WPARAM(wParam) / 120;
 				window->MouseScrollEvent(0, delta); // TODO: figure out how to do touch pads
 			} break;
 
 			// Left mouse button
 			case WM_LBUTTONDOWN: {
-				int mods = 0;
+				i32 mods = 0;
 				mods |= (wParam & MK_CONTROL) ? Engine::KeyCode::CtrlMask  : 0;
 				mods |= (wParam & MK_SHIFT)   ? Engine::KeyCode::ShiftMask : 0;
 				mods |= (wParam & MK_ALT)     ? Engine::KeyCode::CtrlMask  : 0;
 				window->MouseClickEvent(Engine::KeyCode::MouseButtonLeft, mods, Engine::KeyCode::KeyPress);
 			} break;
 			case WM_LBUTTONUP: {
-				int mods = 0;
+				i32 mods = 0;
 				mods |= (wParam & MK_CONTROL) ? Engine::KeyCode::CtrlMask : 0;
 				mods |= (wParam & MK_SHIFT) ? Engine::KeyCode::ShiftMask : 0;
 				mods |= (wParam & MK_ALT) ? Engine::KeyCode::CtrlMask : 0;
@@ -113,14 +113,14 @@ namespace Enigma {
 
 			// Middle mouse button
 			case WM_MBUTTONDOWN: {
-				int mods = 0;
+				i32 mods = 0;
 				mods |= (wParam & MK_CONTROL) ? Engine::KeyCode::CtrlMask : 0;
 				mods |= (wParam & MK_SHIFT) ? Engine::KeyCode::ShiftMask : 0;
 				mods |= (wParam & MK_ALT) ? Engine::KeyCode::CtrlMask : 0;
 				window->MouseClickEvent(Engine::KeyCode::MouseButtonMiddle, mods, Engine::KeyCode::KeyPress);
 			} break;
 			case WM_MBUTTONUP: {
-				int mods = 0;
+				i32 mods = 0;
 				mods |= (wParam & MK_CONTROL) ? Engine::KeyCode::CtrlMask : 0;
 				mods |= (wParam & MK_SHIFT) ? Engine::KeyCode::ShiftMask : 0;
 				mods |= (wParam & MK_ALT) ? Engine::KeyCode::CtrlMask : 0;
@@ -129,14 +129,14 @@ namespace Enigma {
 
 			// Right mouse button
 			case WM_RBUTTONDOWN: {
-				int mods = 0;
+				i32 mods = 0;
 				mods |= (wParam & MK_CONTROL) ? Engine::KeyCode::CtrlMask : 0;
 				mods |= (wParam & MK_SHIFT) ? Engine::KeyCode::ShiftMask : 0;
 				mods |= (wParam & MK_ALT) ? Engine::KeyCode::CtrlMask : 0;
 				window->MouseClickEvent(Engine::KeyCode::MouseButtonRight, mods, Engine::KeyCode::KeyPress);
 			} break;
 			case WM_RBUTTONUP: {
-				int mods = 0;
+				i32 mods = 0;
 				mods |= (wParam & MK_CONTROL) ? Engine::KeyCode::CtrlMask : 0;
 				mods |= (wParam & MK_SHIFT) ? Engine::KeyCode::ShiftMask : 0;
 				mods |= (wParam & MK_ALT) ? Engine::KeyCode::CtrlMask : 0;
@@ -144,13 +144,13 @@ namespace Enigma {
 			} break;
 			// Keyboard
 			case WM_KEYDOWN: {
-				uint32_t action = (lParam & (1 << 30) ? Engine::KeyCode::KeyPress : Engine::KeyCode::KeyRepeat);
-				uint32_t scancode = lParam & 0xFF0000;
+				u32 action = (lParam & (1 << 30) ? Engine::KeyCode::KeyPress : Engine::KeyCode::KeyRepeat);
+				u32 scancode = lParam & 0xFF0000;
 				window->KeyboardEvent(WindowsInput::ConvertWindowsKeyCode(wParam), scancode, 0, action);
 			} break;
 			case WM_KEYUP: {
-				uint32_t action = Engine::KeyCode::KeyRelease;
-				uint32_t scancode = lParam & 0xFF0000;
+				u32 action = Engine::KeyCode::KeyRelease;
+				u32 scancode = lParam & 0xFF0000;
 				window->KeyboardEvent(WindowsInput::ConvertWindowsKeyCode(wParam), scancode, 0, action);
 			} break;
 			}
@@ -168,7 +168,7 @@ namespace Enigma {
 			HINSTANCE hInstance = GetModuleHandle(NULL);
 
 			// Get window class title
-			size_t windowClassTitleSize = 0;
+			u64 windowClassTitleSize = 0;
 			mbstowcs_s(&windowClassTitleSize, nullptr, 0, (config.title + "_WINDOWS_WINDOW_CLASS").c_str(), _TRUNCATE);
 			std::vector<wchar_t> windowClassTitle(windowClassTitleSize);
 			mbstowcs_s(&windowClassTitleSize, windowClassTitle.data(), windowClassTitleSize, (config.title + "_WINDOWS_WINDOW_CLASS").c_str(), _TRUNCATE);
@@ -182,7 +182,7 @@ namespace Enigma {
 			RegisterClass(&windowClass);
 
 			// Get window title
-			size_t windowTitleSize = 0;
+			u64 windowTitleSize = 0;
 			mbstowcs_s(&windowTitleSize, nullptr, 0, config.title.c_str(), _TRUNCATE);
 			std::vector<wchar_t> windowTitle(windowTitleSize);
 			mbstowcs_s(&windowTitleSize, windowTitle.data(), windowTitleSize, config.title.c_str(), _TRUNCATE);
@@ -255,18 +255,18 @@ namespace Enigma {
 			m_ShouldClose = false;
 
 			// Allocate memory for all mouse button states
-			m_InputData.mouseButtonStates = (int*)malloc(sizeof(int) * Engine::KeyCode::MouseButtonLast);
+			m_InputData.mouseButtonStates = (i32*)malloc(sizeof(i32) * Engine::KeyCode::MouseButtonLast);
 			if (!m_InputData.mouseButtonStates) {
 				LOG_ERROR("Failed to allocate memory for the mouse button states buffer ( %s )", m_Config.title.c_str());
 			}
-			memset(m_InputData.mouseButtonStates, 0, sizeof(int) * Engine::KeyCode::MouseButtonLast);
+			memset(m_InputData.mouseButtonStates, 0, sizeof(i32) * Engine::KeyCode::MouseButtonLast);
 
 			// Allocate memory for all key states
-			m_InputData.keyboardStates = (int*)malloc(sizeof(int) * Engine::KeyCode::KeyLast);
+			m_InputData.keyboardStates = (i32*)malloc(sizeof(i32) * Engine::KeyCode::KeyLast);
 			if (!m_InputData.keyboardStates) {
 				LOG_ERROR("Failed to allocate memory for the key states buffer ( %s )", m_Config.title.c_str());
 			}
-			memset(m_InputData.keyboardStates, 0, sizeof(int) * Engine::KeyCode::KeyLast);
+			memset(m_InputData.keyboardStates, 0, sizeof(i32) * Engine::KeyCode::KeyLast);
 		}
 		WindowsWindow::~WindowsWindow()
 		{
@@ -360,7 +360,7 @@ namespace Enigma {
 			DestroyWindow((HWND)m_Handle);
 		}
 
-		void WindowsWindow::ResizeEvent(int width, int height)
+		void WindowsWindow::ResizeEvent(i32 width, i32 height)
 		{
 			m_Width = width;
 			m_Height = height;
@@ -370,24 +370,24 @@ namespace Enigma {
 			}
 		}
 
-		void WindowsWindow::MouseMovedEvent(int x, int y)
+		void WindowsWindow::MouseMovedEvent(i32 x, i32 y)
 		{
-			m_InputData.mousePosition = { (float)x, (float)y };
-			Core::MouseMoved e((float)x, (float)y);
+			m_InputData.mousePosition = { static_cast<f32>(x), static_cast<f32>(y) };
+			Core::MouseMoved e(static_cast<f32>(x), static_cast<f32>(y));
 			for (auto& callback : m_Callbacks) {
 				callback(e);
 			}
 		}
 
-		void WindowsWindow::MouseScrollEvent(int x, int y)
+		void WindowsWindow::MouseScrollEvent(i32 x, i32 y)
 		{
-			Core::MouseScroll e((float)x, (float)y);
+			Core::MouseScroll e(static_cast<f32>(x), static_cast<f32>(y));
 			for (auto& callback : m_Callbacks) {
 				callback(e);
 			}
 		}
 
-		void WindowsWindow::MouseClickEvent(int button, int mods, int action)
+		void WindowsWindow::MouseClickEvent(i32 button, i32 mods, i32 action)
 		{
 			if (button < 0 || button >= Engine::KeyCode::MouseButtonLast) {
 				LOG_SOFT_ERROR("Invalid mouse button code ( %d )", button);
@@ -400,7 +400,7 @@ namespace Enigma {
 			}
 		}
 
-		void WindowsWindow::KeyboardEvent(int keycode, int scancode, int mods, int action)
+		void WindowsWindow::KeyboardEvent(i32 keycode, i32 scancode, i32 mods, i32 action)
 		{
 			if (keycode < 0 || keycode >= Engine::KeyCode::KeyLast) {
 				LOG_SOFT_ERROR("Invalid key code ( %d )", keycode);

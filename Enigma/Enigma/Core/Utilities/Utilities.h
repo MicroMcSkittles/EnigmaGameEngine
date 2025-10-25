@@ -2,9 +2,11 @@
 #include <string>
 #include <stdint.h>
 
+#include "Enigma/Core/Types.h"
+
 namespace Enigma {
 	namespace Core {
-		const uint64_t Hash(const char* str);
-		const uint64_t Hash(const char* str1, const char* str2);
+		const u64 Hash(const char* str);
+		const u64 Hash(const char* str1, const char* str2);
 	}
 }

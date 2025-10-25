@@ -14,7 +14,7 @@ namespace Enigma {
 			}
 		}
 
-		Renderer::Texture* ImageLoader::Load(const std::string& filename, const ImageConfig& config)
+		ref<Renderer::Texture> ImageLoader::Load(const std::string& filename, const ImageConfig& config)
 		{
 			Renderer::TextureConfig textureConfig = config;
 
@@ -33,11 +33,11 @@ namespace Enigma {
 			textureConfig.format = Renderer::TexFormat::RGBA;
 			textureConfig.internalFormat = Renderer::TexFormat::RGBA;
 
-			Renderer::Texture* texture = Renderer::Texture::Create(textureConfig);
+			ref<Renderer::Texture> texture = Renderer::Texture::Create(textureConfig);
 			free(textureConfig.data);
 			return texture;
 		}
-		Renderer::Texture* ImageLoader::Load(uint8_t* imageData, int length, const ImageConfig& config)
+		ref<Renderer::Texture> ImageLoader::Load(uint8_t* imageData, int length, const ImageConfig& config)
 		{
 			Renderer::TextureConfig textureConfig = config;
 
@@ -63,18 +63,18 @@ namespace Enigma {
 			textureConfig.format = format;
 			textureConfig.internalFormat = format;
 
-			Renderer::Texture* texture = Renderer::Texture::Create(textureConfig);
+			ref<Renderer::Texture> texture = Renderer::Texture::Create(textureConfig);
 			free(textureConfig.data);
 			return texture;
 		}
 
-		void ImageLoader::Load(Renderer::Texture*& output, const std::string& filename, const ImageConfig& config)
+		void ImageLoader::Load(ref<Renderer::Texture>& output, const std::string& filename, const ImageConfig& config)
 		{
 			Image* image = new Image(output);
 			image->StartLoad(filename, config);
 			m_Images.push_back(image);
 		}
-		void ImageLoader::Load(Renderer::Texture*& output, uint8_t* imageData, int length, const ImageConfig& config)
+		void ImageLoader::Load(ref<Renderer::Texture>& output, uint8_t* imageData, int length, const ImageConfig& config)
 		{
 			Image* image = new Image(output);
 			image->StartLoad(imageData, length, config);

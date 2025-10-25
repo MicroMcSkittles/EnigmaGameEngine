@@ -25,8 +25,6 @@ namespace Enigma {
 			m_LineQuadStencilShader   = LoadLineQuadStencilShader();
 			m_TextStencilShader       = LoadTextStencilShader();
 
-			m_CurrentCamera = nullptr;
-
 			// Init frame buffers
 			FrameBufferConfig frameBufferConfig;
 			frameBufferConfig.width = config.surface.scale.x;
@@ -34,7 +32,6 @@ namespace Enigma {
 			frameBufferConfig.attachments = { { AttachmentType::ColorAttachment } };
 			m_FrameBuffer = FrameBuffer::Create(frameBufferConfig);
 
-			m_OutputBuffer = nullptr;
 			if (config.surface.frame != nullptr) {
 				frameBufferConfig.attachments = { { AttachmentType::ColorAttachment, config.surface.frame } };
 				m_OutputBuffer = FrameBuffer::Create(frameBufferConfig);
@@ -57,7 +54,7 @@ namespace Enigma {
 			TextureConfig blankTextureConfig;
 			blankTextureConfig.width = 1;
 			blankTextureConfig.height = 1;
-			blankTextureConfig.data = (uint8_t*)malloc(3);
+			blankTextureConfig.data = malloc(3);
 			if (blankTextureConfig.data) memset(blankTextureConfig.data, 255, 3);
 			m_BlankTexture = Texture::Create(blankTextureConfig);
 			free(blankTextureConfig.data);
@@ -66,12 +63,12 @@ namespace Enigma {
 			s_Quad = VertexArray::Create();
 			s_Quad->Bind();
 
-			VertexBuffer* vertexBuffer = VertexBuffer::Create(s_VertexLayout, Usage::StaticDraw);
+			ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(s_VertexLayout, Usage::StaticDraw);
 			vertexBuffer->SetData(&s_QuadVertices[0], s_QuadVertices.size() * sizeof(s_QuadVertices[0]));
 			vertexBuffer->InitAttribs();
 			s_Quad->AttachBuffer(vertexBuffer);
 
-			IndexBuffer* indexBuffer = IndexBuffer::Create(DataType::UnsignedInt, Usage::StaticDraw);
+			ref<IndexBuffer> indexBuffer = IndexBuffer::Create(DataType::UnsignedInt, Usage::StaticDraw);
 			indexBuffer->SetData(&s_QuadIndices[0], s_QuadIndices.size() * sizeof(s_QuadIndices[0]));
 			s_Quad->AttachBuffer(indexBuffer);
 
@@ -85,7 +82,7 @@ namespace Enigma {
 			RenderAPI::SetViewport(config.surface.scale.x, config.surface.scale.y);
 		}
 
-		void Render2D::Resize(int width, int height)
+		void Render2D::Resize(i32 width, i32 height)
 		{
 			RenderAPI::SetViewport(width, height);
 			m_FrameBuffer->Resize(width, height);
@@ -93,7 +90,7 @@ namespace Enigma {
 			if (m_OutputBuffer != nullptr)  m_OutputBuffer->Resize(width, height);
 			if (m_CurrentCamera != nullptr) m_CurrentCamera->Resize(width, height);
 		}
-		void Render2D::StartFrame(OrthographicCamera* camera)
+		void Render2D::StartFrame(ref<OrthographicCamera> camera)
 		{
 			Core::Application::UseRenderAPI(m_RenderAPI);
 			RenderAPI::Clear();
@@ -119,7 +116,7 @@ namespace Enigma {
 			s_Quad->Bind();
 
 			// Render all stencil data to the stencil buffer
-			OrthographicCamera* lastCamera = nullptr;
+			ref<OrthographicCamera> lastCamera;
 
 			for (auto& [batchHash, batch] : m_Batches) {
 				if (batch.stencilType == StencilType::None) continue;
@@ -154,12 +151,12 @@ namespace Enigma {
 			m_MainShader->Bind();
 
 			m_StencilTexture->Bind();
-			m_MainShader->SetUniform("StencilMap", (void*)m_StencilTexture);
+			m_MainShader->SetUniform("StencilMap", (void*)&m_StencilTexture);
 
 			// Render the scene
 			lastCamera = nullptr;
-			Texture* lastTexture = nullptr;
-			int i = 0;
+			ref<Texture> lastTexture = nullptr;
+			i32 i = 0;
 			for (auto& [batchHash, batch] : m_Batches) {
 				// Set Camera data if it is differant from the last batch
 				if (batch.camera != lastCamera) {
@@ -170,7 +167,7 @@ namespace Enigma {
 				if (batch.texture != lastTexture) {
 					if (lastTexture != nullptr) lastTexture->Unbind();
 					batch.texture->Bind();
-					m_MainShader->SetUniform("TextureMap", (void*)batch.texture);
+					m_MainShader->SetUniform("TextureMap", (void*)&batch.texture);
 					lastTexture = batch.texture;
 					i += 1;
 				}
@@ -202,11 +199,11 @@ namespace Enigma {
 
 			// Run the frame through the post process shader
 			m_PostProcShader->Bind();
-			Texture* frame = m_FrameBuffer->GetColorAttachment(0);
+			ref<Texture> frame = m_FrameBuffer->GetColorAttachment(0);
 			//Texture* frame = m_StencilTexture;
 
 			frame->Bind();
-			m_PostProcShader->SetUniform("FrameTexture", (void*)frame);
+			m_PostProcShader->SetUniform("FrameTexture", (void*)&frame);
 
 			s_Quad->Bind();
 			RenderAPI::DrawIndexed(6, DataType::UnsignedInt, NULL);
@@ -218,7 +215,7 @@ namespace Enigma {
 			if (m_OutputBuffer != nullptr) m_OutputBuffer->Unbind();
 		}
 
-		void Render2D::SetCamera(OrthographicCamera* camera)
+		void Render2D::SetCamera(ref<OrthographicCamera> camera)
 		{
 			m_CurrentCamera = camera;
 
@@ -239,7 +236,7 @@ namespace Enigma {
 			m_CameraWorldBounds.far    = viewbox.far;
 		}
 
-		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, const glm::vec4& tint)
+		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, f32 rotation, i32 depth, const glm::vec4& tint)
 		{
 			if (!OnScreen(position, scale)) return;
 			
@@ -250,7 +247,7 @@ namespace Enigma {
 
 			Submit(transform, tint, StencilType::None, nullptr, m_BlankTexture);
 		}
-		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, Texture* texture, const glm::vec4& tint)
+		void Render2D::DrawQuad(const glm::vec2& position, const glm::vec2& scale, f32 rotation, i32 depth, ref<Texture> texture, const glm::vec4& tint)
 		{
 			if (!OnScreen(position, scale)) return;
 
@@ -261,7 +258,7 @@ namespace Enigma {
 
 			Submit(transform, tint, StencilType::None, nullptr, texture);
 		}
-		void Render2D::DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, float thickness, int depth, const glm::vec4& tint)
+		void Render2D::DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, f32 rotation, f32 thickness, i32 depth, const glm::vec4& tint)
 		{
 			if (!OnScreen(position, scale)) return;
 
@@ -272,7 +269,7 @@ namespace Enigma {
 
 			Submit(transform, tint, StencilType::LineQuad, new LineQuadStencil({ m_CurrentStencilID, transform, scale, thickness }), m_BlankTexture);
 		}
-		void Render2D::DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, float thickness, int depth, Texture* texture, const glm::vec4& tint)
+		void Render2D::DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, f32 rotation, f32 thickness, i32 depth, ref<Texture> texture, const glm::vec4& tint)
 		{
 			if (!OnScreen(position, scale)) return;
 
@@ -284,7 +281,7 @@ namespace Enigma {
 			Submit(transform, tint, StencilType::LineQuad, new LineQuadStencil({ m_CurrentStencilID, transform, scale, thickness }), texture);
 		}
 
-		void Render2D::DrawCircle(const glm::vec2& position, float radius, int depth, const glm::vec4& tint)
+		void Render2D::DrawCircle(const glm::vec2& position, f32 radius, i32 depth, const glm::vec4& tint)
 		{
 			if (!OnScreen(position, { radius, radius })) return;
 
@@ -294,7 +291,7 @@ namespace Enigma {
 
 			Submit(transform, tint, StencilType::Circle, new CircleStencil({ m_CurrentStencilID, transform }), m_BlankTexture);
 		}
-		void Render2D::DrawCircle(const glm::vec2& position, float radius, int depth, Texture* texture, const glm::vec4& tint)
+		void Render2D::DrawCircle(const glm::vec2& position, f32 radius, i32 depth, ref<Texture> texture, const glm::vec4& tint)
 		{
 			if (!OnScreen(position, { radius, radius })) return;
 
@@ -304,7 +301,7 @@ namespace Enigma {
 
 			Submit(transform, tint, StencilType::Circle, new CircleStencil({ m_CurrentStencilID, transform }), texture);
 		}
-		void Render2D::DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, const glm::vec4& tint)
+		void Render2D::DrawLineCircle(const glm::vec2& position, f32 radius, f32 thickness, i32 depth, const glm::vec4& tint)
 		{
 			if (!OnScreen(position, { radius, radius })) return;
 
@@ -314,7 +311,7 @@ namespace Enigma {
 
 			Submit(transform, tint, StencilType::LineCircle, new LineCircleStencil({ m_CurrentStencilID, transform, thickness }), m_BlankTexture);
 		}
-		void Render2D::DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, Texture* texture, const glm::vec4& tint)
+		void Render2D::DrawLineCircle(const glm::vec2& position, f32 radius, f32 thickness, i32 depth, ref<Texture> texture, const glm::vec4& tint)
 		{
 			if (!OnScreen(position, { radius, radius })) return;
 			
@@ -325,7 +322,7 @@ namespace Enigma {
 			Submit(transform, tint, StencilType::LineCircle, new LineCircleStencil({ m_CurrentStencilID, transform, thickness }), texture);
 		}
 
-		void Render2D::DrawText(Text* text, const glm::vec2& position, float scale, float rotation, int depth, const glm::vec4& tint)
+		void Render2D::DrawText(Text* text, const glm::vec2& position, f32 scale, f32 rotation, i32 depth, const glm::vec4& tint)
 		{
 			// Create stencil, the vao with glyph bounding box info uses a different transform matrix from the main quad
 			glm::mat4 glyphTransform = glm::mat4(1.0f);
@@ -343,7 +340,7 @@ namespace Enigma {
 			// Push the draw call
 			Submit(textTransform, tint, StencilType::Text, new TextStencil({ m_CurrentStencilID, glyphTransform, text }), m_BlankTexture);
 		}
-		void Render2D::DrawText(Text* text, const glm::vec2& position, float scale, float rotation, int depth, Texture* texture, const glm::vec4& tint)
+		void Render2D::DrawText(Text* text, const glm::vec2& position, f32 scale, f32 rotation, i32 depth, ref<Texture> texture, const glm::vec4& tint)
 		{
 			// Create stencil, the vao with glyph bounding box info uses a different transform matrix from the main quad
 			glm::mat4 glyphTransform = glm::mat4(1.0f);
@@ -388,9 +385,9 @@ namespace Enigma {
 			stencil->text->GetGlyphData()->Bind();
 			m_TextStencilShader->SetUniform("Model", (void*)&stencil->transform);
 			m_TextStencilShader->SetUniform("StencilID", (void*)&stencil->id);
-			m_TextStencilShader->SetUniform("TextData", (void*)stencil->text->GetGlyphData());
+			m_TextStencilShader->SetUniform("TextData", (void*)&stencil->text->GetGlyphData());
 
-			VertexArray* vao = stencil->text->GetGlyphBoundsVAO();
+			ref<VertexArray> vao = stencil->text->GetGlyphBoundsVAO();
 			vao->Bind();
 			RenderAPI::DrawIndexed(vao->GetIndexBuffer()->GetIndexCount(), vao->GetIndexBuffer()->GetIndexType(), NULL);
 			vao->Unbind();
@@ -398,7 +395,7 @@ namespace Enigma {
 			stencil->text->GetGlyphData()->Unbind();
 		}
 
-		void Render2D::Submit(const glm::mat4& transform, const glm::vec4& tint, StencilType stencilType, void* stencil, Texture* texture)
+		void Render2D::Submit(const glm::mat4& transform, const glm::vec4& tint, StencilType stencilType, void* stencil, ref<Texture> texture)
 		{
 			uint64_t batchHash = Batch::Hash({ m_CurrentCamera, texture, stencilType });
 
@@ -442,12 +439,12 @@ namespace Enigma {
 		uint64_t Render2D::Batch::Hash(const Batch& batch)
 		{
 			// No clue how well this will work
-			uint64_t p1 = (uint64_t)batch.camera;
-			uint64_t p2 = (uint64_t)batch.texture;
-			uint8_t t   = (uint8_t)batch.stencilType;
+			u64 p1 = reinterpret_cast<u64>(batch.camera.get());
+			u64 p2 = reinterpret_cast<u64>(batch.texture.get());
+			u8  t  = static_cast<u8>(batch.stencilType);
 			p1 = p1 << (3 + t);
 			p2 = p2 >> (4 - t);
-			uint64_t rslt = p1 & p2;
+			u64 rslt = p1 & p2;
 			return rslt;
 		}
 	}

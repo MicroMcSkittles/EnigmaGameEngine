@@ -29,12 +29,12 @@ private:
 
 private:
 	// Render
-	Renderer::OrthographicCamera* m_Camera;
+	ref<Renderer::OrthographicCamera> m_Camera;
 	Renderer::Render2D* m_RenderContext;
 	Engine::Surface m_Surface;
 
 	// Input
-	Engine::Input* m_InputContext;
+	ref<Engine::Input> m_InputContext;
 	float m_CameraSpeed;
 	bool m_Controlling;
 

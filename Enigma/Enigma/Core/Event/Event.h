@@ -1,4 +1,5 @@
 #pragma once
+#include "Enigma/Core/Types.h"
 #include "Enigma/Core/Core.h"
 #include "Enigma/Core/Utilities/Utilities.h"
 #include <functional>
@@ -18,8 +19,8 @@ namespace Enigma {
 			LastEventCategoryBit = 6
 		};
 		
-#define EVENT_TYPE(type) virtual uint64_t GetType() override { return EventType::type; } \
-						static uint64_t StaticGetType() { return EventType::type; } \
+#define EVENT_TYPE(type) virtual u64 GetType() override { return EventType::type; } \
+						static u64 StaticGetType() { return EventType::type; } \
 						virtual std::string GetName() override { return #type; }
 
 #define EVENT_CATEGORY(category) virtual uint32_t GetCategory() override { return category; }
@@ -28,8 +29,8 @@ namespace Enigma {
 
 		class Event {
 		public:
-			virtual uint64_t GetType() = 0;
-			virtual uint32_t GetCategory() = 0;
+			virtual u64 GetType() = 0;
+			virtual u32 GetCategory() = 0;
 			virtual std::string GetName() = 0;
 			virtual std::string ToString() { return GetName(); }
 
@@ -46,13 +47,11 @@ namespace Enigma {
 			EventHandler(Event& event) 
 				: m_Event(event) { }
 
-			// To bind a function I recommend using a lamda in the following format
-			// [&](Event& e)  { return func(e); }
-			// you could use std::bind but it allocates extra memory for some reason
+			// If the event is of type T, then runs the passed function
 			template<typename T>
 			void Dispatch(std::function<bool(T&)> func) {
 				if (T::StaticGetType() == m_Event.GetType()) {
-					m_Event.m_Handled = func(*(T*)&m_Event);
+					m_Event.m_Handled = func(*static_cast<T*>(&m_Event));
 				}
 			}
  

@@ -10,19 +10,19 @@ namespace Enigma {
 				OpenGLVertexArray();
 				~OpenGLVertexArray();
 
-				virtual Renderer::VertexBuffer* GetVertexBuffer() override;
-				virtual Renderer::IndexBuffer* GetIndexBuffer() override;
+				virtual ref<Renderer::VertexBuffer> GetVertexBuffer() override;
+				virtual ref<Renderer::IndexBuffer> GetIndexBuffer() override;
 
-				virtual void AttachBuffer(Renderer::VertexBuffer* vertexBuffer) override;
-				virtual void AttachBuffer(Renderer::IndexBuffer* indexBuffer) override;
+				virtual void AttachBuffer(ref<Renderer::VertexBuffer> vertexBuffer) override;
+				virtual void AttachBuffer(ref<Renderer::IndexBuffer> indexBuffer) override;
 
 				virtual void Bind() override;
 				virtual void Unbind() override;
 
 			private:
-				uint32_t m_Handle;
-				Renderer::VertexBuffer* m_VertexBuffer;
-				Renderer::IndexBuffer* m_IndexBuffer;
+				u32 m_Handle;
+				ref<Renderer::VertexBuffer> m_VertexBuffer;
+				ref<Renderer::IndexBuffer> m_IndexBuffer;
 			};
 
 		}

@@ -26,20 +26,20 @@ public:
 
 private:
 	// Render
-	Renderer::OrthographicCamera* m_Camera;
+	ref<Renderer::OrthographicCamera> m_Camera;
 	Renderer::Render2D* m_RenderContext;
 	Engine::Surface m_Surface;
 
-	Engine::ECS::RenderSystem2D* m_RenderECS;
+	ref<Engine::ECS::RenderSystem2D> m_RenderECS;
 
 	// Input
-	Engine::Input* m_InputContext;
+	ref<Engine::Input> m_InputContext;
 	float m_CameraSpeed;
 	bool m_Controlling;
 
 	// Test variables
-	Engine::ECS::ECS* m_ECS;
-	Renderer::Texture* m_Texture;
+	ref<Engine::ECS::ECS> m_ECS;
+	ref<Renderer::Texture> m_Texture;
 	bool m_Running;
 	int m_EntityCount;
 	float m_FPS;

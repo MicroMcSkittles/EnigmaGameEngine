@@ -13,18 +13,19 @@ namespace Enigma::Engine::ECS {
 		Renderer::API renderAPI;
 		Engine::Surface surface;
 
-		Renderer::Shader* mainShader = nullptr; // If nullptr then the default main shader will be used
-		Renderer::Shader* postProcShader = nullptr; // If nullptr thrn the default postProcShader will be used
+		ref<Renderer::Shader> mainShader; // If nullptr then the default main shader will be used
+		ref<Renderer::Shader> postProcShader; // If nullptr thrn the default postProcShader will be used
 	};
 
 	class RenderSystem2D {
 	public:
-		RenderSystem2D(const RenderSystem2DConfig& config, ECS* ecs);
+		static ref<RenderSystem2D> Create(const RenderSystem2DConfig& config, ref<ECS> ecs);
+		RenderSystem2D(const RenderSystem2DConfig& config, ref<ECS> ecs);
 		~RenderSystem2D();
 
-		void Resize(int width, int height);
+		void Resize(i32 width, i32 height);
 
-		void StartFrame(Renderer::OrthographicCamera* camera);
+		void StartFrame(ref<Renderer::OrthographicCamera> camera);
 		void EndFrame();
 
 	private:
@@ -35,21 +36,21 @@ namespace Enigma::Engine::ECS {
 		void TexturedCircleSystem(Transform& transform, TexturedCircle& circle);
 
 	private:
-		ECS* m_ECS;
+		ref<ECS> m_ECS;
 
-		Renderer::OrthographicCamera* m_CurrentCamera;
+		ref<Renderer::OrthographicCamera> m_CurrentCamera;
 
 		// Framebuffers
-		Renderer::FrameBuffer* m_FrameBuffer;
-		Renderer::FrameBuffer* m_OutputBuffer;
+		ref<Renderer::FrameBuffer> m_FrameBuffer;
+		ref<Renderer::FrameBuffer> m_OutputBuffer;
 
 		// Shaders
-		Renderer::Shader* m_MainShader;
-		Renderer::Shader* m_CircleShader;
-		Renderer::Shader* m_PostProcShader;
+		ref<Renderer::Shader> m_MainShader;
+		ref<Renderer::Shader> m_CircleShader;
+		ref<Renderer::Shader> m_PostProcShader;
 
 		// Other
-		Renderer::Texture* m_BlankTexture; // Used for anything with no texture
+		ref<Renderer::Texture> m_BlankTexture; // Used for anything with no texture
 
 		RenderSystem2DConfig m_Config;
 
@@ -75,7 +76,7 @@ namespace Enigma::Engine::ECS {
 			1,2,3
 		};
 
-		inline static Renderer::VertexArray* s_Quad;
+		inline static ref<Renderer::VertexArray> s_Quad;
 	};
 
 }

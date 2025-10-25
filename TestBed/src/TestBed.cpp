@@ -24,7 +24,8 @@ void TestBed::StartUp()
 
 	m_WindowID = Core::Application::CreateWindow(windowConfig, imguiConfig);
 	//m_WindowID = Core::Application::CreateWindow(windowConfig);
-	Core::Application::BindSubProcToWindow(this, m_WindowID);
+	ref<SubProcess> self = Core::Application::GetSubProcess(m_ProcessID);
+	Core::Application::BindSubProcToWindow(self, m_WindowID);
 	Core::Application::GetWindow(m_WindowID)->AddEventCallback([&](Core::Event& e) { return OnEvent(e); });
 
 	m_TestContext = new CURRENT_TEST_CONTEXT(m_WindowID);

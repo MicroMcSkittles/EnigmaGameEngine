@@ -22,10 +22,10 @@ namespace Enigma {
 			void StartDocking();
 
 		private:
-			Core::Window* m_WindowInstance;
+			ref<Core::Window> m_WindowInstance;
 			Renderer::API m_RenderAPI;
 
-			ImGuiContext* m_Context;
+			ref<ImGuiContext> m_Context;
 
 			bool m_EnableDocking;
 

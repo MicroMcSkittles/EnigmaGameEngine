@@ -5,7 +5,7 @@
 	#include<string>
 #endif
 
-extern void Enigma::Core::ApplicationMain(Enigma::Core::Application* app);
+extern void Enigma::Core::ApplicationMain();
 
 int main(int argc, char** argv) {
 
@@ -16,13 +16,11 @@ int main(int argc, char** argv) {
 	chdir(dir.c_str());
 #endif
 
-	Enigma::Core::Application* app = new Enigma::Core::Application(argc, argv);
+	Enigma::unique<Enigma::Core::Application>& app = Enigma::Core::Application::Create(argc, argv);
 
-	Enigma::Core::ApplicationMain(nullptr);
+	Enigma::Core::ApplicationMain();
 
 	app->Run();
-
-	delete app;
 
 	return 0;
 }

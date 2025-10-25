@@ -1,8 +1,10 @@
 #pragma once
-#include <string>
-#include <functional>
+#include "Enigma/Core/Types.h"
 #include "Enigma/Core/Event/Event.h"
 #include "Enigma/Renderer/RenderEnum.h"
+
+#include <string>
+#include <functional>
 
 namespace Enigma {
 	namespace Core {
@@ -10,8 +12,8 @@ namespace Enigma {
 		struct WindowConfig {
 			std::string title;
 
-			int width = 600;
-			int height = 800;
+			i32 width = 600;
+			i32 height = 800;
 
 			bool resizable = true;
 			bool vSync = true;
@@ -20,7 +22,7 @@ namespace Enigma {
 
 			WindowConfig(
 				const std::string& title = "Window", 
-				int width = 800, int height = 600, 
+				i32 width = 800, i32 height = 600,
 				bool resizable = true, 
 				bool vSync = true,
 				Renderer::API renderAPI = Renderer::API::OpenGL
@@ -30,15 +32,15 @@ namespace Enigma {
 		// TODO: add remove event callback function
 		class Window {
 		public:
-			static Window* Create(const WindowConfig& config);
+			static ref<Window> Create(const WindowConfig& config);
 			virtual ~Window() { }
 
 			virtual void AddEventCallback(std::function<void(Event&)> callback) = 0;
 
 			virtual void MakeCurrent() = 0;
 
-			virtual int GetWidth() = 0;
-			virtual int GetHeight() = 0;
+			virtual i32 GetWidth() = 0;
+			virtual i32 GetHeight() = 0;
 
 			virtual Renderer::API GetAPI() = 0;
 

@@ -10,19 +10,19 @@ namespace Enigma {
 		public:
 			WindowsInput(const Engine::InputConfig& config);
 
-			static int ConvertWindowsKeyCode(int keycode);
+			static i32 ConvertWindowsKeyCode(i32 keycode);
 
 		protected:
-			virtual bool IsKeyPressedImpl(int key) override;
-			virtual bool IsMouseButtonPressedImpl(int button) override;
+			virtual bool IsKeyPressedImpl(i32 key) override;
+			virtual bool IsMouseButtonPressedImpl(i32 button) override;
 
 			virtual glm::vec2 GetMousePositionImpl() override;
-			virtual float GetMouseXImpl() override;
-			virtual float GetMouseYImpl() override;
+			virtual f32 GetMouseXImpl() override;
+			virtual f32 GetMouseYImpl() override;
 
 		private:
-			WindowsWindow* m_Window;
-			Engine::Surface* m_Surface;
+			ref<WindowsWindow> m_Window;
+			ref<Engine::Surface> m_Surface;
 		};
 
 	}

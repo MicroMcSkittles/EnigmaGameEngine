@@ -10,6 +10,7 @@
 class AudioTestContext : public TestContext {
 public:
 	AudioTestContext(Core::ID windowID);
+	~AudioTestContext();
 
 	void OnResize(int width, int height);
 	void OnClose();
@@ -20,10 +21,10 @@ public:
 
 private:
 	// Render
-	Renderer::OrthographicCamera* m_Camera;
+	ref<Renderer::OrthographicCamera> m_Camera;
 	Renderer::Render2D* m_RenderContext;
 	Engine::Surface m_Surface;
 
 	// Input
-	Engine::Input* m_InputContext;
+	ref<Engine::Input> m_InputContext;
 };

@@ -19,9 +19,9 @@ namespace Enigma::Engine::ECS {
 
 		// TODO: impl this function
 		// Returns a Transform thats in world space
-		Transform ApplyParent(ECS* ecs) const;
+		Transform ApplyParent(ref<ECS> ecs) const;
 		glm::mat4 GetRelativeMatrix() const;
-		glm::mat4 GetWorldMatrix(ECS* ecs) const;
+		glm::mat4 GetWorldMatrix(ref<ECS> ecs) const;
 	};
 
 	// Render components
@@ -30,7 +30,7 @@ namespace Enigma::Engine::ECS {
 	};
 	struct TexturedQuad {
 		glm::vec3 tint;
-		Renderer::Texture* texture;
+		ref<Renderer::Texture> texture;
 	};
 
 	struct ColoredCircle {
@@ -38,7 +38,7 @@ namespace Enigma::Engine::ECS {
 	};
 	struct TexturedCircle {
 		glm::vec3 tint;
-		Renderer::Texture* texture;
+		ref<Renderer::Texture> texture;
 	};
 
 }

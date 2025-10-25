@@ -1,10 +1,11 @@
 #pragma once
-#include "Enigma/Core/Core.h"
-#include "Enigma/Core/SparseSet.h"
-
 #include <vector>
 #include <algorithm>
 #include <limits>
+
+#include "Enigma/Core/Core.h"
+#include "Enigma/Core/Types.h"
+#include "Enigma/Core/SparseSet.h"
 
 // TODO: update docs
 
@@ -12,8 +13,8 @@ namespace Enigma {
 	namespace Core {
 
 		struct ID {
-			size_t index = std::numeric_limits<size_t>::max();
-			size_t generation = std::numeric_limits<size_t>::max();
+			u64 index = std::numeric_limits<u64>::max();
+			u64 generation = std::numeric_limits<u64>::max();
 
 			bool operator <  (const ID other) const { return index < other.index; }
 			bool operator == (const ID other) const { return (index == other.index) && (generation == other.generation); }
@@ -23,7 +24,7 @@ namespace Enigma {
 				return std::string("( " + std::to_string(index) + ", " + std::to_string(generation) + " )"); 
 			}
 		};
-		constexpr ID InvalidID = { (size_t)-1, (size_t)-1 };
+		constexpr ID InvalidID = { std::numeric_limits<u64>::max(), std::numeric_limits<u64>::max() };
 
 		template<class T>
 		class IDHandler {
@@ -43,7 +44,7 @@ namespace Enigma {
 			}
 			ID Create(T value) {
 				// Find an available id
-				size_t availableID;
+				u64 availableID;
 				if (!m_AvailableIDs.empty()) {
 					availableID = *std::min_element(m_AvailableIDs.begin(), m_AvailableIDs.end());
 				}
@@ -51,7 +52,7 @@ namespace Enigma {
 					availableID = m_LargestID;
 					m_LargestID += 1;
 					// Create a new generation entry
-					m_Generations.Create(availableID, std::numeric_limits<size_t>::max());
+					m_Generations.Create(availableID, std::numeric_limits<u64>::max());
 				}
 
 				m_Generations.Get(availableID) += 1;
@@ -78,7 +79,7 @@ namespace Enigma {
 
 			// Returns the id of an element
 			ID Get(const T& value) {
-				for (size_t index : m_Data.GetIDs()) {
+				for (u64 index : m_Data.GetIDs()) {
 					if (m_Data.Get(index) == value) {
 						ID id;
 						id.index = index;
@@ -90,8 +91,8 @@ namespace Enigma {
 			}
 
 			// Returns the id of a element at index
-			ID Get(size_t index) {
-				LOG_ASSERT(index >= m_Generations.GetIDs().size(), "Failed to get id at index ( %ull )", static_cast<unsigned long long>(index));
+			ID Get(u64 index) {
+				LOG_ASSERT(index >= m_Generations.GetIDs().size(), "Failed to get id at index ( %ull )", static_cast<u64>(index));
 				
 				ID id;
 				id.index = m_Generations.GetIDs()[index];
@@ -107,11 +108,11 @@ namespace Enigma {
 			}
 
 		private:
-			size_t m_LargestID;
-			std::vector<size_t> m_AvailableIDs;
+			u64 m_LargestID;
+			std::vector<u64> m_AvailableIDs;
 
 			SparseSet<T> m_Data;
-			SparseSet<size_t> m_Generations;
+			SparseSet<u64> m_Generations;
 		};
 
 	}

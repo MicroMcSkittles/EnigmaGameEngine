@@ -1,4 +1,5 @@
 #pragma once
+#include "Enigma/Core/Types.h"
 #include "Enigma/Core/Event/Event.h"
 #include "Enigma/Core/IdHandler.h"
 #include "Enigma/Engine/DeltaTime.h"
@@ -26,6 +27,9 @@ namespace Enigma {
 			// Called when the engine is showing ImGui
 			virtual void ImGui() {}
 
+		protected:
+			ID m_ProcessID;
+
 		private:
 			bool m_Started;
 
@@ -35,16 +39,17 @@ namespace Enigma {
 
 		class SubProcStack {
 		public:
-			SubProcStack();
-			~SubProcStack();
+			static ref<SubProcess> Create();
+			SubProcStack() { }
+			~SubProcStack() { }
 
-			ID PushProcBack(SubProcess* subProc);
+			ID PushProcBack(ref<SubProcess> subProc);
 
 			void RemoveProc(ID id);
 
-			SubProcess* GetProcess(ID id);
-			ID GetProcessID(SubProcess* proc);
-			std::vector<SubProcess*>& GetData();
+			ref<SubProcess> GetProcess(ID id);
+			ID GetProcessID(ref<SubProcess> proc);
+			std::vector<ref<SubProcess>>& GetData();
 
 			// Calls the OnEvent function for every sub process, goes through list form front to back
 			void OnEvent(Event& e);
@@ -58,7 +63,7 @@ namespace Enigma {
 			void ShutDown();
 
 		private:
-			IDHandler<SubProcess*> m_SubProcesses;
+			IDHandler<ref<SubProcess>> m_SubProcesses;
 		};
 	}
 }

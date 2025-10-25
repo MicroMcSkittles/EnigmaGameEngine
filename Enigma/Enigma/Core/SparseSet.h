@@ -1,36 +1,38 @@
 #pragma once
-#include "Enigma/Core/Core.h"
 #include <limits>
 #include <vector>
 #include <array>
 #include <algorithm>
+
+#include "Enigma/Core/Types.h"
+#include "Enigma/Core/Core.h"
 
 namespace Enigma::Core {
 
 	// My implementation of the sparse set concept.
 	// Used to keep all of the data compact to take advantage of cpu caching
 	// Create and Remove instructions have a constant speed O(1)
-	template<typename T, size_t PageSize = 64>
+	template<typename T, u64 PageSize = 64>
 	class SparseSet {
 	public:
 
 		SparseSet() { }
 		~SparseSet() { Clear(); }
 
-		void Create(size_t id) {
+		void Create(u64 id) {
 			SetDenseIndex(id, m_Dense.size());
 			m_IDMap.push_back(id);
 			m_Dense.push_back(T());
 		}
-		void Create(size_t id, T value) {
+		void Create(u64 id, T value) {
 			SetDenseIndex(id, m_Dense.size());
 			m_IDMap.push_back(id);
 			m_Dense.push_back(value);
 		}
 
-		void Remove(size_t id) {
-			size_t index = GetDenseIndex(id);
-			LOG_ASSERT(index == InvalidIndex, "Failed to remove value from sparse set, invalid id ( %d )", static_cast<int>(index));
+		void Remove(u64 id) {
+			u64 index = GetDenseIndex(id);
+			LOG_ASSERT(index == InvalidIndex, "Failed to remove value from sparse set, invalid id ( %d )", static_cast<i64>(index));
 
 			// Update indices
 			SetDenseIndex(m_IDMap.back(), index);
@@ -45,16 +47,16 @@ namespace Enigma::Core {
 			m_IDMap.pop_back();
 		}
 
-		bool Contains(size_t id) {
+		bool Contains(u64 id) {
 			if (m_SparsePages.size() * PageSize <= id) return false;
 			if (GetDenseIndex(id) == InvalidIndex) return false;
 			return true;
 		}
 
-		T& Get(size_t id) {
+		T& Get(u64 id) {
 			LOG_ASSERT(m_SparsePages.size() * PageSize <= id, "Failed to get value from sparse set, id out of sparse list bounds ( %d )", static_cast<int>(id));
 
-			size_t index = GetDenseIndex(id);
+			u64 index = GetDenseIndex(id);
 			LOG_ASSERT(index == InvalidIndex, "Failed to get value from sparse set, invalid id ( %d )", static_cast<int>(id));
 
 			return m_Dense[index];
@@ -67,15 +69,15 @@ namespace Enigma::Core {
 		}
 
 		bool Empty() { return m_Dense.empty(); }
-		size_t Size() { return m_Dense.size(); }
-		std::vector<size_t>& GetIDs() { return m_IDMap; }
+		u64 Size() { return m_Dense.size(); }
+		std::vector<u64>& GetIDs() { return m_IDMap; }
 		std::vector<T>& GetData() { return m_Dense; }
 
 	private:
-		inline void SetDenseIndex(size_t id, size_t index) {
+		inline void SetDenseIndex(u64 id, u64 index) {
 			// Find what page id is on and where on that page its on
-			size_t page = id / PageSize;
-			size_t sparseIndex = id % PageSize;
+			u64 page = id / PageSize;
+			u64 sparseIndex = id % PageSize;
 
 			// if the page doesn't exist than create it
 			if (page >= m_SparsePages.size()) {
@@ -85,10 +87,10 @@ namespace Enigma::Core {
 
 			m_SparsePages[page][sparseIndex] = index;
 		}
-		inline size_t GetDenseIndex(size_t id) {
+		inline u64 GetDenseIndex(u64 id) {
 			// Find what page id is on and where on that page its on
-			size_t page = id / PageSize;
-			size_t sparseIndex = id % PageSize;
+			u64 page = id / PageSize;
+			u64 sparseIndex = id % PageSize;
 
 			LOG_ASSERT(page >= m_SparsePages.size(), "Failed to get sparse set dense index");
 
@@ -96,11 +98,11 @@ namespace Enigma::Core {
 		}
 
 	private:
-		static constexpr size_t InvalidIndex = std::numeric_limits<size_t>::max();
+		static constexpr u64 InvalidIndex = std::numeric_limits<u64>::max();
 
 		std::vector<T> m_Dense;
-		std::vector<size_t> m_IDMap;
-		std::vector<std::array<size_t, PageSize>> m_SparsePages;
+		std::vector<u64> m_IDMap;
+		std::vector<std::array<u64, PageSize>> m_SparsePages;
 	};
 
 }

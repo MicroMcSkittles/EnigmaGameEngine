@@ -24,20 +24,20 @@ public:
 
 private:
 	// Render
-	Renderer::OrthographicCamera* m_Camera;
-	Engine::ECS::RenderSystem2D* m_RenderContext;
+	ref<Renderer::OrthographicCamera> m_Camera;
+	ref<Engine::ECS::RenderSystem2D> m_RenderContext;
 	Engine::Surface m_Surface;
 
 	// Input
-	Engine::Input* m_InputContext;
+	ref<Engine::Input> m_InputContext;
 	float m_CameraSpeed;
 	bool m_Controlling;
 
 	// Test variables
-	Engine::ECS::ECS* m_ECS;
+	ref<Engine::ECS::ECS> m_ECS;
 	Engine::ECS::EntityID m_Cuboid;
 	Engine::ECS::EntityID m_Cuboid1;
-	Engine::Physics::PhysicsEngine2D* m_PhysicsEngine;
+	ref<Engine::Physics::PhysicsEngine2D> m_PhysicsEngine;
 	bool m_Running;
 	float m_FPS;
 

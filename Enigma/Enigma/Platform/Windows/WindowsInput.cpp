@@ -3,34 +3,34 @@
 
 namespace Enigma {
 
-	Engine::Input* Engine::Input::Create(const Engine::InputConfig& config) {
-		return new Platform::WindowsInput(config);
+	ref<Engine::Input> Engine::Input::Create(const Engine::InputConfig& config) {
+		return CreateRef<Platform::WindowsInput>(config);
 	}
 
 	namespace Platform {
 
 		WindowsInput::WindowsInput(const Engine::InputConfig& config)
 		{
-			m_Window = (WindowsWindow*)config.window;
+			m_Window = CastRef<WindowsWindow>(config.window);
 			m_Surface = config.surface;
 		}
 
-		int WindowsInput::ConvertWindowsKeyCode(int keycode)
+		i32 WindowsInput::ConvertWindowsKeyCode(i32 keycode)
 		{
-			int result = 0;
+			i32 result = 0;
 			if (keycode >= Engine::KeyCode::KeySpace && keycode <= Engine::KeyCode::KeyGraveAccent) result = keycode;
 			return result;
 		}
 
-		bool WindowsInput::IsKeyPressedImpl(int key)
+		bool WindowsInput::IsKeyPressedImpl(i32 key)
 		{
-			int rslt = m_Window->GetInputData().keyboardStates[key];
+			i32 rslt = m_Window->GetInputData().keyboardStates[key];
 			return rslt == Engine::KeyCode::KeyPress || rslt == Engine::KeyCode::KeyRepeat;
 			return false;
 		}
-		bool WindowsInput::IsMouseButtonPressedImpl(int button)
+		bool WindowsInput::IsMouseButtonPressedImpl(i32 button)
 		{
-			int rslt = m_Window->GetInputData().mouseButtonStates[button];
+			i32 rslt = m_Window->GetInputData().mouseButtonStates[button];
 			return rslt == Engine::KeyCode::KeyPress || rslt == Engine::KeyCode::KeyRepeat;
 		}
 
@@ -40,11 +40,11 @@ namespace Enigma {
 			rslt -= m_Surface->position;
 			return rslt;
 		}
-		float WindowsInput::GetMouseXImpl()
+		f32 WindowsInput::GetMouseXImpl()
 		{
 			return GetMousePositionImpl().x;
 		}
-		float WindowsInput::GetMouseYImpl()
+		f32 WindowsInput::GetMouseYImpl()
 		{
 			return GetMousePositionImpl().y;
 		}

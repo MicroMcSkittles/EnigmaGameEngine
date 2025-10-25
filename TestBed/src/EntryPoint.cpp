@@ -3,6 +3,6 @@
 
 #include "TestBed.h"
 
-void Enigma::Core::ApplicationMain(Enigma::Core::Application* app) {
+void Enigma::Core::ApplicationMain() {
   Enigma::Core::Application::CreateSubProc<TestBed>();
 }

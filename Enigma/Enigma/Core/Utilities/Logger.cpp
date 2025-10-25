@@ -15,7 +15,7 @@ namespace Enigma {
 				std::cout << "Logger already initalized" << std::endl;
 				return;
 			}
-			s_Config = new LoggerConfig(config);
+			s_Config =  CreateUnique<LoggerConfig>(config);
 		}
 
 		void Logger::Log(const std::string& message, LogInfo info, ...) {
@@ -62,7 +62,7 @@ namespace Enigma {
 
 			if (s_Config->flags & LoggerDate) {
 				Time t = System::GetTime();
-				int year = 1900 + t.year;
+				i32 year = 1900 + t.year;
 				ss << t.dayName << " ( " << t.month << " / " << t.day << " / " << year << " )" << std::endl;
 			}
 			if (s_Config->flags & LoggerTime) {
@@ -87,7 +87,7 @@ namespace Enigma {
 			}
 			if (s_Config->flags & LoggerDate) {
 				Time t = System::GetTime();
-				int year = 1900 + t.year;
+				i32 year = 1900 + t.year;
 				ss << "[" << t.month << "/" << t.day << "/" << year << "] ";
 			}
 			if (s_Config->flags & LoggerFile) {
@@ -101,7 +101,7 @@ namespace Enigma {
 				ss << "[Line: " << info.line << "] ";
 			}
 			if (s_Config->flags & LoggerPriority) {
-				ss << "[" << (int)info.priority << "] ";
+				ss << "[" << (i32)info.priority << "] ";
 			}
 			ss << message;
 			return ss.str();
@@ -112,8 +112,8 @@ namespace Enigma {
 
 			std::stringstream formated;
 
-			size_t lastPosition = 0;
-			size_t position = 0;
+			u64 lastPosition = 0;
+			u64 position = 0;
 			int index = 0;
 			while ((position = str.find_first_of("%", position)) != std::string::npos) {
 
@@ -122,22 +122,22 @@ namespace Enigma {
 
 				if (position + 1 == str.size()) break;
 
-				char type = str[position + 1];
+				i8 type = str[position + 1];
 
 				switch (type)
 				{
 				case '%': formated << '%'; break;
-				case 'c': formated << va_arg(args, int); break;
+				case 'c': formated << va_arg(args, i32); break;
 
 				case 'd':
-				case 'i': formated << va_arg(args, int); break;
+				case 'i': formated << va_arg(args, i32); break;
 
-				case 'u': formated << va_arg(args, uint32_t); break;
+				case 'u': formated << va_arg(args, u32); break;
 
 				case 'x':
-				case 'X': formated << std::hex << va_arg(args, uint32_t); break;
+				case 'X': formated << std::hex << va_arg(args, u32); break;
 
-				case 'f': formated << va_arg(args, double); break;
+				case 'f': formated << va_arg(args, f64); break;
 
 				case 's': formated << va_arg(args, const char*); break;
 				}

@@ -33,19 +33,19 @@ namespace Enigma {
 			~ImageLoader();
 
 			// Load image from file
-			static Renderer::Texture* Load(const std::string& filename, const ImageConfig& config);
+			static ref<Renderer::Texture> Load(const std::string& filename, const ImageConfig& config);
 			// Load image from byte buffer
-			static Renderer::Texture* Load(uint8_t* imageData, int length, const ImageConfig& config);
+			static ref<Renderer::Texture> Load(uint8_t* imageData, int length, const ImageConfig& config);
 
-			void Load(Renderer::Texture*& output, const std::string& filename, const ImageConfig& config);
-			void Load(Renderer::Texture*& output, uint8_t* imageData, int length, const ImageConfig& config);
+			void Load(ref<Renderer::Texture>& output, const std::string& filename, const ImageConfig& config);
+			void Load(ref<Renderer::Texture>& output, uint8_t* imageData, int length, const ImageConfig& config);
 
 			bool IsLoading();
 
 		private:
 
 			struct Image {
-				Renderer::Texture*& output;
+				ref<Renderer::Texture>& output;
 				
 				Renderer::TextureConfig textureConfig;
 				std::thread thread;
@@ -54,7 +54,7 @@ namespace Enigma {
 				std::string errorMessage;
 				bool success;
 
-				Image(Renderer::Texture*& output) : output(output) { }
+				Image(ref<Renderer::Texture>& output) : output(output) { }
 
 				// Starts a new thread that loads the image from file
 				void StartLoad(const std::string& filename, const ImageConfig& config);

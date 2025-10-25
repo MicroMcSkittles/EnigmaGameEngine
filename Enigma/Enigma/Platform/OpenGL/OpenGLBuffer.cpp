@@ -34,12 +34,12 @@ namespace Enigma {
 					offset += Conversions::DataTypeSize(type);
 				}
 			}
-			void OpenGLVertexBuffer::SetData(void* vertices, int size)
+			void OpenGLVertexBuffer::SetData(void* vertices, i32 size)
 			{
 				glBindBuffer(GL_ARRAY_BUFFER, m_Handle);
 				glBufferData(GL_ARRAY_BUFFER, size, vertices, m_Usage);
 			}
-			void OpenGLVertexBuffer::SetSubData(void* vertices, int size, int offset)
+			void OpenGLVertexBuffer::SetSubData(void* vertices, i32 size, i32 offset)
 			{
 				glBindBuffer(GL_ARRAY_BUFFER, m_Handle);
 				glBufferSubData(GL_ARRAY_BUFFER, offset, size, vertices);
@@ -73,14 +73,14 @@ namespace Enigma {
 			{
 				return m_Type;
 			}
-			void OpenGLIndexBuffer::SetData(void* indices, int size)
+			void OpenGLIndexBuffer::SetData(void* indices, i32 size)
 			{
 				m_IndicesCount = size / Conversions::DataTypeSize(m_Type);
 
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Handle);
 				glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, m_Usage);
 			}
-			void OpenGLIndexBuffer::SetSubData(void* indices, int size, int offset)
+			void OpenGLIndexBuffer::SetSubData(void* indices, i32 size, i32 offset)
 			{
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Handle);
 				glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, indices);
@@ -110,7 +110,7 @@ namespace Enigma {
 				glGenFramebuffers(1, &m_Handle);
 				glBindFramebuffer(GL_FRAMEBUFFER, m_Handle);
 
-				for (int i = 0; i < m_Config.attachments.size(); ++i) {
+				for (u64 i = 0; i < m_Config.attachments.size(); ++i) {
 					auto& attachment = m_Config.attachments[i];
 
 					Renderer::TextureConfig textureConfig;
@@ -125,7 +125,7 @@ namespace Enigma {
 						depthFlag = true;
 
 						textureConfig.dataType = Renderer::DataType::UnsignedInt_24_8;
-						Renderer::Texture* depthTexture;
+						ref<Renderer::Texture> depthTexture;
 						if (attachment.output != nullptr) depthTexture = attachment.output;
 						else depthTexture = Renderer::Texture::Create(textureConfig);
 						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, *(uint32_t*)depthTexture->GetNativeTexture(), 0);
@@ -135,7 +135,7 @@ namespace Enigma {
 					}
 
 					if (attachment.type == Renderer::AttachmentType::ColorAttachment) {
-						Renderer::Texture* colorTexture;
+						ref<Renderer::Texture> colorTexture;
 						if (attachment.output != nullptr) colorTexture = attachment.output;
 						else colorTexture = Renderer::Texture::Create(textureConfig);
 						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + m_ColorAttachmentCount, GL_TEXTURE_2D, *(uint32_t*)colorTexture->GetNativeTexture(), 0);
@@ -143,8 +143,8 @@ namespace Enigma {
 						m_ColorAttachmentCount += 1;
 					}
 				}
-				m_Buffers = new uint32_t[m_ColorAttachmentCount];
-				for (int i = 0; i < m_ColorAttachmentCount; ++i) {
+				m_Buffers = new u32[m_ColorAttachmentCount];
+				for (u32 i = 0; i < m_ColorAttachmentCount; ++i) {
 					m_Buffers[i] = GL_COLOR_ATTACHMENT0 + i;
 				}
 
@@ -166,7 +166,7 @@ namespace Enigma {
 			{
 				glDeleteFramebuffers(1, &m_Handle);
 			}
-			void OpenGLFrameBuffer::Resize(int width, int height)
+			void OpenGLFrameBuffer::Resize(i32 width, i32 height)
 			{
 				m_Width = width;
 				m_Height = height;
@@ -203,7 +203,7 @@ namespace Enigma {
 				GLenum bufs[] = { GL_COLOR_ATTACHMENT0 };
 				glDrawBuffers(1, bufs);
 			}
-			Renderer::Texture* OpenGLFrameBuffer::GetColorAttachment(int index)
+			ref<Renderer::Texture> OpenGLFrameBuffer::GetColorAttachment(i32 index)
 			{
 				if (index >= m_ColorAttachmentCount) {
 					LOG_WARNING("Color attachment out of bounds");
@@ -211,13 +211,13 @@ namespace Enigma {
 				}
 				return m_Attachments[index];
 			}
-			Renderer::Texture* OpenGLFrameBuffer::SeverColorAttachment(int index)
+			ref<Renderer::Texture> OpenGLFrameBuffer::SeverColorAttachment(i32 index)
 			{
 				if (index >= m_ColorAttachmentCount) {
 					LOG_WARNING("Color attachment out of bounds");
 					return nullptr;
 				}
-				Renderer::Texture* out = m_Attachments[index];
+				ref<Renderer::Texture> out = m_Attachments[index];
 
 				auto& attachment = m_Config.attachments[index];
 
@@ -234,7 +234,7 @@ namespace Enigma {
 
 				return out;
 			}
-			Renderer::Texture* OpenGLFrameBuffer::GetDepthAttachment()
+			ref<Renderer::Texture> OpenGLFrameBuffer::GetDepthAttachment()
 			{
 				if (m_DepthAttachmentID == 0) {
 					LOG_WARNING("Frame buffer doesn't have a depth buffer");

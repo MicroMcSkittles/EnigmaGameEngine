@@ -11,26 +11,26 @@ namespace Enigma {
 
 				virtual void* GetNativeTexture() override;
 
-				virtual void Resize(int width, int height, void* data = (void*)NULL) override;
+				virtual void Resize(i32 width, i32 height, void* data = (void*)NULL) override;
 
 				virtual void Bind() override;
 				virtual void Unbind() override;
 
-				virtual int GetWidth() override { return m_Width; }
-				virtual int GetHeight() override { return m_Height; }
+				virtual i32 GetWidth() override { return m_Width; }
+				virtual i32 GetHeight() override { return m_Height; }
 
-				int GetSlot() { return m_CurrentSlot; }
+				i32 GetSlot() { return m_CurrentSlot; }
 
 			private:
-				uint32_t m_Handle;
-				int m_CurrentSlot;
+				u32 m_Handle;
+				i32 m_CurrentSlot;
 
 				Renderer::TextureConfig m_Config;
-				int m_Width;
-				int m_Height;
+				i32 m_Width;
+				i32 m_Height;
 
 			private:
-				inline static int s_OccupiedSlotCount = 0;
+				inline static i32 s_OccupiedSlotCount = 0;
 			};
 		}
 	}

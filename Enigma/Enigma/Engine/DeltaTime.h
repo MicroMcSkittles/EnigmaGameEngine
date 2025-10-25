@@ -1,4 +1,5 @@
 #pragma once
+#include "Enigma/Core/Types.h"
 #include "Enigma/Core/System.h"
 
 namespace Enigma {
@@ -10,13 +11,13 @@ namespace Enigma {
 				m_DeltaTime = 0;
 				m_LastFrame = Core::System::GetTimeMS();
 			}
-			DeltaTime(float deltaTime) {
+			DeltaTime(f32 deltaTime) {
 				m_DeltaTime = deltaTime;
 				m_LastFrame = Core::System::GetTimeMS();
 			}
 
 			void Calculate() {
-				float currentTime = Core::System::GetTimeMS();
+				f32 currentTime = Core::System::GetTimeMS();
 				m_DeltaTime = currentTime - m_LastFrame;
 				m_LastFrame = currentTime;
 			}
@@ -25,8 +26,8 @@ namespace Enigma {
 			operator float() const { return m_DeltaTime; }
 
 		private:
-			float m_DeltaTime;
-			float m_LastFrame;
+			f32 m_DeltaTime;
+			f32 m_LastFrame;
 		};
 
 	}

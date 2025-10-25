@@ -11,39 +11,39 @@ namespace Enigma {
 		struct Render2DConfig {
 			API renderAPI;
 			Engine::Surface surface;
-			Shader* mainShader = nullptr; // if nullptr then the default main shader will be used
-			Shader* postProcShader = nullptr; // if nullptr thrn the default postProcShader will be used
+			ref<Shader> mainShader = nullptr; // if nullptr then the default main shader will be used
+			ref<Shader> postProcShader = nullptr; // if nullptr thrn the default postProcShader will be used
 		};
 
 		class Render2D {
 		public:
 			Render2D(const Render2DConfig& config);
 
-			void Resize(int width, int height);
+			void Resize(i32 width, i32 height);
 
-			void StartFrame(OrthographicCamera* camera);
+			void StartFrame(ref<OrthographicCamera> camera);
 			void EndFrame();
-			void SetCamera(OrthographicCamera* camera);
+			void SetCamera(ref<OrthographicCamera> camera);
 
-			void DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, const glm::vec4& tint);
-			void DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, int depth, Texture* texture, const glm::vec4& tint);
+			void DrawQuad(const glm::vec2& position, const glm::vec2& scale, f32 rotation, i32 depth, const glm::vec4& tint);
+			void DrawQuad(const glm::vec2& position, const glm::vec2& scale, f32 rotation, i32 depth, ref<Texture> texture, const glm::vec4& tint);
 			
-			void DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, float thickness, int depth, const glm::vec4& tint);
-			void DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, float thickness, int depth, Texture* texture, const glm::vec4& tint);
+			void DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, f32 rotation, f32 thickness, i32 depth, const glm::vec4& tint);
+			void DrawLineQuad(const glm::vec2& position, const glm::vec2& scale, f32 rotation, f32 thickness, i32 depth, ref<Texture> texture, const glm::vec4& tint);
 
-			void DrawCircle(const glm::vec2& position, float radius, int depth, const glm::vec4& tint);
-			void DrawCircle(const glm::vec2& position, float radius, int depth, Texture* texture, const glm::vec4& tint);
+			void DrawCircle(const glm::vec2& position, f32 radius, i32 depth, const glm::vec4& tint);
+			void DrawCircle(const glm::vec2& position, f32 radius, i32 depth, ref<Texture> texture, const glm::vec4& tint);
 			
-			void DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, const glm::vec4& tint);
-			void DrawLineCircle(const glm::vec2& position, float radius, float thickness, int depth, Texture* texture, const glm::vec4& tint);
+			void DrawLineCircle(const glm::vec2& position, f32 radius, f32 thickness, i32 depth, const glm::vec4& tint);
+			void DrawLineCircle(const glm::vec2& position, f32 radius, f32 thickness, i32 depth, ref<Texture> texture, const glm::vec4& tint);
 
-			void DrawText(Text* text, const glm::vec2& position, float scale, float rotation, int depth, const glm::vec4& tint);
-			void DrawText(Text* text, const glm::vec2& position, float scale, float rotation, int depth, Texture* texture, const glm::vec4& tint);
+			void DrawText(Text* text, const glm::vec2& position, f32 scale, f32 rotation, i32 depth, const glm::vec4& tint);
+			void DrawText(Text* text, const glm::vec2& position, f32 scale, f32 rotation, i32 depth, ref<Texture> texture, const glm::vec4& tint);
 
-			Shader* GetMainShader() { return m_MainShader; }
-			Shader* GetPostProcShader() { return m_PostProcShader; }
+			ref<Shader> GetMainShader() { return m_MainShader; }
+			ref<Shader> GetPostProcShader() { return m_PostProcShader; }
 
-			Texture* GetBlankTexture() { return m_BlankTexture; }
+			ref<Texture> GetBlankTexture() { return m_BlankTexture; }
 
 		private:
 			enum class StencilType {
@@ -54,39 +54,39 @@ namespace Enigma {
 				Text
 			};
 			struct LineQuadStencil {
-				int id;
+				i32 id;
 				glm::mat4 transform;
 				glm::vec2 bounds;
-				float thickness;
+				f32 thickness;
 			};
 			struct CircleStencil {
-				int id;
+				i32 id;
 				glm::mat4 transform;
 			};
 			struct LineCircleStencil {
-				int id;
+				i32 id;
 				glm::mat4 transform;
-				float thickness;
+				f32 thickness;
 			};
 			struct TextStencil {
-				int id;
+				i32 id;
 				glm::mat4 transform;
 				Text* text;
 			};
 
 		private:
 
-			static Shader* LoadCircleStencilShader();
-			static Shader* LoadLineCircleStencilShader();
-			static Shader* LoadLineQuadStencilShader();
-			static Shader* LoadTextStencilShader();
+			static ref<Shader> LoadCircleStencilShader();
+			static ref<Shader> LoadLineCircleStencilShader();
+			static ref<Shader> LoadLineQuadStencilShader();
+			static ref<Shader> LoadTextStencilShader();
 
 			void DrawLineQuadStencil(LineQuadStencil* stencil);
 			void DrawCircleStencil(CircleStencil* stencil);
 			void DrawLineCircleStencil(LineCircleStencil* stencil);
 			void DrawTextStencil(TextStencil* stencil);
 
-			void Submit(const glm::mat4& transform, const glm::vec4& tint, StencilType stencilType, void* stencil, Texture* texture);
+			void Submit(const glm::mat4& transform, const glm::vec4& tint, StencilType stencilType, void* stencil, ref<Texture> texture);
 
 			// Checks if a quad is on the render target, used for culling
 			bool OnScreen(const glm::vec2& position, const glm::vec2& scale);
@@ -97,43 +97,43 @@ namespace Enigma {
 			struct DrawCall {
 				glm::mat4 transform;
 				glm::vec4 tint;
-				int       stencilID;
+				i32       stencilID;
 			};
 			struct Batch {
-				OrthographicCamera* camera;
-				Texture*            texture;
-				StencilType         stencilType;
-				Shader*             stencilShader;
+				ref<OrthographicCamera> camera;
+				ref<Texture>            texture;
+				StencilType             stencilType;
+				ref<Shader>             stencilShader;
 
 				std::vector<DrawCall> drawCalls;
 				std::vector<void*> stencils;
 
-				static uint64_t Hash(const Batch& batch);
+				static u64 Hash(const Batch& batch);
 			};	
 
 			// Camera variables
-			OrthographicCamera* m_CurrentCamera;
-			ViewBox             m_CameraWorldBounds;
+			ref<OrthographicCamera> m_CurrentCamera;
+			ViewBox                 m_CameraWorldBounds;
 
 			// Framebuffers
-			FrameBuffer* m_FrameBuffer;
-			FrameBuffer* m_StencilBuffer;
-			FrameBuffer* m_OutputBuffer;
+			ref<FrameBuffer> m_FrameBuffer;
+			ref<FrameBuffer> m_StencilBuffer;
+			ref<FrameBuffer> m_OutputBuffer;
 
 			// Shaders
-			Shader* m_MainShader;
-			Shader* m_CircleStencilShader;
-			Shader* m_LineCircleStencilShader;
-			Shader* m_LineQuadStencilShader;
-			Shader* m_TextStencilShader;
-			Shader* m_PostProcShader;
+			ref<Shader> m_MainShader;
+			ref<Shader> m_CircleStencilShader;
+			ref<Shader> m_LineCircleStencilShader;
+			ref<Shader> m_LineQuadStencilShader;
+			ref<Shader> m_TextStencilShader;
+			ref<Shader> m_PostProcShader;
 
 			// Default Textures
-			Texture* m_BlankTexture; // Used for anything with no texture
-			Texture* m_StencilTexture;
+			ref<Texture> m_BlankTexture; // Used for anything with no texture
+			ref<Texture> m_StencilTexture;
 
-			int m_CurrentStencilID;
-			std::map<uint64_t, Batch> m_Batches;
+			i32 m_CurrentStencilID;
+			std::map<u64, Batch> m_Batches;
 
 			// Other
 			API m_RenderAPI;
@@ -151,11 +151,11 @@ namespace Enigma {
 				{ { -1.0f, -1.0f, 0.0f }, { 0.0f, 0.0f } },
 				{ { -1.0f,  1.0f, 0.0f }, { 0.0f, 1.0f } }
 			};
-			inline static std::vector<unsigned int> s_QuadIndices = {
+			inline static std::vector<u32> s_QuadIndices = {
 				0,1,3,
 				1,2,3
 			};
-			inline static VertexArray* s_Quad;
+			inline static ref<VertexArray> s_Quad;
 		};
 
 	}

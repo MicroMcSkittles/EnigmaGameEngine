@@ -8,34 +8,32 @@ namespace Enigma {
             // Conversions for all the RendererEnums to OpenGL types.
             namespace Conversions {
                 // Converts clear mask type to the OpenGL mask type
-                uint32_t ClearMask(uint32_t mask);
+                u32 ClearMask(u32 mask);
 
                 // Converts draw mode to the OpenGL draw mode
-                uint32_t DrawMode(Renderer::DrawMode mode);
+                u32 DrawMode(Renderer::DrawMode mode);
 
                 // Converts data type to the OpenGL data type
-                uint32_t DataType(Renderer::DataType type);
+                u32 DataType(Renderer::DataType type);
                 // Converts OpenGL data type to data type
-                Renderer::DataType DataType(uint32_t type);
+                Renderer::DataType DataType(u32 type);
                 // Returns how many values are in a type
-                uint32_t DataTypeCount(Renderer::DataType type);
+                u32 DataTypeCount(Renderer::DataType type);
                 // Returns the size of data type in bytes
-                uint32_t DataTypeSize(Renderer::DataType type);
+                u32 DataTypeSize(Renderer::DataType type);
 
                 // Converts usage type to the OpenGL usage type
-                uint32_t Usage(Renderer::Usage usage);
+                u32 Usage(Renderer::Usage usage);
 
                 // Converts texture format to OpenGL texture format
-                uint32_t TexFormat(Renderer::TexFormat format);
+                u32 TexFormat(Renderer::TexFormat format);
 
                 // Converts texture filter mode to OpenGL texture filter mode
-                uint32_t TexFilterMode(Renderer::TexFilterMode mode);
+                u32 TexFilterMode(Renderer::TexFilterMode mode);
 
                 // Converts texture wrap mode to OpenGL texture wrap mode
-                uint32_t TexWrapMode(Renderer::TexWrapMode mode);
+                u32 TexWrapMode(Renderer::TexWrapMode mode);
             }
-
-            //void OpenGLErrorCheck();
 
             class OpenGLRenderAPI : public Renderer::RenderAPI {
             public:
@@ -46,23 +44,23 @@ namespace Enigma {
 
                 virtual void SetClearColorImpl(const glm::vec4& color) override;
 
-                virtual void SetClearMaskImpl(uint32_t mask) override;
+                virtual void SetClearMaskImpl(u32 mask) override;
                 virtual void ClearImpl() override;
 
                 virtual glm::vec2 GetViewportSizeImpl() override { return { (float)m_Data.viewportWidth, (float)m_Data.viewportHeight }; }
-                virtual void SetViewportImpl(int width, int height) override;
+                virtual void SetViewportImpl(i32 width, i32 height) override;
 
                 virtual void SetDrawModeImpl(Renderer::DrawMode mode) override;
-                virtual void DrawIndexedImpl(int count, Renderer::DataType type, void* data) override;
-                virtual void DrawArraysImpl(int first, int count) override;
+                virtual void DrawIndexedImpl(i32 count, Renderer::DataType type, void* data) override;
+                virtual void DrawArraysImpl(i32 first, i32 count) override;
 
             private:
                 struct {
-                    uint32_t clearMask = NULL;
-                    uint32_t drawMode  = NULL;
+                    u32 clearMask = 0;
+                    u32 drawMode  = 0;
 
-                    int viewportWidth  = NULL;
-                    int viewportHeight = NULL;
+                    i32 viewportWidth  = 0;
+                    i32 viewportHeight = 0;
                 } m_Data;
             };
 

@@ -24,9 +24,9 @@ private:
 	glm::vec2 m_Position;
 	glm::vec2 m_Scale;
 	glm::vec4 m_Tint;
-	Renderer::Texture* m_Texture;
+	ref<Renderer::Texture> m_Texture;
 
 	Engine::Surface m_Surface;
 	Renderer::Render2D* m_RenderContext;
-	Renderer::OrthographicCamera* m_Camera;
+	ref<Renderer::OrthographicCamera> m_Camera;
 };

@@ -21,7 +21,6 @@ project "TestBed"
         "src",
         rootdir .. "Enigma",
         rootdir .. "EnigmaSerialization",
-        --rootdir .. "Enigma/Enigma",
         rootdir .. "Vendor/GLM/GLM",
         rootdir .. "Vendor/ImGui/ImGui",
     }
@@ -39,8 +38,6 @@ project "TestBed"
 
 -- Windows ==========================
     filter "system:windows"
-        -- Use debugdir!
-        --location "../"
         staticruntime "On"
         systemversion "latest"
 
@@ -50,8 +47,6 @@ project "TestBed"
 
 -- Linux ==========================
     filter "system:linux"
-        --debugdir "SpaceSim"
-
         links {
             "GLAD",
             "GLFW"

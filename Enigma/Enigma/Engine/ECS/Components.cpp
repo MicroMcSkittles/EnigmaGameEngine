@@ -3,7 +3,7 @@
 
 namespace Enigma::Engine::ECS{
 
-	Transform Transform::ApplyParent(ECS* ecs) const
+	Transform Transform::ApplyParent(ref<ECS> ecs) const
 	{
 		// Return the unmodifed data if there is no parent
 		if (parent == InvalidEntityID) return *this;
@@ -22,7 +22,7 @@ namespace Enigma::Engine::ECS{
 		return model;
 	}
 
-	glm::mat4 Transform::GetWorldMatrix(ECS* ecs) const
+	glm::mat4 Transform::GetWorldMatrix(ref<ECS> ecs) const
 	{
 		Transform world = ApplyParent(ecs);
 

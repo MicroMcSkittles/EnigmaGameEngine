@@ -3,17 +3,16 @@
 
 namespace Enigma {
 	namespace Core {
-
-		SubProcStack::SubProcStack()
+		ref<SubProcess> SubProcStack::Create()
 		{
-		}
-		SubProcStack::~SubProcStack()
-		{
+			return CreateRef<SubProcess>();
 		}
 
-		ID SubProcStack::PushProcBack(SubProcess* subProc)
+		ID SubProcStack::PushProcBack(ref<SubProcess> subProc)
 		{
-			return m_SubProcesses.Create(subProc);
+			ID id = m_SubProcesses.Create(subProc);
+			subProc->m_ProcessID = id;
+			return id;
 		}
 
 		void SubProcStack::RemoveProc(ID id)
@@ -21,17 +20,17 @@ namespace Enigma {
 			m_SubProcesses.Delete(id);
 		}
 
-		SubProcess* SubProcStack::GetProcess(ID id)
+		ref<SubProcess> SubProcStack::GetProcess(ID id)
 		{
 			return m_SubProcesses.Get(id);
 		}
 
-		ID SubProcStack::GetProcessID(SubProcess* proc)
+		ID SubProcStack::GetProcessID(ref<SubProcess> proc)
 		{
 			return m_SubProcesses.Get(proc);
 		}
 
-		std::vector<SubProcess*>& SubProcStack::GetData()
+		std::vector<ref<SubProcess>>& SubProcStack::GetData()
 		{
 			return m_SubProcesses.GetData();
 		}
@@ -40,8 +39,8 @@ namespace Enigma {
 		{
 			if (e.Handled()) return;
 			// Loop through each sub process from front to back and
-			std::vector<SubProcess*>& processes = m_SubProcesses.GetData();
-			for (size_t i = processes.size(); i > 0; i--) {
+			std::vector<ref<SubProcess>>& processes = m_SubProcesses.GetData();
+			for (u64 i = processes.size(); i > 0; i--) {
 				auto proc = processes[i - 1];
 				e.Handled(proc->OnEvent(e));
 				if (e.Handled()) break;
@@ -50,8 +49,8 @@ namespace Enigma {
 
 		void SubProcStack::Update(Engine::DeltaTime deltaTime)
 		{
-			for (size_t i = 0; i < m_SubProcesses.GetData().size(); ++i) {
-				SubProcess* proc = m_SubProcesses.GetData()[i];
+			for (u64 i = 0; i < m_SubProcesses.GetData().size(); ++i) {
+				ref<SubProcess> proc = m_SubProcesses.GetData()[i];
 				if (!proc->m_Started) {
 					proc->StartUp();
 					proc->m_Started = true;

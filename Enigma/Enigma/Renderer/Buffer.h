@@ -1,4 +1,5 @@
 #pragma once
+#include "Enigma/Core/Types.h"
 #include "Enigma/Renderer/RenderEnum.h"
 #include "Enigma/Renderer/Texture.h"
 #include <vector>
@@ -8,12 +9,12 @@ namespace Enigma {
 
 		class VertexBuffer {
 		public:
-			static VertexBuffer* Create(const std::vector<DataType>& layout, Usage usage);
+			static ref<VertexBuffer> Create(const std::vector<DataType>& layout, Usage usage);
 
 			virtual void InitAttribs() = 0;
 
-			virtual void SetData(void* vertices, int size) = 0;
-			virtual void SetSubData(void* vertices, int size, int offset) = 0;
+			virtual void SetData(void* vertices, i32 size) = 0;
+			virtual void SetSubData(void* vertices, i32 size, i32 offset) = 0;
 
 			virtual void Bind() = 0;
 			virtual void Unbind() = 0;
@@ -21,13 +22,13 @@ namespace Enigma {
 
 		class IndexBuffer {
 		public:
-			static IndexBuffer* Create(DataType type, Usage usage);
+			static ref<IndexBuffer> Create(DataType type, Usage usage);
 
 			virtual int GetIndexCount() = 0;
 			virtual DataType GetIndexType() = 0;
 
-			virtual void SetData(void* indices, int size) = 0;
-			virtual void SetSubData(void* indices, int size, int offset) = 0;
+			virtual void SetData(void* indices, i32 size) = 0;
+			virtual void SetSubData(void* indices, i32 size, i32 offset) = 0;
 
 			virtual void Bind() = 0;
 			virtual void Unbind() = 0;
@@ -41,7 +42,7 @@ namespace Enigma {
 		struct Attachment {
 			AttachmentType type;
 
-			Texture* output = nullptr; // If output is not nullptr, then it will be used as the attachment
+			ref<Texture> output; // If output is not nullptr, then it will be used as the attachment
 
 			// used when creating texture
 			TexFormat format = TexFormat::RGB;
@@ -51,8 +52,8 @@ namespace Enigma {
 			DataType dataType = DataType::UnsignedByte;
 		};
 		struct FrameBufferConfig{
-			int width;
-			int height;
+			i32 width;
+			i32 height;
 
 			// color textures will be attached in the order given here
 			// depth attachment must be at the end of the list if it exists
@@ -60,18 +61,18 @@ namespace Enigma {
 		};
 		class FrameBuffer {
 		public:
-			static FrameBuffer* Create(const FrameBufferConfig & config);
+			static ref<FrameBuffer> Create(const FrameBufferConfig & config);
 
-			virtual void Resize(int width, int height) = 0;
+			virtual void Resize(i32 width, i32 height) = 0;
 
 			virtual void Bind() = 0;
 			virtual void Unbind() = 0;
 
-			virtual std::vector<Texture*> GetAttachments() = 0;
-			virtual Texture* GetColorAttachment(int index) = 0;
+			virtual std::vector<ref<Texture>> GetAttachments() = 0;
+			virtual ref<Texture> GetColorAttachment(i32 index) = 0;
 			// Returns the current color attachment at index then creates a new color attachment
-			virtual Texture* SeverColorAttachment(int index) = 0;
-			virtual Texture* GetDepthAttachment() = 0;
+			virtual ref<Texture> SeverColorAttachment(i32 index) = 0;
+			virtual ref<Texture> GetDepthAttachment() = 0;
 		};
 	}
 }

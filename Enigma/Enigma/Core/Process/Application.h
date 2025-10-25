@@ -1,4 +1,5 @@
 #pragma once
+#include "Enigma/Core/Types.h"
 #include "Enigma/Engine/DeltaTime.h"
 #include "Enigma/Core/SparseSet.h"
 #include "Enigma/Core/Window.h"
@@ -16,10 +17,11 @@ namespace Enigma {
 
 		class Application {
 		public:
-			Application(int argc, char** argv);
+			static unique<Application>& Create(i32 argc, i8** argv);
+			Application(i32 argc, i8** argv);
 			~Application();
 
-			static Application* Get() { return s_Instance; }
+			static unique<Application>& Get() { return s_Instance; }
 			// Argument 0 should always be a path to the exe file
 			static std::vector<std::string>& GetArguments();
 			// Argument 0 should always be a path to the exe file
@@ -34,28 +36,30 @@ namespace Enigma {
 			// Returns a pointer to the process
 			// T must be a inherited class of the SubProcess class
 			template<typename T>
-			static T* CreateSubProc() {
-				T* proc = new T;
+			static ref<T> CreateSubProc() {
+				ref<T> proc = CreateRef<T>();
 				ID id = s_Data->subProcStack.PushProcBack(proc);
 				return proc;
 			}
-			static void BindSubProcToWindow(SubProcess* proc, ID windowID);
+			static ref<SubProcess> GetSubProcess(ID id);
+			static void BindSubProcToWindow(ref<SubProcess> proc, ID windowID);
 
 			static ID CreateWindow(const WindowConfig& config);
 			static ID CreateWindow(const WindowConfig& windowConfig, const ImGuiConfig& imguiConfig);
-			static Window* GetWindow(ID id);
-			static ID GetWindowID(Window* window);
-			static ImGuiHandler* GetImGui(ID id);
+			static ref<Window> GetWindow(ID id);
+			static ID GetWindowID(ref<Window> window);
+			static ref<ImGuiHandler> GetImGui(ID id);
 
 			static void UseRenderAPI(Renderer::API api);
-			static Renderer::RenderAPI* GetRenderAPI(Renderer::API api);
+			static ref<Renderer::RenderAPI> GetRenderAPI(Renderer::API api);
 
 			static void Run();
 
 		private:
+			
 			struct WindowHandler {
-				Window* window;
-				ImGuiHandler* imgui;
+				ref<Window> window;
+				ref<ImGuiHandler> imgui;
 				std::vector<ID> engineInstances;
 				std::vector<ID> subProcesses;
 			};
@@ -69,16 +73,16 @@ namespace Enigma {
 
 				SubProcStack subProcStack;
 
-				IDHandler<WindowHandler*> windows;
-				std::map<Renderer::API, Renderer::RenderAPI*> renderAPIs;
+				IDHandler<ref<WindowHandler>> windows;
+				std::map<Renderer::API, ref<Renderer::RenderAPI>> renderAPIs;
 			};
 
 		private:
-			inline static Application* s_Instance;
-			inline static Data* s_Data;
+			inline static unique<Application> s_Instance;
+			inline static unique<Data> s_Data;
 		};
 
-		void ApplicationMain(Application* app);
+		void ApplicationMain();
 
 	};
 };

@@ -5,16 +5,20 @@
 
 namespace Enigma {
 	namespace Core {
-
-		Application::Application(int argc, char** argv)
+		unique<Application>& Application::Create(i32 argc, i8** argv)
 		{
-			// Call an error if an instance of application exists
-			if (s_Instance) {
+			if (s_Instance != nullptr) {
 				LOG_SOFT_ERROR("Application Instance already exists");
-				return;
+				return s_Instance;
 			}
-			s_Instance = this;
-			s_Data = new Data();
+			
+			s_Instance = CreateUnique<Application>(argc, argv);
+
+			return s_Instance;
+		}
+		Application::Application(i32 argc, i8** argv)
+		{
+			s_Data = CreateUnique<Data>();
       
 			System::Init();
 
@@ -56,12 +60,17 @@ namespace Enigma {
 
 		void Application::EventCallback(Event& e)
 		{
-			for (WindowHandler* handler : s_Data->windows.GetData()) {
+			for (ref<WindowHandler>& handler : s_Data->windows.GetData()) {
 				for (ID& id : handler->subProcesses) s_Data->subProcStack.GetProcess(id)->OnEvent(e);
 			}
 		}
 
-		void Application::BindSubProcToWindow(SubProcess* proc, ID windowID)
+		ref<SubProcess> Application::GetSubProcess(ID id)
+		{
+			return s_Data->subProcStack.GetProcess(id);
+		}
+
+		void Application::BindSubProcToWindow(ref<SubProcess> proc, ID windowID)
 		{
 			if (!s_Data->windows.Contains(windowID)) {
 				LOG_ERROR("Failed to create sub process. Window does not exist");
@@ -72,11 +81,11 @@ namespace Enigma {
 
 		ID Application::CreateWindow(const WindowConfig& config)
 		{
-			WindowHandler* handler = new WindowHandler();
+			ref<WindowHandler> handler = CreateRef<WindowHandler>();
 			handler->window = Window::Create(config);
 
 			if (!s_Data->renderAPIs.count(config.renderAPI)) {
-				Renderer::RenderAPI* api = Renderer::RenderAPI::CreateContext(config.renderAPI);
+				ref<Renderer::RenderAPI> api = Renderer::RenderAPI::CreateContext(config.renderAPI);
 				s_Data->renderAPIs.insert({ config.renderAPI, api });
 			}
 
@@ -85,11 +94,11 @@ namespace Enigma {
 		}
 		ID Application::CreateWindow(const WindowConfig& windowConfig, const ImGuiConfig& imguiConfig)
 		{
-			WindowHandler* handler = new WindowHandler();
+			ref<WindowHandler> handler = CreateRef<WindowHandler>();
 			handler->window = Window::Create(windowConfig);
 
 			if (!s_Data->renderAPIs.count(windowConfig.renderAPI)) {
-				Renderer::RenderAPI* api = Renderer::RenderAPI::CreateContext(windowConfig.renderAPI);
+				ref<Renderer::RenderAPI> api = Renderer::RenderAPI::CreateContext(windowConfig.renderAPI);
 				s_Data->renderAPIs.insert({ windowConfig.renderAPI, api });
 			}
 
@@ -100,7 +109,7 @@ namespace Enigma {
 
 			return s_Data->windows.Create(handler);
 		}
-		Window* Application::GetWindow(ID id)
+		ref<Window> Application::GetWindow(ID id)
 		{
 			if (!s_Data->windows.Contains(id)) {
 				LOG_WARNING("Window with id %s doesn't exist", id.ToString().c_str());
@@ -109,9 +118,9 @@ namespace Enigma {
 
 			return s_Data->windows.Get(id)->window;
 		}
-		ID Application::GetWindowID(Window* window)
+		ID Application::GetWindowID(ref<Window> window)
 		{
-			for (WindowHandler* handler : s_Data->windows.GetData()) {
+			for (ref<WindowHandler>& handler : s_Data->windows.GetData()) {
 				if (handler->window == window) {
 					return s_Data->windows.Get(handler);
 				}
@@ -119,14 +128,14 @@ namespace Enigma {
 			LOG_WARNING("Window isn't registered");
 			return Core::InvalidID;
 		}
-		ImGuiHandler* Application::GetImGui(ID id)
+		ref<ImGuiHandler> Application::GetImGui(ID id)
 		{
 			if (!s_Data->windows.Contains(id)) {
 				LOG_WARNING("ImGui context with id %s doesn't exist", id.ToString().c_str());
 				return nullptr;
 			}
 
-			ImGuiHandler* context = s_Data->windows.Get(id)->imgui;
+			ref<ImGuiHandler> context = s_Data->windows.Get(id)->imgui;
 			if (context == nullptr) {
 				LOG_WARNING("ImGui context with id %s doesn't exist", id.ToString().c_str());
 			}
@@ -142,7 +151,7 @@ namespace Enigma {
 			}
 			Renderer::RenderAPI::MakeContextCurrent(s_Data->renderAPIs[api]);
 		}
-		Renderer::RenderAPI* Application::GetRenderAPI(Renderer::API api)
+		ref<Renderer::RenderAPI> Application::GetRenderAPI(Renderer::API api)
 		{
 			if (!s_Data->renderAPIs.count(api)) {
 				LOG_WARNING("Render API doesn't exist ( %s )", Renderer::ToString(api).c_str());
@@ -161,14 +170,14 @@ namespace Enigma {
 				s_Data->subProcStack.Update(s_Data->deltaTime);
 				s_Data->subProcStack.Render();
 
-				std::vector<WindowHandler*>& windows = s_Data->windows.GetData();
-				for (size_t i = 0; i < windows.size(); ++i) {
-					WindowHandler* windowHandler = windows[i];
+				std::vector<ref<WindowHandler>>& windows = s_Data->windows.GetData();
+				for (u64 i = 0; i < windows.size(); ++i) {
+					ref<WindowHandler> windowHandler = windows[i];
 
 					windowHandler->window->MakeCurrent();
 					if (windowHandler->window->ShouldClose()) {
-					  delete windowHandler->window;
-					  if (windowHandler->imgui != nullptr) delete windowHandler->imgui;
+					  //windowHandler->window.;
+					  //if (windowHandler->imgui != nullptr) delete windowHandler->imgui;
 					  s_Data->windows.Delete(s_Data->windows.Get(i));
 					  i -= 1;
 					  continue;

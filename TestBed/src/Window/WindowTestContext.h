@@ -20,5 +20,5 @@ public:
 private:
 	// Input
 	Engine::Surface m_Surface;
-	Engine::Input* m_InputContext;
+	ref<Engine::Input> m_InputContext;
 };

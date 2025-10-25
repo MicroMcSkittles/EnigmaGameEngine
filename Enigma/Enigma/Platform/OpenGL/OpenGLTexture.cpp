@@ -51,7 +51,7 @@ namespace Enigma {
 				return (void*)&m_Handle;
 			}
 
-			void OpenGLTexture::Resize(int width, int height, void* data)
+			void OpenGLTexture::Resize(i32 width, i32 height, void* data)
 			{
 				m_Width = width;
 				m_Height = height;
@@ -76,7 +76,7 @@ namespace Enigma {
 			}
 			void OpenGLTexture::Bind()
 			{
-				int maxSlots = 32;
+				i32 maxSlots = 32;
 				//glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxSlots);
 				if (s_OccupiedSlotCount >= maxSlots) {
 					LOG_SOFT_ERROR("To many textures binded at once, the max is ( %i )", maxSlots);

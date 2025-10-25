@@ -11,14 +11,14 @@ namespace Enigma {
 	namespace Platform {
 		namespace OpenGL {
 			// Makes sure shader compiled correctly, logs a warning if it didn't
-			bool ValidateShader(uint32_t handle) {
-				int success = 0;
-				char info[512];
+			bool ValidateShader(u32 handle) {
+				i32 success = 0;
+				i8 info[512];
 				glGetShaderiv(handle, GL_COMPILE_STATUS, &success);
 				if (!success) {
 #ifdef ENABLE_LOGGER
 					glGetShaderInfoLog(handle, 512, NULL, info);
-					int type;
+					i32 type;
 					glGetShaderiv(handle, GL_SHADER_TYPE, &type);
 					std::string infoLog = info;
 					std::string shaderType;
@@ -88,8 +88,8 @@ namespace Enigma {
 				if (m_Config.flags & Renderer::GeometryShader) glAttachShader(m_Handle, m_GeometryHandle);
 				glLinkProgram(m_Handle);
 
-				int success = 0;
-				char info[512];
+				i32 success = 0;
+				i8 info[512];
 				glGetProgramiv(m_Handle, GL_LINK_STATUS, &success);
 				if (!success) {
 					glGetProgramInfoLog(m_Handle, 512, NULL, info);
@@ -126,68 +126,68 @@ namespace Enigma {
 				glUseProgram(m_Handle);
 
 				Renderer::Uniform& uniform = m_Uniforms[m_UniformLookup[name]];
-				uint32_t location = m_UniformLocations[m_UniformLookup[name]];
+				u32 location = m_UniformLocations[m_UniformLookup[name]];
 				uniform.data = data;
 
 				switch (uniform.type)
 				{
 				case Renderer::DataType::Int: {
-					int value = *(int*)data;
+					i32 value = *static_cast<i32*>(data);
 					glUniform1i(location, value);
 					break;
 				}
 				case Renderer::DataType::Int2: {
-					glm::ivec2 value = *(glm::ivec2*)data;
+					glm::ivec2 value = *static_cast<glm::ivec2*>(data);
 					glUniform2i(location, value.x, value.y);
 					break;
 				}
 				case Renderer::DataType::Int3: {
-					glm::ivec3 value = *(glm::ivec3*)data;
+					glm::ivec3 value = *static_cast<glm::ivec3*>(data);
 					glUniform3i(location, value.x, value.y, value.z);
 					break;
 				}
 				case Renderer::DataType::Int4: {
-					glm::ivec4 value = *(glm::ivec4*)data;
+					glm::ivec4 value = *static_cast<glm::ivec4*>(data);
 					glUniform4i(location, value.x, value.y, value.z, value.w);
 					break;
 				}
 				case Renderer::DataType::Float: {
-					float value = *(float*)data;
+					f32 value = *static_cast<f32*>(data);
 					glUniform1f(location, value);
 					break;
 				}
 				case Renderer::DataType::Float2: {
-					glm::vec2 value = *(glm::vec2*)data;
+					glm::vec2 value = *static_cast<glm::vec2*>(data);
 					glUniform2f(location, value.x, value.y);
 					break;
 				}
 				case Renderer::DataType::Float3: {
-					glm::vec3 value = *(glm::vec3*)data;
+					glm::vec3 value = *static_cast<glm::vec3*>(data);
 					glUniform3f(location, value.x, value.y, value.z);
 					break;
 				}
 				case Renderer::DataType::Float4: {
-					glm::vec4 value = *(glm::vec4*)data;
+					glm::vec4 value = *static_cast<glm::vec4*>(data);
 					glUniform4f(location, value.x, value.y, value.z, value.w);
 					break;
 				}
 				case Renderer::DataType::Matrix2: {
-					glm::mat2 value = *(glm::mat2*)data;
+					glm::mat2 value = *static_cast<glm::mat2*>(data);
 					glUniformMatrix2fv(location, 1, GL_FALSE, glm::value_ptr(value));
 					break;
 				}
 				case Renderer::DataType::Matrix3: {
-					glm::mat3 value = *(glm::mat3*)data;
+					glm::mat3 value = *static_cast<glm::mat3*>(data);
 					glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
 					break;
 				}
 				case Renderer::DataType::Matrix4: {
-					glm::mat4 value = *(glm::mat4*)data;
+					glm::mat4 value = *static_cast<glm::mat4*>(data);
 					glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 					break;
 				}
 				case Renderer::DataType::Texture2D: {
-					OpenGLTexture* texture = (OpenGLTexture*)data;
+					ref<OpenGLTexture> texture = *static_cast<ref<OpenGLTexture>*>(data);
 					glUniform1i(location, texture->GetSlot());
 					break;
 				}
@@ -200,17 +200,17 @@ namespace Enigma {
 			{
 				glUseProgram(m_Handle);
 
-				int uniformCount = 0;
+				i32 uniformCount = 0;
 				glGetProgramiv(m_Handle, GL_ACTIVE_UNIFORMS, &uniformCount);
 
-				for (int i = 0; i < uniformCount; ++i) {
-					int maxNameLength = 0;
-					int nameLength = 0;
-					int size = 0;
-					uint32_t type = GL_NONE;
+				for (i32 i = 0; i < uniformCount; ++i) {
+					i32 maxNameLength = 0;
+					i32 nameLength = 0;
+					i32 size = 0;
+					u32 type = GL_NONE;
 					glGetProgramiv(m_Handle, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxNameLength);
 
-					std::vector<char> name(maxNameLength);
+					std::vector<i8> name(maxNameLength);
 					glGetActiveUniform(m_Handle, i, maxNameLength, &nameLength, &size, &type, name.data());
 
 					Renderer::Uniform uniform;
