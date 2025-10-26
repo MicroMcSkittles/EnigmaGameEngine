@@ -174,7 +174,6 @@ namespace Enigma {
 				for (u64 i = 0; i < windows.size(); ++i) {
 					ref<WindowHandler> windowHandler = windows[i];
 
-					windowHandler->window->MakeCurrent();
 					if (windowHandler->window->ShouldClose()) {
 					  //windowHandler->window.;
 					  //if (windowHandler->imgui != nullptr) delete windowHandler->imgui;
@@ -183,6 +182,7 @@ namespace Enigma {
 					  continue;
 					}
 
+					windowHandler->window->MakeCurrent();
 					if (windowHandler->imgui != nullptr && (!windowHandler->engineInstances.empty() || !windowHandler->subProcesses.empty())) {
 						ImGuiHandler::MakeCurrent(windowHandler->imgui);
 						ImGuiHandler::StartFrame();

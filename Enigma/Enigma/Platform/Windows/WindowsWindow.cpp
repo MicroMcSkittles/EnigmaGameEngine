@@ -270,9 +270,10 @@ namespace Enigma {
 		}
 		WindowsWindow::~WindowsWindow()
 		{
-			if (DestroyWindow((HWND)m_Handle)) return;
-			LOG_SOFT_ERROR("Failed to close window ( %s ): %s", m_Config.title.c_str(), GetErrorMessage().c_str());
-		
+			if (DestroyWindow((HWND)m_Handle)) {
+				LOG_SOFT_ERROR("Failed to close window ( %s ): %s", m_Config.title.c_str(), GetErrorMessage().c_str());
+				return;
+			}
 			if (m_InputData.mouseButtonStates != nullptr) free(m_InputData.mouseButtonStates);
 
 			// TODO: delete the renderer context
