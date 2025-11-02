@@ -22,18 +22,18 @@ namespace Enigma::Editor {
 
 		ImGui::BeginChild("SceneHierachyView", ImVec2(0, 0), ImGuiChildFlags_ResizeY);
 
-		// Find the root entities
-		//m_Root.Clear();
-		//m_SceneContext->ForEach([&](Entity entity, EntityMetaData& metaData) {
-		//	if (metaData.parent.Valid()) return;
-		//	m_Root.Create(entity.GetID(), entity);
-		//});
-
 		// Show root entities
 		for (Entity entity : m_SceneContext->GetRoot().children.GetData()) {
 			EntityMetaData& metaData = entity.GetComponent<EntityMetaData>();
 			EntityNodeGui(entity, metaData);
 		}
+
+
+		ImGui::EndChild();
+
+		// Root Entity settings menu
+		if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) ImGui::OpenPopup("RootEntitySettings");
+		RootEntitySettings();
 
 		// Entity settings menu
 		if (m_OpenEntitySettings) {
@@ -41,8 +41,7 @@ namespace Enigma::Editor {
 			m_OpenEntitySettings = false;
 		}
 		EntitySettings();
-
-		ImGui::EndChild();
+		
 
 		EntityDragDropTarget({});
 
@@ -83,8 +82,6 @@ namespace Enigma::Editor {
 		}
 		EntityDragDropTarget(entity);
 
-		//EntityDrag(entity, metaData);
-
 		// Handle clicks
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) m_Selected = entity;
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
@@ -120,8 +117,12 @@ namespace Enigma::Editor {
 		}
 
 		// Show text box
-		ImGuiInputTextFlags inputFlags = ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue;
-		if (ImGui::InputText("##EntityRenameBox", &metaData.name, inputFlags)) m_EntityToRename = { };
+		ImGuiInputTextFlags inputFlags = ImGuiInputTextFlags_EnterReturnsTrue;
+		std::string buffer = metaData.name;
+		if (ImGui::InputText("##EntityRenameBox", &buffer, inputFlags)) {
+			metaData.name = buffer;
+			m_EntityToRename = { };
+		}
 		if (ImGui::IsItemDeactivated()) m_EntityToRename = { };
 
 		ImGui::PopStyleVar();
@@ -147,6 +148,18 @@ namespace Enigma::Editor {
 
 		if (ImGui::MenuItem("Remove")) {
 			m_SceneContext->RemoveEntity(m_EntitySettingsContext);
+		}
+
+		ImGui::EndPopup();
+	}
+	void SceneHierachyPanel::RootEntitySettings()
+	{
+		if (!ImGui::BeginPopup("RootEntitySettings")) return;
+
+		if (ImGui::MenuItem("Create")) {
+			m_EntityToRename = m_SceneContext->CreateEntity("New Entity");
+			m_Selected = m_EntityToRename;
+			m_RenameEntity = true;
 		}
 
 		ImGui::EndPopup();

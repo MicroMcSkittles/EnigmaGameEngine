@@ -71,6 +71,10 @@ namespace Enigma::Editor {
 			EntityMetaData& parentMetaData = parent.GetComponent<EntityMetaData>();
 			parentMetaData.children.Create(entity.GetID(), entity);
 		}
+		else {
+			EntityMetaData& root = Entity(0, this).GetComponent<EntityMetaData>();
+			root.children.Create(entity.GetID(), entity);
+		}
 
 		// Update entity metadata and transform
 		entityMetaData.parent = parent;

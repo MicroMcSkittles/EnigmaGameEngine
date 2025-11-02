@@ -16,6 +16,7 @@ namespace Enigma::Editor {
 		void EntityNodeGui(Entity entity, EntityMetaData& metaData);
 		void EntityRenameGui();
 		void EntitySettings();
+		void RootEntitySettings();
 		void EntityDrag(Entity entity, EntityMetaData& metaData);
 		void EntityDragDropTarget(Entity entity);
 
