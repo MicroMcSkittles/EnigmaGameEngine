@@ -1,6 +1,11 @@
 #pragma once
 #include <Enigma/Core/Process/SubProcess.h>
 
+#include "Scene/Scene.h"
+#include "Scene/Entity.h"
+
+#include "Panels/SceneHierarchyPanel.h"
+
 namespace Enigma::Editor {
 	class EditorProcess : public Core::SubProcess {
 	public:
@@ -15,5 +20,10 @@ namespace Enigma::Editor {
 
 	private:
 		Core::ID m_WindowID;
+
+		ref<Scene> m_Scene;
+		Entity m_Entity;
+
+		unique<SceneHierachyPanel> m_SceneHierachyPanel;
 	};	
 }

@@ -36,6 +36,10 @@ namespace Enigma {
 		return std::static_pointer_cast<T>(other);
 	}
 
+	// Lets you give a weak reference to something, that reference can be destroyed
+	template<typename T>
+	using wref = std::weak_ptr<T>;
+
 	// Only allows one instance of the pointer to exist, frees memory when destroyed
 	template<typename T>
 	using unique = std::unique_ptr<T>;

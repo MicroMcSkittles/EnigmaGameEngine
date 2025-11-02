@@ -98,8 +98,8 @@ namespace Enigma::Engine::ECS {
 			return pool->GetComponent(entityID);
 		}
 
-		template<typename T>
-		T& CreateComponent(EntityID entityID) {
+		template<typename T, typename... Args>
+		T& CreateComponent(EntityID entityID, Args... constructorArgs) {
 			u64 componentHash = ComponentHasher<T>::Hash();
 
 			// If component pool for component hash doesn't exist than create one
@@ -114,12 +114,17 @@ namespace Enigma::Engine::ECS {
 				m_EntityGroups[mask].Remove(entityID);
 			}
 			mask[m_ComponentPoolBits[componentHash]] = true;
-			if (!m_EntityGroups.count(mask)) m_EntityGroups.insert({ mask, {} });
+			if (!m_EntityGroups.count(mask)) m_EntityGroups.insert({ mask, { } });
 			m_EntityGroups[mask].Create(entityID, entityID);
 
 			// Get the component pool
 			ref<ComponentPool<T>> pool = CastRef<ComponentPool<T>>(m_ComponentPools[componentHash]);
+			
+			// Create component, use constructor args if provided
 			pool->Create(entityID);
+			if constexpr (sizeof...(Args) != 0) {
+				pool->GetComponent(entityID) = T{ constructorArgs... };
+			}
 			return pool->GetComponent(entityID);
 		}
 		template<typename T>

@@ -68,11 +68,34 @@ namespace Enigma::Core {
 			m_SparsePages.clear();
 		}
 
+		// Swaps the memory in the dense list at the given indices
+		void Swap(u64 first, u64 second) {
+			// Get Dense indices
+			u64 firstDenseIndex = GetDenseIndex(first);
+			u64 secondDenseIndex = GetDenseIndex(second);
+
+			// Swap Dense indices
+			SetDenseIndex(first, secondDenseIndex);
+			SetDenseIndex(second, firstDenseIndex);
+
+			// Swap Dense data
+			std::swap(m_Dense[firstDenseIndex], m_Dense[secondDenseIndex]);
+		}
+
 		bool Empty() { return m_Dense.empty(); }
 		u64 Size() { return m_Dense.size(); }
 		std::vector<u64>& GetIDs() { return m_IDMap; }
 		std::vector<T>& GetData() { return m_Dense; }
 
+		inline u64 GetDenseIndex(u64 id) {
+			// Find what page id is on and where on that page its on
+			u64 page = id / PageSize;
+			u64 sparseIndex = id % PageSize;
+
+			LOG_ASSERT(page >= m_SparsePages.size(), "Failed to get sparse set dense index");
+
+			return m_SparsePages[page][sparseIndex];
+		}
 	private:
 		inline void SetDenseIndex(u64 id, u64 index) {
 			// Find what page id is on and where on that page its on
@@ -86,15 +109,6 @@ namespace Enigma::Core {
 			}
 
 			m_SparsePages[page][sparseIndex] = index;
-		}
-		inline u64 GetDenseIndex(u64 id) {
-			// Find what page id is on and where on that page its on
-			u64 page = id / PageSize;
-			u64 sparseIndex = id % PageSize;
-
-			LOG_ASSERT(page >= m_SparsePages.size(), "Failed to get sparse set dense index");
-
-			return m_SparsePages[page][sparseIndex];
 		}
 
 	private:
