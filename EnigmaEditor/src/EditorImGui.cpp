@@ -60,7 +60,7 @@ namespace Enigma::Editor {
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
 
-		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
 		f32 lineHeight = s_Data->style.fontSize + GImGui->Style.FramePadding.y * 2.0f;
@@ -108,7 +108,7 @@ namespace Enigma::Editor {
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
 
-		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+		ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
 		f32 lineHeight = s_Data->style.fontSize + GImGui->Style.FramePadding.y * 2.0f;
@@ -178,7 +178,7 @@ namespace Enigma::Editor {
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
 
-		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
 		f32 lineHeight = s_Data->style.fontSize + GImGui->Style.FramePadding.y * 2.0f;
@@ -272,7 +272,7 @@ namespace Enigma::Editor {
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
 
-		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
 		f32 lineHeight = s_Data->style.fontSize + GImGui->Style.FramePadding.y * 2.0f;
@@ -320,7 +320,7 @@ namespace Enigma::Editor {
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
 
-		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+		ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
 		f32 lineHeight = s_Data->style.fontSize + GImGui->Style.FramePadding.y * 2.0f;
@@ -390,7 +390,7 @@ namespace Enigma::Editor {
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
 
-		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
 		f32 lineHeight = s_Data->style.fontSize + GImGui->Style.FramePadding.y * 2.0f;
@@ -681,6 +681,109 @@ namespace Enigma::Editor {
 		ImGui::PopID();
 
 		ImGui::EndColumns();
+
+		return edited;
+	}
+	
+	bool EditorGui::InputColor(const std::string& lable, glm::vec3& value, f32 resetValue, f32 columnWidth)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		ImFont* boldFont = io.Fonts->Fonts[static_cast<i32>(EditorFont::Bold)];
+
+		glm::vec3 rgbValue = value * 255.0f;
+		float rgbResetValue = resetValue * 255.0f;
+
+		bool edited = false;
+
+		ImGui::PushID(lable.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, columnWidth);
+		ImGui::Text("%s", lable.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+
+		f32 lineHeight = s_Data->style.fontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ToImVec(s_Data->style.colorX));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImVec(s_Data->style.pressedColorX));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ToImVec(s_Data->style.colorX));
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("R", buttonSize)) {
+			rgbValue.x = rgbResetValue;
+			edited = true;
+		}
+		if (ImGui::BeginItemTooltip()) {
+			ImGui::Text("Reset the Red field to %.2f", rgbResetValue);
+			ImGui::EndTooltip();
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+
+		ImGui::SameLine();
+		if (ImGui::DragFloat("##R", &rgbValue.x, 0.1f, 0.0f, 0.0f, "%.2f")) {
+			edited = true;
+		}
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ToImVec(s_Data->style.colorY));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImVec(s_Data->style.pressedColorY));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ToImVec(s_Data->style.colorY));
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("G", buttonSize)) {
+			rgbValue.y = rgbResetValue;
+			edited = true;
+		}
+		if (ImGui::BeginItemTooltip()) {
+			ImGui::Text("Reset the Green field to %.2f", rgbResetValue);
+			ImGui::EndTooltip();
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+
+		ImGui::SameLine();
+		if (ImGui::DragFloat("##G", &rgbValue.y, 0.1f, 0.0f, 0.0f, "%.2f")) {
+			edited = true;
+		}
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ToImVec(s_Data->style.colorZ));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImVec(s_Data->style.pressedColorZ));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ToImVec(s_Data->style.colorZ));
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("B", buttonSize)) {
+			rgbValue.z = rgbResetValue;
+			edited = true;
+		}
+		if (ImGui::BeginItemTooltip()) {
+			ImGui::Text("Reset the Blue field to %.2f", rgbResetValue);
+			ImGui::EndTooltip();
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+
+		ImGui::SameLine();
+		if (ImGui::DragFloat("##B", &rgbValue.z, 0.1f, 0.0f, 0.0f, "%.2f")) {
+			edited = true;
+		}
+		ImGui::PopItemWidth();
+
+		ImGui::PopStyleVar();
+		ImGui::PopID();
+
+		ImGui::SameLine();
+		ImGui::ColorEdit3("##ColorPicker", &value.r, ImGuiColorEditFlags_NoInputs);
+
+		ImGui::EndColumns();
+
+		if (edited) {
+			value = rgbValue / 255.0f;
+		}
 
 		return edited;
 	}

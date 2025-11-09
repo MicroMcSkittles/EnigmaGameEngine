@@ -23,6 +23,11 @@ namespace Enigma::Editor {
 		return Entity(0, this).GetComponent<EntityMetaData>();
 	}
 
+	ref<Engine::ECS::ECS> Scene::GetECS()
+	{
+		return m_ECS;
+	}
+
 	Entity Scene::CreateEntity(const std::string& name)
 	{
 		Entity entity = { m_ECS->CreateEntity(), this };
@@ -101,6 +106,10 @@ namespace Enigma::Editor {
 		if (entityMetaData.parent.Valid()) {
 			EntityMetaData& parentMetaData = entityMetaData.parent.GetComponent<EntityMetaData>();
 			parentMetaData.children.Remove(entity.GetID());
+		}
+		else {
+			EntityMetaData& root = Entity(0, this).GetComponent<EntityMetaData>();
+			root.children.Remove(entity.GetID());
 		}
 
 		m_ECS->RemoveEntity(entity.GetID());

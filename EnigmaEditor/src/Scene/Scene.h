@@ -14,6 +14,7 @@ namespace Enigma::Editor {
 		Scene();
 
 		EntityMetaData& GetRoot();
+		ref<Engine::ECS::ECS> GetECS();
 
 		Entity CreateEntity(const std::string& name = "");
 		Entity CreateEntity(Entity parent, const std::string& name = "");

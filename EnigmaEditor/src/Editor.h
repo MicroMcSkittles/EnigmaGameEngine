@@ -5,6 +5,8 @@
 #include "Scene/Entity.h"
 
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/InspectorPanel.h"
+#include "Panels/SceneViewPanel.h"
 
 namespace Enigma::Editor {
 	class EditorProcess : public Core::SubProcess {
@@ -25,5 +27,7 @@ namespace Enigma::Editor {
 		Entity m_Entity;
 
 		unique<SceneHierachyPanel> m_SceneHierachyPanel;
+		unique<SceneViewPanel> m_SceneViewPanel;
+		unique<InspectorPanel> m_InspectorPanel;
 	};	
 }

@@ -9,6 +9,7 @@ namespace Enigma::Editor {
 	public:
 		SceneHierachyPanel();
 		void SetContext(ref<Scene> scene) { m_SceneContext = scene; }
+		void SetSelectionCallback(std::function<void(Entity)> callback) { m_SelectionCallback = callback; }
 
 		void ShowGui();
 
@@ -22,6 +23,7 @@ namespace Enigma::Editor {
 
 	private:
 		ref<Scene> m_SceneContext;
+		std::function<void(Entity)> m_SelectionCallback;
 		Entity m_Selected;
 
 		bool m_OpenEntitySettings; // Used to open the entity settings menu outside the imgui tree

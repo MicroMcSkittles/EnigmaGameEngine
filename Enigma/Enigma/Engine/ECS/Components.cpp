@@ -8,30 +8,39 @@ namespace Enigma::Engine::ECS{
 		// Return the unmodifed data if there is no parent
 		if (parent == InvalidEntityID) return *this;
 
-		LOG_WARNING("Transform Transform::ApplyParent() not impl yet!!");
-		return *this;
+		//LOG_WARNING("Transform Transform::ApplyParent() not impl yet!!");
+		Transform result;
+		Transform parentTransform = ecs->GetComponent<Transform>(parent).ApplyParent(ecs);
+
+		glm::mat4 parentModel = parentTransform.GetRelativeMatrix();
+
+		result.position = parentModel * glm::vec4(position, 1.0f);
+		result.rotation = rotation    * parentTransform.rotation;
+		result.scale    = scale       * parentTransform.scale;
+
+		return result;
 	}
 
 	glm::mat4 Transform::GetRelativeMatrix() const
 	{
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, position);
-		model = model * glm::mat4_cast(rotation);
-		model = glm::scale(model, scale);
+		glm::mat4 result = glm::mat4(1.0f);
+		result = glm::translate(result, position);
+		result = result * glm::mat4_cast(rotation);
+		result = glm::scale(result, scale);
 
-		return model;
+		return result;
 	}
 
 	glm::mat4 Transform::GetWorldMatrix(ref<ECS> ecs) const
 	{
-		Transform world = ApplyParent(ecs);
+		if (parent == InvalidEntityID) return GetRelativeMatrix();
 
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, world.position);
-		model = model * glm::mat4_cast(world.rotation);
-		model = glm::scale(model, world.scale);
+		Transform parentTransform = ecs->GetComponent<Transform>(parent).ApplyParent(ecs);
+		
+		glm::mat4 result = GetRelativeMatrix();
+		result = parentTransform.GetWorldMatrix(ecs) * result;
 
-		return model;
+		return result;
 	}
 
 }

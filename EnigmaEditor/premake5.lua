@@ -23,6 +23,7 @@ project "EnigmaEditor"
         rootdir .. "EnigmaSerialization",
         rootdir .. "Vendor/GLM/GLM",
         rootdir .. "Vendor/ImGui/ImGui",
+        rootdir .. "Vendor/ImGuizmo/ImGuizmo",
     }
 
     defines {
@@ -34,6 +35,7 @@ project "EnigmaEditor"
         "Enigma",
         "EnigmaSerialization",
         "ImGui",
+        "ImGuizmo",
     }
 
 -- Windows ==========================

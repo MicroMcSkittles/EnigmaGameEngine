@@ -32,6 +32,11 @@ namespace Enigma {
 			return frustum;
 		}
 
+		ref<PerspectiveCamera> PerspectiveCamera::Create(const Frustum& frustum, const glm::vec3& position, const glm::vec3& direction)
+		{
+			return CreateRef<PerspectiveCamera>(frustum, position, direction);
+		}
+
 		PerspectiveCamera::PerspectiveCamera(const Frustum& frustum, const glm::vec3& position, const glm::vec3& direction)
 			: Camera(position, direction), m_Frustum(frustum)
 		{

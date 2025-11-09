@@ -11,3 +11,6 @@
 	path = Vendor/ImGui/ImGui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
+[submodule "Vendor/ImGuizmo/ImGuizmo"]
+	path = Vendor/ImGuizmo/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git

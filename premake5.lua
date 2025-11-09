@@ -13,11 +13,15 @@ workspace "EnigmaGameEngine"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 -- Libraries
+include "Vendor/GLFW" -- Temp
+include "Vendor/stb" -- Temp
+
 include "Vendor/GLAD"
-include "Vendor/GLFW"
 include "Vendor/GLM"
-include "Vendor/stb"
+
 include "Vendor/ImGui"
+include "Vendor/ImGuizmo"
+
 include "Enigma"
 include "EnigmaSerialization"
 include "EnigmaEditor"

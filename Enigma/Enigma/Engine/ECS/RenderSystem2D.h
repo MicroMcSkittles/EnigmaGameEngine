@@ -25,7 +25,7 @@ namespace Enigma::Engine::ECS {
 
 		void Resize(i32 width, i32 height);
 
-		void StartFrame(ref<Renderer::OrthographicCamera> camera);
+		void StartFrame(ref<Renderer::Camera> camera);
 		void EndFrame();
 
 	private:
@@ -38,7 +38,7 @@ namespace Enigma::Engine::ECS {
 	private:
 		ref<ECS> m_ECS;
 
-		ref<Renderer::OrthographicCamera> m_CurrentCamera;
+		ref<Renderer::Camera> m_CurrentCamera;
 
 		// Framebuffers
 		ref<Renderer::FrameBuffer> m_FrameBuffer;

@@ -9,6 +9,10 @@ namespace Enigma::Editor {
 
 		Entity parent;
 		Core::SparseSet<Entity> children;
+
+		// Transform data
+		bool degrees = true; // Should inputs be in degrees or radians
+		glm::vec3 eulerAngles = glm::vec3(0.0f); // Rotation stored as euler angles instead of a quaturnian
 	};
 
 }

@@ -77,7 +77,7 @@ namespace Enigma::Engine::ECS {
 		if (m_CurrentCamera != nullptr) m_CurrentCamera->Resize(width, height);
 	}
 
-	void RenderSystem2D::StartFrame(ref<Renderer::OrthographicCamera> camera)
+	void RenderSystem2D::StartFrame(ref<Renderer::Camera> camera)
 	{
 		Core::Application::UseRenderAPI(m_Config.renderAPI);
 		Renderer::RenderAPI::Clear();

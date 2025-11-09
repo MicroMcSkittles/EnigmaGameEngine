@@ -4,7 +4,7 @@
 
 namespace ImGui {
 
-	void Image(Enigma::Renderer::Texture* texture, const glm::vec2& scale, const glm::vec2& uv0, const glm::vec2& uv1) {
+	void Image(Enigma::ref<Enigma::Renderer::Texture> texture, const glm::vec2& scale, const glm::vec2& uv0, const glm::vec2& uv1) {
 		glm::vec2 dim = {
 			texture->GetWidth(),
 			texture->GetHeight()

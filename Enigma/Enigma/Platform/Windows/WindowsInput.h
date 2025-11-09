@@ -22,7 +22,7 @@ namespace Enigma {
 
 		private:
 			ref<WindowsWindow> m_Window;
-			ref<Engine::Surface> m_Surface;
+			Engine::Surface* m_Surface;
 		};
 
 	}

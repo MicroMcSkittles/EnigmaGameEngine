@@ -62,8 +62,9 @@ namespace Enigma::Editor {
 		EditorFont defaultFont = EditorFont::Regular;
 	};
 
-	inline ImVec2 ToImVec(const glm::vec2& vec) { return { vec.x, vec.y }; }
-	inline ImVec4 ToImVec(const glm::vec4& vec) { return { vec.x, vec.y, vec.z, vec.w }; }
+	inline glm::vec2 FromImVec(const ImVec2& vec) { return { vec.x, vec.y }; }
+	inline ImVec2 ToImVec(const glm::vec2& vec)   { return { vec.x, vec.y }; }
+	inline ImVec4 ToImVec(const glm::vec4& vec)   { return { vec.x, vec.y, vec.z, vec.w }; }
 
 	class EditorGui {
 	public:
@@ -85,6 +86,8 @@ namespace Enigma::Editor {
 		static bool ListBox(const std::string& lable, i32& selection, std::vector<std::string>& items, f32 columnWidth = 100.0f);
 		static bool ComboBox(const std::string& lable, i32& selection, std::vector<std::string>& items, f32 columnWidth = 100.0f);
 	
+		static bool InputColor(const std::string& lable, glm::vec3& value, f32 resetValue = 0.0f, f32 columnWidth = 100.0f);
+
 	private:
 		struct Data {
 			EditorStyle style;

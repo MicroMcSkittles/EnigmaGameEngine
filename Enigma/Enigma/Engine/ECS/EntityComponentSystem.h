@@ -59,6 +59,9 @@ namespace Enigma::Engine::ECS {
 		template<typename...>
 		friend class View;
 
+		using ComponentMask = std::bitset<MaxComponentPoolCount>;
+
+	public:
 		// Used to generate a unique number for component types
 		template<typename T>
 		class ComponentHasher {
@@ -67,8 +70,6 @@ namespace Enigma::Engine::ECS {
 		private:
 			inline static char s_ID;
 		};
-		
-		using ComponentMask = std::bitset<MaxComponentPoolCount>;
 
 	public:
 		static ref<ECS> Create() {
@@ -154,9 +155,9 @@ namespace Enigma::Engine::ECS {
 			// Make sure the entity exitsts
 			if (!m_EntityComponentMasks.Contains(entityID)) return false;
 			// Check if component pool exists
-			if (!m_ComponentPools.count(componentType)) return false;
+			if (!m_ComponentPools.count(componentHash)) return false;
 			// Make sure the entity has that component
-			if (!m_EntityComponentMasks.Get(entityID)[m_ComponentPoolBits[componentType]]) return false;
+			if (!m_EntityComponentMasks.Get(entityID)[m_ComponentPoolBits[componentHash]]) return false;
 			return true;
 		}
 

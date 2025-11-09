@@ -11,7 +11,7 @@ namespace Enigma {
 
 		struct InputConfig {
 			ref<Core::Window> window;
-			ref<Surface> surface;
+			Surface* surface;
 		};
 
 		class Input {

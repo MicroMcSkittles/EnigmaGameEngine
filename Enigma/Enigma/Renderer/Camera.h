@@ -51,6 +51,7 @@ namespace Enigma {
 
 		class PerspectiveCamera : public Camera {
 		public:
+			static ref<PerspectiveCamera> Create(const Frustum& frustum, const glm::vec3& position, const glm::vec3& direction);
 			PerspectiveCamera(const Frustum& frustum, const glm::vec3& position, const glm::vec3& direction);
 
 			virtual void Resize(u32 width, u32 height) override;

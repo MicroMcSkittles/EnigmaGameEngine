@@ -28,7 +28,6 @@ namespace Enigma::Editor {
 			EntityNodeGui(entity, metaData);
 		}
 
-
 		ImGui::EndChild();
 
 		// Root Entity settings menu
@@ -83,7 +82,10 @@ namespace Enigma::Editor {
 		EntityDragDropTarget(entity);
 
 		// Handle clicks
-		if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) m_Selected = entity;
+		if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+			m_Selected = entity;
+			m_SelectionCallback(m_Selected);
+		}
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
 			m_EntitySettingsContext = entity;
 			m_OpenEntitySettings = true;
@@ -123,7 +125,10 @@ namespace Enigma::Editor {
 			metaData.name = buffer;
 			m_EntityToRename = { };
 		}
-		if (ImGui::IsItemDeactivated()) m_EntityToRename = { };
+		if (ImGui::IsItemDeactivated()) {
+			metaData.name = buffer;
+			m_EntityToRename = { };
+		}
 
 		ImGui::PopStyleVar();
 	}
@@ -144,6 +149,7 @@ namespace Enigma::Editor {
 			m_EntityToRename = m_SceneContext->CreateEntity(m_EntitySettingsContext, "New Entity");
 			m_Selected = m_EntityToRename;
 			m_RenameEntity = true;
+			m_SelectionCallback(m_Selected);
 		}
 
 		if (ImGui::MenuItem("Remove")) {
@@ -160,17 +166,24 @@ namespace Enigma::Editor {
 			m_EntityToRename = m_SceneContext->CreateEntity("New Entity");
 			m_Selected = m_EntityToRename;
 			m_RenameEntity = true;
+			m_SelectionCallback(m_Selected);
 		}
 
 		ImGui::EndPopup();
 	}
 	void SceneHierachyPanel::EntityDrag(Entity entity, EntityMetaData& metaData)
 	{
-		if (!(ImGui::IsItemActive() && !ImGui::IsItemHovered())) return;
+		//if (!(ImGui::IsItemActive() && !ImGui::IsItemHovered())) return;
 
-		f32 mouseDelta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left).y;
-		if (fabsf(mouseDelta) < 10.f) return;
-		i32 delta = (mouseDelta < 0.0f ? -1 : 1);
+		//f32 mouseDelta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left).y;
+		//if (fabsf(mouseDelta) < 10.f) return;
+		//i32 delta = (mouseDelta < 0.0f ? -1 : 1);
+		if (m_Selected != entity) return;
+		
+		i32 delta = 0;
+		if (ImGui::IsKeyChordPressed(ImGuiKey_UpArrow | ImGuiKey_ModShift)) delta = -1;
+		else if (ImGui::IsKeyChordPressed(ImGuiKey_DownArrow | ImGuiKey_ModShift)) delta = 1;
+		else return;
 
 		ImGui::PushItemFlag(ImGuiItemFlags_AllowDuplicateId, true);
 

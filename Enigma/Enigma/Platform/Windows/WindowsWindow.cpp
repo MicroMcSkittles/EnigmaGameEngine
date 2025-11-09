@@ -144,7 +144,7 @@ namespace Enigma {
 			} break;
 			// Keyboard
 			case WM_KEYDOWN: {
-				u32 action = (lParam & (1 << 30) ? Engine::KeyCode::KeyPress : Engine::KeyCode::KeyRepeat);
+				u32 action = (lParam & (1 << 30)) ? Engine::KeyCode::KeyRepeat : Engine::KeyCode::KeyPress;
 				u32 scancode = lParam & 0xFF0000;
 				window->KeyboardEvent(WindowsInput::ConvertWindowsKeyCode(wParam), scancode, 0, action);
 			} break;
