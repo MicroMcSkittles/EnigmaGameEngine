@@ -16,18 +16,21 @@ namespace Enigma::Editor {
 	{
 		m_ECS = Engine::ECS::ECS::Create();
 		Entity root = { m_ECS->CreateEntity(), this };
-		root.CreateComponent<EntityMetaData>("Scene Root");
+		root.CreateComponent<EntityMetaData>("Untitled Scene");
 	}
 
-	EntityMetaData& Scene::GetRoot()
+	Scene::Scene(const std::string& name)
 	{
-		return Entity(0, this).GetComponent<EntityMetaData>();
+		m_ECS = Engine::ECS::ECS::Create();
+		Entity root = { m_ECS->CreateEntity(), this };
+		root.CreateComponent<EntityMetaData>(name);
 	}
 
-	ref<Engine::ECS::ECS> Scene::GetECS()
-	{
-		return m_ECS;
-	}
+	Entity Scene::GetEntity(Engine::UUID uuid) { return m_EntityUUIDs[uuid]; }
+	EntityMetaData&       Scene::GetRoot()     { return Entity(0, this).GetComponent<EntityMetaData>(); }
+	ref<Engine::ECS::ECS> Scene::GetECS()      { return m_ECS; }
+	std::string&          Scene::GetName()     { return GetRoot().name; }
+	std::string&          Scene::GetFileName() { return m_FileName; }
 
 	Entity Scene::CreateEntity(const std::string& name)
 	{

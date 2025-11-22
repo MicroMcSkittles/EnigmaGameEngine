@@ -21,9 +21,13 @@ namespace Enigma::Editor {
 		virtual void ImGui() override;
 
 	private:
+		void MainMenuBar();
+		void SaveActiveScene();
+
+	private:
 		Core::ID m_WindowID;
 
-		ref<Scene> m_Scene;
+		ref<Scene> m_ActiveScene;
 		Entity m_Entity;
 
 		unique<SceneHierachyPanel> m_SceneHierachyPanel;

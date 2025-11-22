@@ -4,6 +4,7 @@
 #include <Enigma/Core/System.h>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
+#include <filesystem>
 
 
 namespace YAML {
@@ -133,93 +134,123 @@ namespace Enigma::Editor {
 
 	using namespace Enigma::Engine;
 
+	std::string SceneSerializer::FileExtension = ".scene";
+
 	SceneSerializer::SceneSerializer(const ref<Scene>& scene) :m_Scene(scene) { }
 
 	// Serialization
-	template<typename T>
-	static void SerializeComponent(YAML::Emitter& out, const ref<Scene>& scene, Entity entity, std::function<void(YAML::Emitter&, const ref<Scene>&, T&)> func) {
+	template<typename T, typename Func>
+	static void SerializeComponent(YAML::Emitter& out, Entity entity, Func func, SceneSerializer* serializer) {
+		// Check if entity has a component T
 		if (!entity.HasComponent<T>()) return;
 
+		// Make sure the function is valid
+		if constexpr (!std::is_invocable_v<Func, SceneSerializer&, YAML::Emitter&, T&>) {
+			LOG_ERROR("Invalid serialization function");
+		}
+
+		// Call serialization function
 		T& component = entity.GetComponent<T>();
-		func(out, scene, component);
+		(serializer->*func)(out, component);
 	}
 	
-	static void SerializeEntityMetaData(YAML::Emitter& out, const ref<Scene>& scene, EntityMetaData& entityMetaData) {
+	void SceneSerializer::SerializeEntityMetaData(YAML::Emitter& out, EntityMetaData& entityMetaData) {
+		// Start EntityMetaData Node
 		out << YAML::Key << "EntityMetaData" << YAML::Comment("Extra data needed by the editor");
 		out << YAML::BeginMap;
 		
+		// Push name
 		out << YAML::Key << "Name" << YAML::Value << entityMetaData.name;
+
+		// Push parent if it exists
 		if (entityMetaData.parent) {
 			out << YAML::Key << "Parent" << YAML::Value << entityMetaData.parent.GetUUID();
 		}
 
+		// Push children if they exist
 		if (!entityMetaData.children.Empty()) {
 			out << YAML::Key << "Children" << YAML::Value << YAML::BeginSeq;
 			for (Entity& child : entityMetaData.children.GetData()) out << child.GetUUID();
 			out << YAML::EndSeq;
 		}
 
+		// Push other data
 		out << YAML::Key << "Degrees" << YAML::Value << entityMetaData.degrees;
 		out << YAML::Key << "EulerAngles" << entityMetaData.eulerAngles;
 
 		out << YAML::EndMap;
 	}
-	static void SerializeTransform(YAML::Emitter& out, const ref<Scene>& scene, ECS::Transform& transform) {
+	void SceneSerializer::SerializeTransform(YAML::Emitter& out, ECS::Transform& transform) {
+		// Start Transform Node
 		out << YAML::Key << "Transform";
 		out << YAML::BeginMap;
 		
+		// Push transform data
 		out << YAML::Key << "Position" << YAML::Value << transform.position;
 		out << YAML::Key << "Rotation" << YAML::Value << transform.rotation;
 		out << YAML::Key << "Scale"    << YAML::Value << transform.scale;
 
-		Entity parent = { transform.parent, scene.get() };
+		// Push parent if it exists
+		Entity parent = { transform.parent, m_Scene.get() };
 		if (parent) out << YAML::Key << "Parent" << YAML::Value << parent.GetUUID();
 
 		out << YAML::EndMap;
 	}
-	static void SerializeColoredQuad(YAML::Emitter& out, const ref<Scene>& scene, ECS::ColoredQuad& quad) {
+	void SceneSerializer::SerializeColoredQuad(YAML::Emitter& out, ECS::ColoredQuad& quad) {
+		// Start ColoredQuad Node
 		out << YAML::Key << "ColoredQuad";
 		out << YAML::BeginMap;
 
+		// Push tint
 		out << YAML::Key << "Tint" << YAML::Value << quad.tint;
 
 		out << YAML::EndMap;
 	}
 
-	static void SerializeEntity(YAML::Emitter& out, const ref<Scene>& scene, Entity entity) {
+	void SceneSerializer::SerializeEntity(YAML::Emitter& out, Entity entity) {
+
+		std::string sceneFileName = std::filesystem::path(m_Scene->m_FileName).filename().string();
+		LOG_MESSAGE("Serializing entity %s to ( %s )", 5, entity.GetMetaData().name.c_str(), sceneFileName.c_str());
+
+		// Start Entity Node
 		out << YAML::BeginMap;
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 
-		SerializeComponent<EntityMetaData>(out, scene, entity, SerializeEntityMetaData);
-		SerializeComponent<ECS::Transform>(out, scene, entity, SerializeTransform);
-		SerializeComponent<ECS::ColoredQuad>(out, scene, entity, SerializeColoredQuad);
+		// Push component data
+		SerializeComponent<EntityMetaData>(out, entity,   &SceneSerializer::SerializeEntityMetaData, this);
+		SerializeComponent<ECS::Transform>(out, entity,   &SceneSerializer::SerializeTransform,      this);
+		SerializeComponent<ECS::ColoredQuad>(out, entity, &SceneSerializer::SerializeColoredQuad,    this);
 
 		out << YAML::EndMap;
 	}
 
-	void SceneSerializer::Serialize(const std::string& filename)
-	{
+	void SceneSerializer::Serialize(const std::string& filename) {
+
+		LOG_MESSAGE("Serializing scene %s to ( %s )", 5, m_Scene->GetName().c_str(), m_Scene->m_FileName.c_str());
+
+		// Start emitting
 		YAML::Emitter out;
 		out << YAML::Comment("An Enigma scene file");
-
 		out << YAML::BeginMap;
-		// Scene name
-		out << YAML::Key << "Scene" << YAML::Value << "Untitled, little do they know you can't title scenes yet";
 
-		// Entities
+		// Scene name
+		out << YAML::Key << "Scene" << YAML::Value << m_Scene->GetName();
+
+		// Push entity data
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 		m_Scene->ForEach([&](Entity entity) {
-			SerializeEntity(out, m_Scene, entity);
+			SerializeEntity(out, entity);
 		});
 		out << YAML::EndSeq;
 
+		// Stop emitting
 		out << YAML::EndMap;
 
 		// Open file
 		std::ofstream file;
 		file.open(filename);
 		if (!file.is_open()) {
-			LOG_SOFT_ERROR("Failed to save to file ( %s )");
+			LOG_SOFT_ERROR("Failed to save to file ( %s )", filename.c_str());
 		}
 
 		// Save and close file
@@ -232,44 +263,57 @@ namespace Enigma::Editor {
 	}
 
 	// Deserialization
-	template<typename T>
-	static void DeserializeComponent(const std::string& name, Entity entity, std::unordered_map<Engine::UUID, Entity>& entities, const YAML::Node& data, std::function<void(const YAML::Node&, std::unordered_map<Engine::UUID, Entity>&, T&)> func) {
+	template<typename T, typename Func>
+	static void DeserializeComponent(const std::string& name, Entity entity, const YAML::Node& data, Func func, SceneSerializer* serializer) {
+		// Check if the entity has component T
 		YAML::Node componentData = data[name];
 		if (!componentData) return;
 
+		// Make sure the function is valid
+		if constexpr (!std::is_invocable_v<Func, SceneSerializer&, const YAML::Node&, T&>) {
+			LOG_ERROR("Invalid deserialization function");
+		}
+
+		// Call deserialization function
 		T& component = entity.CreateComponent<T>();
-		func(componentData, entities, component);
+		(serializer->*func)(componentData, component);
 	}
 
-	static void DeserializeEntityMetaData(const YAML::Node& data, std::unordered_map<Engine::UUID, Entity>& entities, EntityMetaData& metaData) {
+	void SceneSerializer::DeserializeEntityMetaData(const YAML::Node& data, EntityMetaData& metaData) {
 		metaData.name = data["Name"].as<std::string>();
 
+		// Get parent entity if it exists
 		if (data["Parent"]) {
-			Engine::UUID parentID = data["Parent"].as<Engine::UUID>();
-			metaData.parent = entities[parentID];
+			UUID parentID = data["Parent"].as<UUID>();
+			metaData.parent = m_Scene->m_EntityUUIDs[parentID];
 		}
 		
+		// Get children if they exist
 		if (data["Children"]) {
 			u64 childCount = 0;
 			for (const YAML::Node& child : data["Children"]) {
-				Engine::UUID childID = child.as<Engine::UUID>();
-				metaData.children.Create(childCount++, entities[childID]);
+				UUID childID = child.as<UUID>();
+				metaData.children.Create(childCount++, m_Scene->m_EntityUUIDs[childID]);
 			}
 		}
 
+		// Other info
 		metaData.degrees = data["Degrees"].as<bool>();
 		metaData.eulerAngles = data["EulerAngles"].as<glm::vec3>();
 	}
-	static void DeserializeTransform(const YAML::Node& data, std::unordered_map<Engine::UUID, Entity>& entities, ECS::Transform& transform) {
+	void SceneSerializer::DeserializeTransform(const YAML::Node& data, ECS::Transform& transform) {
+		// Deserialize transform data
 		transform.position = data["Position"].as<glm::vec3>();
 		transform.rotation = data["Rotation"].as<glm::quat>();
 		transform.scale    = data["Scale"].as<glm::vec3>();
+
+		// Get parent entity if it exists
 		if (data["Parent"]) {
-			Engine::UUID uuid = data["Parent"].as<Engine::UUID>();
-			transform.parent = entities[uuid].GetID();
+			UUID uuid = data["Parent"].as<UUID>();
+			transform.parent = m_Scene->m_EntityUUIDs[uuid].GetID();
 		}
 	}
-	static void DeserializeColoredQuad(const YAML::Node& data, std::unordered_map<Engine::UUID, Entity>& entities, ECS::ColoredQuad& quad) {
+	void SceneSerializer::DeserializeColoredQuad(const YAML::Node& data, ECS::ColoredQuad& quad) {
 		quad.tint = data["Tint"].as<glm::vec3>();
 	}
 
@@ -281,47 +325,51 @@ namespace Enigma::Editor {
 
 		// Make sure it is a Scene file
 		if (!data["Scene"]) {
-			LOG_WARNING("Failed to deserialize scene ( %s ) invalid format", filename.c_str());
+			LOG_WARNING("Failed to deserialize scene ( %s ), invalid format", filename.c_str());
 			return false;
 		}
+
+		m_Scene->m_FileName = filename;
 
 		// Get Scene name
 		std::string sceneName = data["Scene"].as<std::string>();
 		LOG_MESSAGE("Deserializing scene \"%s\" from ( %s )", 5, sceneName.c_str(), filename.c_str());
 		
+		// Get scene entities
 		YAML::Node entities = data["Entities"];
-		std::unordered_map<Engine::UUID, Entity> entityUUIDMap;
-		if (entities) {
-			// Create an entity for every entity in the file
-			for (YAML::Node entityData : entities) {
-				// Create entity
-				Entity entity = { m_Scene->m_ECS->CreateEntity(), m_Scene.get() };
-				if (!entityData["EntityMetaData"]["Parent"]) {
-					EntityMetaData& sceneRoot = Entity(0, m_Scene.get()).GetComponent<EntityMetaData>();
-					sceneRoot.children.Create(entity.GetID(), entity);
-				}
+		if (!entities) return true;
 
-				// Create UUID
-				Engine::UUID uuid = entityData["Entity"].as<Engine::UUID>();
-				entity.CreateComponent<Engine::UUID>(uuid);
+		// Create an entity for every entity in the file
+		for (YAML::Node entityData : entities) {
+			Entity entity = { m_Scene->m_ECS->CreateEntity(), m_Scene.get() };
 
-				entityUUIDMap.insert({ uuid, entity });
+			// "Store" entity to the scene root if it doesn't have a parent
+			if (!entityData["EntityMetaData"]["Parent"]) {
+				EntityMetaData& sceneRoot = Entity(0, m_Scene.get()).GetComponent<EntityMetaData>();
+				sceneRoot.children.Create(entity.GetID(), entity);
 			}
 
-			// Load the components for each entity
-			for (YAML::Node entityData : entities) {
+			// Create UUID
+			UUID uuid = entityData["Entity"].as<UUID>();
+			entity.CreateComponent<UUID>(uuid);
 
-				Engine::UUID uuid = entityData["Entity"].as<Engine::UUID>();
-				Entity entity = entityUUIDMap[uuid];
-
-				// Deserialize components
-				DeserializeComponent<EntityMetaData>("EntityMetaData", entity, entityUUIDMap, entityData, DeserializeEntityMetaData);
-				DeserializeComponent<ECS::Transform>("Transform", entity, entityUUIDMap, entityData, DeserializeTransform);
-				DeserializeComponent<ECS::ColoredQuad>("ColoredQuad", entity, entityUUIDMap, entityData, DeserializeColoredQuad);
-			
-				LOG_MESSAGE("Deserialized entity \"%s\", UUID: %u", 5, entity.GetComponent<EntityMetaData>().name.c_str(), uuid);
-			}
+			m_Scene->m_EntityUUIDs.insert({ uuid, entity });
 		}
+
+		// Load the components for each entity
+		for (YAML::Node entityData : entities) {
+
+			UUID uuid = entityData["Entity"].as<UUID>();
+			Entity entity = m_Scene->m_EntityUUIDs[uuid];
+
+			// Deserialize components
+			DeserializeComponent<EntityMetaData>("EntityMetaData", entity, entityData, &SceneSerializer::DeserializeEntityMetaData, this);
+			DeserializeComponent<ECS::Transform>("Transform",      entity, entityData, &SceneSerializer::DeserializeTransform,      this);
+			DeserializeComponent<ECS::ColoredQuad>("ColoredQuad",  entity, entityData, &SceneSerializer::DeserializeColoredQuad,    this);
+
+			LOG_MESSAGE("Deserialized entity \"%s\", UUID: %s", 5, entity.GetComponent<EntityMetaData>().name.c_str(), static_cast<std::string>(uuid).c_str());
+		}
+		
 
 		return true;
 	}

@@ -1,83 +1,22 @@
 #include "Editor.h"
+#include "EditorImGui.h"
+#include "Serialization/SceneSerializer.h"
+
+#include <Enigma/Core/System.h>
 #include <Enigma/Core/Process/Application.h>
 #include <Enigma/Core/Event/WindowEvent.h>
+
+#include <Enigma/Engine/ECS/Components.h>
+
+#include <filesystem>
 
 #include <imgui.h>
 #include <ImGuizmo.h>
 
-#include "EditorImGui.h"
-#include <Enigma/Engine/ECS/Components.h>
-
-//#include <EnigmaSerialization/YAML.h>
-#include "Serialization/SceneSerializer.h"
-
-//static int GUARD_BAND_SIZE_BYTES = 64;
-//
-//static void* MyCustomAlloc(size_t userNumBytes)
-//{
-//	// We'll allocate space for a guard-band, then space to store the user's allocation-size-value,
-//	// then space for the user's actual data bytes, then finally space for a second guard-band at the end.
-//	char* buf = (char*)malloc(GUARD_BAND_SIZE_BYTES + sizeof(userNumBytes) + userNumBytes + GUARD_BAND_SIZE_BYTES);
-//	if (buf)
-//	{
-//		char* w = buf;
-//		memset(w, 'B', GUARD_BAND_SIZE_BYTES);          w += GUARD_BAND_SIZE_BYTES;
-//		memcpy(w, &userNumBytes, sizeof(userNumBytes)); w += sizeof(userNumBytes);
-//		char* userRetVal = w;                          w += userNumBytes;
-//		memset(w, 'E', GUARD_BAND_SIZE_BYTES);          w += GUARD_BAND_SIZE_BYTES;
-//		printf("Allocated %u: %p\n", userNumBytes, userRetVal);
-//		return userRetVal;
-//	}
-//	else throw std::bad_alloc();
-//}
-//
-//static void MyCustomDelete(void* p)
-//{
-//	if (p == NULL) return;   // since delete NULL is a safe no-op
-//
-//	// Convert the user's pointer back to a pointer to the top of our header bytes
-//	char* internalCP = ((char*)p) - (GUARD_BAND_SIZE_BYTES + sizeof(size_t));
-//
-//	char* cp = internalCP;
-//	for (int i = 0; i < GUARD_BAND_SIZE_BYTES; i++)
-//	{
-//		if (*cp++ != 'B')
-//		{
-//			printf("CORRUPTION DETECTED at BEGIN GUARD BAND POSITION %i of allocation %p\n", i, p);
-//			abort();
-//		}
-//	}
-//
-//	// At this point, (cp) should be pointing to the stored (userNumBytes) field
-//	size_t userNumBytes = *((const size_t*)cp);
-//	cp += sizeof(userNumBytes);  // skip past the user's data
-//	cp += userNumBytes;
-//
-//	// At this point, (cp) should be pointing to the second guard band
-//	for (int i = 0; i < GUARD_BAND_SIZE_BYTES; i++)
-//	{
-//		if (*cp++ != 'E')
-//		{
-//			printf("CORRUPTION DETECTED at END GUARD BAND POSITION %i of allocation %p\n", i, p);
-//			abort();
-//		}
-//	}
-//
-//	// If we got here, no corruption was detected, so free the memory and carry on
-//	printf("Dealocated %u: %p\n", userNumBytes, internalCP);
-//	free(internalCP);
-//}
-//
-//// override the global C++ new/delete operators to call our
-//// instrumented functions rather than their normal behavior
-//void* operator new(size_t s)    throw(std::bad_alloc) { return MyCustomAlloc(s); }
-//void* operator new[](size_t s)  throw(std::bad_alloc) {return MyCustomAlloc(s); }
-//void operator delete(void* p)   throw() { MyCustomDelete(p); }
-//void operator delete[](void* p) throw() {MyCustomDelete(p); }
-
 namespace Enigma::Editor {
 	void EditorProcess::StartUp()
 	{
+		SET_LOGGER_FLAGS(Core::LoggerTime | Core::LoggerShort);
 
 		// Create Window
 		Core::WindowConfig windowConfig;
@@ -102,44 +41,21 @@ namespace Enigma::Editor {
 		EditorStyle style;
 		EditorGui::SetStyle(style);
 
-		// Setup scene
-		/*m_Scene = Scene::Create();
-		m_Entity = m_Scene->CreateEntity("Cube");
-		m_Scene->CreateEntity(m_Entity, "Child 1");
-		m_Scene->CreateEntity(m_Entity, "Child 2");
-		m_Scene->CreateEntity("Box even");
-		m_Scene->CreateEntity("Circle");
-
-		m_Entity.CreateComponent<Engine::ECS::ColoredQuad>(glm::vec3(1.0f, 0.0f, 0.0f));*/
-
-		{
-			ref<Scene> scene = Scene::Create();
-			Entity entity = scene->CreateEntity("Cube");
-			scene->CreateEntity(entity, "Child 1");
-			scene->CreateEntity(entity, "Child 2");
-			scene->CreateEntity("Box even");
-			scene->CreateEntity("Circle");
-
-			entity.CreateComponent<Engine::ECS::ColoredQuad>(glm::vec3(1.0f, 0.0f, 0.0f));
-
-			SceneSerializer serializer(scene);
-			serializer.Serialize("Scene.yml");
-		}
-
-		m_Scene = Scene::Create();
-		SceneSerializer serializer(m_Scene);
-		serializer.Deserialize("Scene.yml");
+		// Load Scene
+		m_ActiveScene = Scene::Create();
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.Deserialize("Scene.scene");
 
 		// Configure Inspector
 		m_InspectorPanel = CreateUnique<InspectorPanel>();
 
 		// Configure Scene View
 		m_SceneViewPanel = CreateUnique<SceneViewPanel>(m_WindowID);
-		m_SceneViewPanel->SetContext(m_Scene);
+		m_SceneViewPanel->SetContext(m_ActiveScene);
 
 		// Configure Scene Hierachy
 		m_SceneHierachyPanel = CreateUnique<SceneHierachyPanel>();
-		m_SceneHierachyPanel->SetContext(m_Scene);
+		m_SceneHierachyPanel->SetContext(m_ActiveScene);
 		m_SceneHierachyPanel->SetSelectionCallback([&](Entity selected) {
 			m_SceneViewPanel->SetSelected(selected);
 			m_InspectorPanel->SetContext(EntityInspectorContext::Create(selected));
@@ -179,8 +95,61 @@ namespace Enigma::Editor {
 	{
 		ImGuizmo::BeginFrame();
 
+		MainMenuBar();
+
 		m_InspectorPanel->ShowGui();
 		m_SceneHierachyPanel->ShowGui();
 		m_SceneViewPanel->ShowGui();
+	}
+	void EditorProcess::MainMenuBar()
+	{
+		if (!ImGui::BeginMainMenuBar()) return;
+		if (!ImGui::BeginMenu("File")) goto EndMainMenuBar;
+
+		if (ImGui::MenuItem("Save Scene")) {
+			// Open file dialog if there is no scene path
+			if (m_ActiveScene->GetFileName().empty()) {
+				m_ActiveScene->GetFileName() = Core::System::SaveFileDialog("Enigma Scene (*.scene)\0*.scene\0", m_WindowID);
+			}
+
+			SaveActiveScene();
+		}
+		if (ImGui::MenuItem("Save Scene As")) {
+			// Get filename from a filedialog
+			m_ActiveScene->GetFileName() = Core::System::SaveFileDialog("Enigma Scene (*.scene)\0*.scene\0", m_WindowID);
+
+			SaveActiveScene();
+		}
+		if (ImGui::MenuItem("Open Scene")) {
+			std::string scenePath = Core::System::OpenFileDialog("Enigma Scene (*.scene)\0*.scene\0", m_WindowID);
+			if (!scenePath.empty()) {
+				m_ActiveScene = Scene::Create();
+				SceneSerializer serializer(m_ActiveScene);
+				serializer.Deserialize(scenePath);
+
+				m_SceneHierachyPanel->SetContext(m_ActiveScene);
+				m_SceneViewPanel->SetContext(m_ActiveScene);
+				m_InspectorPanel->SetContext(nullptr);
+			}
+		}
+		ImGui::EndMenu();
+
+		EndMainMenuBar:
+		ImGui::EndMainMenuBar();
+	}
+
+	void EditorProcess::SaveActiveScene()
+	{
+		// Make sure filepath has the proper extension
+		std::filesystem::path scenePath = m_ActiveScene->GetFileName();
+		if (!scenePath.has_extension() || scenePath.extension() != SceneSerializer::FileExtension) {
+			m_ActiveScene->GetFileName().append(SceneSerializer::FileExtension);
+		}
+
+		// If filename is still empty then the save was cancled by the user
+		if (!m_ActiveScene->GetFileName().empty()) {
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.Serialize(m_ActiveScene->GetFileName());
+		}
 	}
 }

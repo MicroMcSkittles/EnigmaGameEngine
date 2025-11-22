@@ -1,4 +1,3 @@
-#include <crtdbg.h>
 #include <Enigma/Enigma.h>
 #include <Enigma/Core/EntryPoint.h>
 

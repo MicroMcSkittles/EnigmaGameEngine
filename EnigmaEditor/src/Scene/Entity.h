@@ -7,6 +7,8 @@
 
 namespace Enigma::Editor {
 
+	struct EntityMetaData;
+
 	// Wrapper for the ECS entity
 	class Entity {
 	public:
@@ -24,6 +26,8 @@ namespace Enigma::Editor {
 
 		Engine::ECS::EntityID GetID() const { return m_EntityID; }
 		Engine::UUID GetUUID() { return GetComponent<Engine::UUID>(); }
+
+		EntityMetaData& GetMetaData();
 
 		bool Valid() const;
 		operator bool() { return Valid(); }

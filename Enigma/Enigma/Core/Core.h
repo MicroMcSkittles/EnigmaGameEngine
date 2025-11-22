@@ -44,7 +44,7 @@
 #    include "Enigma/Core/Utilities/Logger.h"
 
 #    define INIT_LOGGER(config)        Enigma::Core::Logger::Init(config)
-#    define SET_LOGGER_FLAGS(flags)    Enigma::Core::Logger::GetConfig()->flags = flags;
+#    define SET_LOGGER_FLAGS(newFlags)    Enigma::Core::Logger::GetConfig()->flags = newFlags;
 #    define SET_LOG_CALLBACK(callback) Enigma::Core::Logger::GetConfig()->logCallback = callback;
 
 #    ifdef PLATFORM_WINDOWS

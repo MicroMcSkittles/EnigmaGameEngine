@@ -1,5 +1,6 @@
 #pragma once
 #include "Enigma/Core/Types.h"
+#include <string>
 
 namespace Enigma::Engine {
 
@@ -11,6 +12,7 @@ namespace Enigma::Engine {
 		UUID(const UUID& other) = default;
 
 		operator u64() const { return m_UUID; }
+		operator std::string() const { return std::to_string(m_UUID); }
 
 	private:
 		u64 m_UUID;

@@ -1,52 +1,54 @@
 # An Enigma scene file
-Scene: Untitled, little do they know you can't title scenes yet
+Scene: Untitled Scene
 Entities:
-  - Entity: 11055849481746997469
+  - Entity: 17819971743026343214
     EntityMetaData:  # Extra data needed by the editor
       Name: Cube
       Children:
-        - 3881758233126869630
-        - 6510499250599114611
+        - 3309148762156736941
+        - 6372347871745484202
       Degrees: true
-      EulerAngles: [0, 0, 0]
+      EulerAngles: [0, -0, 0]
     Transform:
-      Position: [0, 0, 0]
+      Position: [-1.46042, 1.1760902, 0]
       Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
     ColoredQuad:
       Tint: [1, 0, 0]
-  - Entity: 3881758233126869630
+  - Entity: 3309148762156736941
     EntityMetaData:  # Extra data needed by the editor
       Name: Child 1
-      Parent: 11055849481746997469
+      Parent: 17819971743026343214
       Degrees: true
       EulerAngles: [0, 0, 0]
     Transform:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
-      Parent: 11055849481746997469
-  - Entity: 6510499250599114611
+      Parent: 17819971743026343214
+  - Entity: 6372347871745484202
     EntityMetaData:  # Extra data needed by the editor
       Name: Child 2
-      Parent: 11055849481746997469
+      Parent: 17819971743026343214
       Degrees: true
       EulerAngles: [0, 0, 0]
     Transform:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
-      Parent: 11055849481746997469
-  - Entity: 14676620911027441704
+      Parent: 17819971743026343214
+  - Entity: 1011743532427908353
     EntityMetaData:  # Extra data needed by the editor
       Name: Box even
       Degrees: true
-      EulerAngles: [0, 0, 0]
+      EulerAngles: [0, -0, 0]
     Transform:
-      Position: [0, 0, 0]
+      Position: [0.8142165, -0.5298867, 0]
       Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
-  - Entity: 11737070636240253236
+    ColoredQuad:
+      Tint: [0.64478767, 0, 0.62736124]
+  - Entity: 17834252377480884730
     EntityMetaData:  # Extra data needed by the editor
       Name: Circle
       Degrees: true

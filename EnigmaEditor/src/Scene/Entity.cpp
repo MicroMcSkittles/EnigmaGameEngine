@@ -18,6 +18,11 @@ namespace Enigma::Editor {
 		return (m_EntityID != other.m_EntityID) || (m_Scene != other.m_Scene);
 	}
 
+	EntityMetaData& Entity::GetMetaData()
+	{
+		return GetComponent<EntityMetaData>();
+	}
+
 	bool Entity::Valid() const
 	{
 		if (m_EntityID == Engine::ECS::InvalidEntityID) return false;
@@ -30,7 +35,7 @@ namespace Enigma::Editor {
 
 	void TransformGui(Entity entity) {
 		Engine::ECS::Transform& transform = entity.GetComponent<Engine::ECS::Transform>();
-		EntityMetaData& metaData = entity.GetComponent<EntityMetaData>();
+		EntityMetaData& metaData = entity.GetMetaData();
 
 		// TODO: add relative and degree controlls
 
@@ -205,12 +210,11 @@ namespace Enigma::Editor {
 	{
 		if (!m_Entity) return;
 		ImGui::PushID(m_Entity.GetID());
-		EntityMetaData& metaData = m_Entity.GetComponent<EntityMetaData>();
+		EntityMetaData& metaData = m_Entity.GetMetaData();
 
-		Engine::UUID& uuid = m_Entity.GetUUID();
-		std::string uuidStr = std::to_string(static_cast<u64>(uuid));
+		std::string uuid = m_Entity.GetUUID();
 
-		ImGui::Text("%s | Entity ID: %u | UUID: %s", metaData.name.c_str(), m_Entity.GetID(), uuidStr.c_str());
+		ImGui::Text("%s | Entity ID: %u | UUID: %s", metaData.name.c_str(), m_Entity.GetID(), uuid.c_str());
 
 		ComponentGui::ShowComponents(m_Entity);
 
