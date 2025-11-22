@@ -1,0 +1,57 @@
+# An Enigma scene file
+Scene: Untitled, little do they know you can't title scenes yet
+Entities:
+  - Entity: 11055849481746997469
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Cube
+      Children:
+        - 3881758233126869630
+        - 6510499250599114611
+      Degrees: true
+      EulerAngles: [0, 0, 0]
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+    ColoredQuad:
+      Tint: [1, 0, 0]
+  - Entity: 3881758233126869630
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Child 1
+      Parent: 11055849481746997469
+      Degrees: true
+      EulerAngles: [0, 0, 0]
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+      Parent: 11055849481746997469
+  - Entity: 6510499250599114611
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Child 2
+      Parent: 11055849481746997469
+      Degrees: true
+      EulerAngles: [0, 0, 0]
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+      Parent: 11055849481746997469
+  - Entity: 14676620911027441704
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Box even
+      Degrees: true
+      EulerAngles: [0, 0, 0]
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+  - Entity: 11737070636240253236
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Circle
+      Degrees: true
+      EulerAngles: [0, 0, 0]
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]

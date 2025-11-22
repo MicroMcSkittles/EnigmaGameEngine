@@ -6,6 +6,7 @@
 namespace Enigma::Editor {
 
 	class Entity;
+	class SceneSerializer;
 	struct EntityMetaData;
 
 	class Scene {
@@ -32,6 +33,7 @@ namespace Enigma::Editor {
 		ref<Engine::ECS::ECS> m_ECS;
 
 		friend class Entity;
+		friend class SceneSerializer;
 	};
 
 }

@@ -3,6 +3,7 @@
 #include <Enigma/Core/System.h>
 
 #include <iomanip>
+#include "YAML.h"
 
 namespace Enigma {
 	namespace Serialization {
@@ -81,6 +82,7 @@ namespace Enigma {
 				}
 				return elements.at(id);
 			}
+
 
 			DataTreeNode& DataTreeNode::operator[](const std::string& name)
 			{

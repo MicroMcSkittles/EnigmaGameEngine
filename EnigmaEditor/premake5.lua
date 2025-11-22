@@ -14,6 +14,7 @@ project "EnigmaEditor"
         "src/**.h",
         "src/**.cpp",
         "src/**.hpp",
+        "src/**.inl",
         rootdir .. "Vendor/stb/stb/stb_image.h",
     }
 
@@ -24,10 +25,12 @@ project "EnigmaEditor"
         rootdir .. "Vendor/GLM/GLM",
         rootdir .. "Vendor/ImGui/ImGui",
         rootdir .. "Vendor/ImGuizmo/ImGuizmo",
+        rootdir .. "Vendor/yaml-cpp/yaml-cpp/include",
     }
 
     defines {
-        "GLM_ENABLE_EXPERIMENTAL"
+        "GLM_ENABLE_EXPERIMENTAL",
+        "YAML_CPP_STATIC_DEFINE",
     }
 
 -- Link libraries ===================
@@ -36,6 +39,7 @@ project "EnigmaEditor"
         "EnigmaSerialization",
         "ImGui",
         "ImGuizmo",
+        "yaml-cpp",
     }
 
 -- Windows ==========================

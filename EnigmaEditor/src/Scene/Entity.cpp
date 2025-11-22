@@ -8,12 +8,16 @@
 #include <imgui.h>
 
 namespace Enigma::Editor {
-	Entity::Entity() : m_EntityID(Engine::ECS::InvalidEntityID), m_Scene(nullptr) {
-
+	Entity::Entity() : m_EntityID(Engine::ECS::InvalidEntityID), m_Scene(nullptr) { }
+	Entity::Entity(Engine::ECS::EntityID entityID, Scene* scene) : m_EntityID(entityID), m_Scene(scene) { }
+	
+	bool Entity::operator==(const Entity& other) {
+		return (m_EntityID == other.m_EntityID) && (m_Scene == other.m_Scene);
 	}
-	Entity::Entity(Engine::ECS::EntityID entityID, Scene* scene) : m_EntityID(entityID), m_Scene(scene) {
-
+	bool Entity::operator!=(const Entity& other) {
+		return (m_EntityID != other.m_EntityID) || (m_Scene != other.m_Scene);
 	}
+
 	bool Entity::Valid() const
 	{
 		if (m_EntityID == Engine::ECS::InvalidEntityID) return false;
@@ -199,10 +203,14 @@ namespace Enigma::Editor {
 	}
 	void EntityInspectorContext::ShowGui()
 	{
-		if (!m_Entity.Valid()) return;
+		if (!m_Entity) return;
 		ImGui::PushID(m_Entity.GetID());
 		EntityMetaData& metaData = m_Entity.GetComponent<EntityMetaData>();
-		ImGui::Text("%s | Entity ID: %u | UUID: %u", metaData.name.c_str(), m_Entity.GetID(), 12385710);
+
+		Engine::UUID& uuid = m_Entity.GetUUID();
+		std::string uuidStr = std::to_string(static_cast<u64>(uuid));
+
+		ImGui::Text("%s | Entity ID: %u | UUID: %s", metaData.name.c_str(), m_Entity.GetID(), uuidStr.c_str());
 
 		ComponentGui::ShowComponents(m_Entity);
 

@@ -45,7 +45,7 @@ project "Enigma"
     }
 
     defines {
-        "GLM_ENABLE_EXPERIMENTAL"
+        "GLM_ENABLE_EXPERIMENTAL",
     }
 
 -- Link libraries ===================

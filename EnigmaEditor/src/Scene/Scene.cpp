@@ -2,6 +2,7 @@
 #include "Scene/Entity.h"
 #include "Scene/Components.h"
 #include <Enigma/Engine/ECS/Components.h>
+#include <Enigma/Engine/UUID.h>
 
 using namespace Enigma::Engine::ECS;
 
@@ -32,6 +33,7 @@ namespace Enigma::Editor {
 	{
 		Entity entity = { m_ECS->CreateEntity(), this };
 		entity.CreateComponent<EntityMetaData>(name);
+		entity.CreateComponent<Engine::UUID>();
 		entity.CreateComponent<Transform>();
 
 		EntityMetaData& root = Entity(0, this).GetComponent<EntityMetaData>();
@@ -44,6 +46,9 @@ namespace Enigma::Editor {
 		// Create child entity
 		Entity entity = { m_ECS->CreateEntity(), this };
 		entity.CreateComponent<EntityMetaData>(name, parent);
+		entity.CreateComponent<Engine::UUID>();
+
+		// Create and set transform
 		Transform& transform = entity.CreateComponent<Transform>();
 		transform.parent = parent.GetID();
 
@@ -62,7 +67,7 @@ namespace Enigma::Editor {
 		if (entityMetaData.parent == parent) return;
 
 		// Update old parent metadata
-		if (entityMetaData.parent.Valid()) {
+		if (entityMetaData.parent) {
 			EntityMetaData& originalParent = entityMetaData.parent.GetComponent<EntityMetaData>();
 			originalParent.children.Remove(entity.GetID());
 		}
@@ -72,7 +77,7 @@ namespace Enigma::Editor {
 		}
 
 		// Update new parent metadata
-		if (parent.Valid()) {
+		if (parent) {
 			EntityMetaData& parentMetaData = parent.GetComponent<EntityMetaData>();
 			parentMetaData.children.Create(entity.GetID(), entity);
 		}
@@ -89,7 +94,7 @@ namespace Enigma::Editor {
 
 	bool Scene::IsChild(Entity entity, Entity parent)
 	{
-		if (!entity.Valid() || !parent.Valid()) return false;
+		if (!entity || !parent) return false;
 
 		EntityMetaData& metaData = entity.GetComponent<EntityMetaData>();
 		if (metaData.parent == parent) return true;
@@ -99,11 +104,11 @@ namespace Enigma::Editor {
 
 	void Scene::RemoveEntity(Entity entity)
 	{
-		if (!entity.Valid()) return;
+		if (!entity) return;
 
 		// update entity and parent entity metadata
 		EntityMetaData& entityMetaData = entity.GetComponent<EntityMetaData>();
-		if (entityMetaData.parent.Valid()) {
+		if (entityMetaData.parent) {
 			EntityMetaData& parentMetaData = entityMetaData.parent.GetComponent<EntityMetaData>();
 			parentMetaData.children.Remove(entity.GetID());
 		}

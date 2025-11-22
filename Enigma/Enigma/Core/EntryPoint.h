@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
 	dir = std::string(dir.begin() + dir.find_last_of('/') + 1, dir.end());
 	chdir(dir.c_str());
 #endif
-
+	
 	Enigma::unique<Enigma::Core::Application>& app = Enigma::Core::Application::Create(argc, argv);
 
 	Enigma::Core::ApplicationMain();
