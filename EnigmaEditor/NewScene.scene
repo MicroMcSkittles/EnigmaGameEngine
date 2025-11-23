@@ -8,11 +8,11 @@ Entities:
         - 3309148762156736941
         - 6372347871745484202
       Degrees: true
-      EulerAngles: [0, -0, 52.38889]
+      EulerAngles: [0, -0, 0]
     Transform:
       Position: [-1.46042, 1.1760902, 0]
-      Rotation: [0, 0, 0.44141886, 0.8973012]
-      Scale: [0.57973003, 0.15000002, 0.15000004]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
     ColoredQuad:
       Tint: [1, 0, 0]
   - Entity: 3309148762156736941
@@ -52,10 +52,8 @@ Entities:
     EntityMetaData:  # Extra data needed by the editor
       Name: Circle
       Degrees: true
-      EulerAngles: [0, -0, 0]
+      EulerAngles: [0, 0, 0]
     Transform:
-      Position: [0.77544445, 2.067851, 0]
+      Position: [0, 0, 0]
       Rotation: [0, 0, 0, 1]
-      Scale: [0.27000004, 0.27000004, 0.27000004]
-    ColoredQuad:
-      Tint: [0.32254916, 0.7027027, 0.18720652]
+      Scale: [1, 1, 1]

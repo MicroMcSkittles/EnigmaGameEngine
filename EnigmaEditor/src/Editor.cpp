@@ -13,6 +13,8 @@
 #include <imgui.h>
 #include <ImGuizmo.h>
 
+#include <Enigma/Core/Utilities/Utilities.h>
+
 namespace Enigma::Editor {
 	void EditorProcess::StartUp()
 	{
@@ -60,7 +62,6 @@ namespace Enigma::Editor {
 			m_SceneViewPanel->SetSelected(selected);
 			m_InspectorPanel->SetContext(EntityInspectorContext::Create(selected));
 		});
-
 	}
 	void EditorProcess::ShutDown()
 	{
@@ -140,16 +141,16 @@ namespace Enigma::Editor {
 
 	void EditorProcess::SaveActiveScene()
 	{
+		if (m_ActiveScene->GetFileName().empty()) return;
+
 		// Make sure filepath has the proper extension
 		std::filesystem::path scenePath = m_ActiveScene->GetFileName();
 		if (!scenePath.has_extension() || scenePath.extension() != SceneSerializer::FileExtension) {
 			m_ActiveScene->GetFileName().append(SceneSerializer::FileExtension);
 		}
 
-		// If filename is still empty then the save was cancled by the user
-		if (!m_ActiveScene->GetFileName().empty()) {
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.Serialize(m_ActiveScene->GetFileName());
-		}
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.Serialize(m_ActiveScene->GetFileName());
+
 	}
 }
