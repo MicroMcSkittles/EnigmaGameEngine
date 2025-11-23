@@ -8,10 +8,16 @@ project "Enigma"
     targetdir (rootdir .. "bin/" .. outputdir .. "/%{prj.name}")
     objdir (rootdir .. "bin-int/" .. outputdir .. "/%{prj.name}")
 
+    pchheader "Enigma/EnigmaPCH.h"
+    pchsource "Enigma/EnigmaPCH.cpp"
+
 -- Include all c/c++ files in project
     files
 	{
         "Enigma/Enigma.h",
+        "Enigma/EnigmaPCH.h",
+        "Enigma/EnigmaPCH.cpp",
+
         "Enigma/Core/**.c",
         "Enigma/Core/**.h",
         "Enigma/Core/**.cpp",

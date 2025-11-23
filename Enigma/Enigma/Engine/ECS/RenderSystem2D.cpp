@@ -1,3 +1,4 @@
+#include "Enigma/EnigmaPCH.h"
 #include "Enigma/Engine/ECS/RenderSystem2D.h"
 #include "Enigma/Renderer/DefaultShaders.h"
 #include "Enigma/Core/Process/Application.h"

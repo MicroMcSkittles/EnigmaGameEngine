@@ -1,14 +1,13 @@
+#include "Enigma/EnigmaPCH.h"
 #include "Enigma/Platform/OpenGL/OpenGLRenderAPI.h"
 #include "Enigma/Core/Core.h"
 #include "Enigma/Core/Window.h"
 
 #include <glad/glad.h>
 
-namespace Enigma {
-    namespace Platform {
-        namespace OpenGL {
-			namespace Conversions {
-				u32 ClearMask(u32 mask) {
+namespace Enigma::Platform::OpenGL {
+	namespace Conversions {
+		u32 ClearMask(u32 mask) {
 					uint32_t gl_mask = 0;
 					gl_mask |= (mask & Renderer::ClearMask::ColorBufferBit) ? GL_COLOR_BUFFER_BIT : 0;
 					gl_mask |= (mask & Renderer::ClearMask::DepthBufferBit) ? GL_DEPTH_BUFFER_BIT : 0;
@@ -16,7 +15,7 @@ namespace Enigma {
 					return gl_mask;
 				}
 
-				u32 DrawMode(Renderer::DrawMode mode) {
+		u32 DrawMode(Renderer::DrawMode mode) {
 					switch (mode)
 					{
 					case Renderer::DrawMode::Points: return GL_POINTS;
@@ -37,7 +36,7 @@ namespace Enigma {
 					}
 				}
 
-				u32 DataType(Renderer::DataType type) {
+		u32 DataType(Renderer::DataType type) {
 					switch (type)
 					{
 					case Renderer::DataType::UnsignedByte:  return GL_UNSIGNED_BYTE;
@@ -61,7 +60,7 @@ namespace Enigma {
 						return 0;
 					}
 				}
-				Renderer::DataType DataType(u32 type) {
+		Renderer::DataType DataType(u32 type) {
 					switch (type)
 					{
 					case GL_UNSIGNED_BYTE:  return Renderer::DataType::UnsignedByte;
@@ -84,7 +83,7 @@ namespace Enigma {
 						return Renderer::DataType::None;
 					}
 				}
-				u32 DataTypeCount(Renderer::DataType type) {
+		u32 DataTypeCount(Renderer::DataType type) {
 					switch (type)
 					{
 					case Renderer::DataType::UnsignedByte:  return 1;
@@ -99,7 +98,7 @@ namespace Enigma {
 						return 0;
 					}
 				}
-				u32 DataTypeSize(Renderer::DataType type) {
+		u32 DataTypeSize(Renderer::DataType type) {
 					switch (type)
 					{
 					case Renderer::DataType::UnsignedByte:  return sizeof(unsigned char) * 1;
@@ -115,7 +114,7 @@ namespace Enigma {
 					}
 				}
 
-				u32 Usage(Renderer::Usage usage) {
+		u32 Usage(Renderer::Usage usage) {
 					switch (usage)
 					{
 					case Renderer::Usage::StaticDraw: return GL_STATIC_DRAW;
@@ -133,7 +132,7 @@ namespace Enigma {
 					}
 				}
 
-				u32 TexFormat(Renderer::TexFormat format) {
+		u32 TexFormat(Renderer::TexFormat format) {
 					switch (format)
 					{
 					case Renderer::TexFormat::RED:              return GL_RED;
@@ -152,7 +151,7 @@ namespace Enigma {
 					}
 				}
 
-				u32 TexFilterMode(Renderer::TexFilterMode mode) {
+		u32 TexFilterMode(Renderer::TexFilterMode mode) {
 					switch (mode)
 					{
 					case Renderer::TexFilterMode::Nearest: return GL_NEAREST;
@@ -163,7 +162,7 @@ namespace Enigma {
 					}
 				}
 
-				u32 TexWrapMode(Renderer::TexWrapMode mode) {
+		u32 TexWrapMode(Renderer::TexWrapMode mode) {
 					switch (mode)
 					{
 					case Renderer::TexWrapMode::Repeat: return GL_REPEAT;
@@ -175,65 +174,62 @@ namespace Enigma {
 						return 0;
 					}
 				}
-			}
+	}
 
-			void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
-			{
-				
-				if (severity == GL_DEBUG_SEVERITY_LOW) return;
-				if (severity == GL_DEBUG_SEVERITY_MEDIUM) return;
-				if (type == GL_DEBUG_TYPE_ERROR) {
-					LOG_WARNING("OpenGL error, Type: 0x%x ( %s )", type, message);
-					return;
-				}
-			}
-
-            OpenGLRenderAPI::OpenGLRenderAPI() {
-				if (!gladLoadGLLoader((GLADloadproc)Core::Window::GetGLProcAddress)) {
-                    LOG_ERROR("Failed to initialize GLAD");
-                    return;
-                }
-				
-				//glEnable(GL_DEBUG_OUTPUT);
-				//glDebugMessageCallback(MessageCallback, nullptr);
-
-				glEnable(GL_DEPTH_TEST); // TODO: add an enable function to RenderAPI
-				glLineWidth(1.f);
-
-                LOG_MESSAGE("Initialized OpenGL!!", 2);
-            }
-
-            void OpenGLRenderAPI::SetClearColorImpl(const glm::vec4& color) {
-                glClearColor(color.r, color.g, color.b, color.a);
-                LOG_MESSAGE("OpenGL clear color set to ( %f, %f, %f, %f ).", 6, color.r, color.g, color.b, color.a);
-            }
-
-            void OpenGLRenderAPI::SetClearMaskImpl(u32 mask) {
-				m_Data.clearMask = Conversions::ClearMask(mask);
-				LOG_MESSAGE("OpenGL clear mask set to ( %s )", 6, Renderer::ToString((Renderer::ClearMask)mask).c_str());
-            }
-            void OpenGLRenderAPI::ClearImpl() {
-                glClear(m_Data.clearMask);
-            }
-
-            void OpenGLRenderAPI::SetViewportImpl(i32 width, i32 height) {
-                glViewport(0, 0, width, height);
-				m_Data.viewportWidth = width;
-				m_Data.viewportHeight = height;
-                LOG_MESSAGE("OpenGL viewport set to ( %i, %i )", 6, width, height);
-            }
-
-            void OpenGLRenderAPI::SetDrawModeImpl(Renderer::DrawMode mode) {
-				m_Data.drawMode = Conversions::DrawMode(mode);
-				LOG_MESSAGE("OpenGL draw mode set to ( %s )", 6, Renderer::ToString(mode).c_str());
-            }
-            void OpenGLRenderAPI::DrawIndexedImpl(i32 count, Renderer::DataType type, void* data) {
-				glDrawElements(m_Data.drawMode, count, Conversions::DataType(type), data);
-            }
-            void OpenGLRenderAPI::DrawArraysImpl(i32 first, i32 count) {
-				glDrawArrays(m_Data.drawMode, first, count);
-            }
-			
+	void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+	{
+		
+		if (severity == GL_DEBUG_SEVERITY_LOW) return;
+		if (severity == GL_DEBUG_SEVERITY_MEDIUM) return;
+		if (type == GL_DEBUG_TYPE_ERROR) {
+			LOG_WARNING("OpenGL error, Type: 0x%x ( %s )", type, message);
+			return;
 		}
+	}
+
+    OpenGLRenderAPI::OpenGLRenderAPI() {
+		if (!gladLoadGLLoader((GLADloadproc)Core::Window::GetGLProcAddress)) {
+            LOG_ERROR("Failed to initialize GLAD");
+            return;
+        }
+		
+		//glEnable(GL_DEBUG_OUTPUT);
+		//glDebugMessageCallback(MessageCallback, nullptr);
+
+		glEnable(GL_DEPTH_TEST); // TODO: add an enable function to RenderAPI
+		glLineWidth(1.f);
+
+        LOG_MESSAGE("Initialized OpenGL!!", 2);
+    }
+
+    void OpenGLRenderAPI::SetClearColorImpl(const glm::vec4& color) {
+        glClearColor(color.r, color.g, color.b, color.a);
+        LOG_MESSAGE("OpenGL clear color set to ( %f, %f, %f, %f ).", 6, color.r, color.g, color.b, color.a);
+    }
+
+    void OpenGLRenderAPI::SetClearMaskImpl(u32 mask) {
+		m_Data.clearMask = Conversions::ClearMask(mask);
+		LOG_MESSAGE("OpenGL clear mask set to ( %s )", 6, Renderer::ToString((Renderer::ClearMask)mask).c_str());
+    }
+    void OpenGLRenderAPI::ClearImpl() {
+        glClear(m_Data.clearMask);
+    }
+
+    void OpenGLRenderAPI::SetViewportImpl(i32 width, i32 height) {
+        glViewport(0, 0, width, height);
+		m_Data.viewportWidth = width;
+		m_Data.viewportHeight = height;
+        LOG_MESSAGE("OpenGL viewport set to ( %i, %i )", 6, width, height);
+    }
+
+    void OpenGLRenderAPI::SetDrawModeImpl(Renderer::DrawMode mode) {
+		m_Data.drawMode = Conversions::DrawMode(mode);
+		LOG_MESSAGE("OpenGL draw mode set to ( %s )", 6, Renderer::ToString(mode).c_str());
+    }
+    void OpenGLRenderAPI::DrawIndexedImpl(i32 count, Renderer::DataType type, void* data) {
+		glDrawElements(m_Data.drawMode, count, Conversions::DataType(type), data);
+    }
+    void OpenGLRenderAPI::DrawArraysImpl(i32 first, i32 count) {
+		glDrawArrays(m_Data.drawMode, first, count);
     }
 }

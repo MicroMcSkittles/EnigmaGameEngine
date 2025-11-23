@@ -8,6 +8,9 @@ project "EnigmaSerialization"
     targetdir (rootdir .. "bin/" .. outputdir .. "/%{prj.name}")
     objdir (rootdir .. "bin-int/" .. outputdir .. "/%{prj.name}")
 
+    --pchheader "Enigma/EnigmaPCH.h"
+    --pchsource "../Enigma/EnigmaPCH.cpp"
+
 -- Include all c/c++ files in project
     files
 	{

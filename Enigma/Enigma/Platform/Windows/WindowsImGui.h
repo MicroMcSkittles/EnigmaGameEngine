@@ -4,35 +4,33 @@
 
 #include <imgui.h>
 
-namespace Enigma {
-	namespace Platform {
+namespace Enigma::Platform {
 
-		class WindowsImGuiContext : public Core::ImGuiHandler {
-		public:
-			WindowsImGuiContext(const Core::ImGuiConfig& config);
+	class WindowsImGuiContext : public Core::ImGuiHandler {
+	public:
+		WindowsImGuiContext(const Core::ImGuiConfig& config);
 
-			virtual void MadeCurrent() override;
+		virtual void MadeCurrent() override;
 
-			virtual void StartFrameImpl() override;
-			virtual void EndFrameImpl() override;
+		virtual void StartFrameImpl() override;
+		virtual void EndFrameImpl() override;
 
-		private:
-			void InitOpenGL();
+	private:
+		void InitOpenGL();
 
-			void StartDocking();
+		void StartDocking();
 
-		private:
-			ref<Core::Window> m_WindowInstance;
-			Renderer::API m_RenderAPI;
+	private:
+		ref<Core::Window> m_WindowInstance;
+		Renderer::API m_RenderAPI;
 
-			ref<ImGuiContext> m_Context;
+		ref<ImGuiContext> m_Context;
 
-			bool m_EnableDocking;
+		bool m_EnableDocking;
 
-		private:
-			
-			inline static bool s_InitGLFW = false;
-		};
+	private:
+		
+		inline static bool s_InitGLFW = false;
+	};
 
-	}
 }

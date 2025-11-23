@@ -1,3 +1,4 @@
+#include "Enigma/EnigmaPCH.h"
 #include "Enigma/Engine/ECS/Components.h"
 #include "Enigma/Core/Core.h"
 
