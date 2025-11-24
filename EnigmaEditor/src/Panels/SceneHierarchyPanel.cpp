@@ -18,7 +18,12 @@ namespace Enigma::Editor {
 	{
 		Core::EventHandler handler(e);
 
+		handler.Dispatch<EntitySelected>([&](EntitySelected& e) {
+			m_Selected = e.GetEntity();
+			return false;
+		});
 		handler.Dispatch<SceneChange>([&](SceneChange& e) {
+			m_Selected = { };
 			SetContext(e.GetScene());
 			return false;
 		});
@@ -184,7 +189,7 @@ namespace Enigma::Editor {
 			m_EntityToRename = m_SceneContext->CreateEntity("New Entity");
 			m_Selected = m_EntityToRename;
 			m_RenameEntity = true;
-			//m_SelectionCallback(m_Selected);
+			
 			EntitySelected e(m_Selected);
 			Core::Application::EventCallback(e);
 		}

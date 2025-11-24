@@ -160,12 +160,13 @@ namespace Enigma::Engine::ECS {
 	void RenderSystem2D::ColoredQuadSystem(Transform& transform, ColoredQuad& quad)
 	{
 		// Create a model matrix
-		Transform worldTransform = transform.ApplyParent(m_ECS);
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, worldTransform.position);
-		model = model * glm::mat4_cast(worldTransform.rotation);
+		//Transform worldTransform = transform.ApplyParent(m_ECS);
+		//glm::mat4 model = glm::mat4(1.0f);
+		//model = glm::translate(model, worldTransform.position);
+		//model = model * glm::mat4_cast(worldTransform.rotation);
 		//model = glm::rotate(model, transform.rotation.z, { 0,0,1 });
-		model = glm::scale(model, worldTransform.scale);
+		//model = glm::scale(model, worldTransform.scale);
+		glm::mat4 model = transform.GetWorldMatrix(m_ECS);
 
 		glm::vec4 tint = { quad.tint, 1.0f };
 

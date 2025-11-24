@@ -72,5 +72,7 @@ namespace Enigma::Renderer {
 		// Returns the current color attachment at index then creates a new color attachment
 		virtual ref<Texture> SeverColorAttachment(i32 index) = 0;
 		virtual ref<Texture> GetDepthAttachment() = 0;
+
+		virtual void GetPixel(i32 x, i32 y, i32 attachment, void* data) = 0;
 	};
 }

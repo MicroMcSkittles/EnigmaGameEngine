@@ -28,6 +28,10 @@ namespace Enigma::Engine::ECS {
 		void StartFrame(ref<Renderer::Camera> camera);
 		void EndFrame();
 
+		RenderSystem2DConfig GetConfig() { return m_Config; }
+
+		static ref<Renderer::VertexArray> GetQuad() { return s_Quad; }
+
 	private:
 		void ColoredQuadSystem(Transform& transform, ColoredQuad& quad);
 		void TexturedQuadSystem(Transform& transform, TexturedQuad& quad);

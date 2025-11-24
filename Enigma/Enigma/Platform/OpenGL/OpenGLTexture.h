@@ -17,6 +17,8 @@ namespace Enigma::Platform::OpenGL {
 		virtual i32 GetWidth() override { return m_Width; }
 		virtual i32 GetHeight() override { return m_Height; }
 
+		virtual Renderer::TextureConfig GetConfig() override { return m_Config; }
+
 		i32 GetSlot() { return m_CurrentSlot; }
 
 	private:

@@ -58,6 +58,8 @@ namespace Enigma::Platform::OpenGL {
 		virtual ref<Renderer::Texture> SeverColorAttachment(i32 index) override;
 		virtual ref<Renderer::Texture> GetDepthAttachment() override;
 
+		virtual void GetPixel(i32 x, i32 y, i32 attachment, void* data) override;
+
 	private:
 		Renderer::FrameBufferConfig m_Config;
 

@@ -20,7 +20,11 @@ namespace Enigma::Editor {
 		void ShowGui();
 
 	private:
+		void OnMouse(Core::MouseButton& e);
+		void OnScroll(Core::MouseScroll& e);
 		void OnKeyboard(Core::Keyboard& e);
+
+		void EntityPicker();
 
 		void ShowGizmos();
 		void ShowOverlayWindow(f32 x, f32 y);
@@ -28,19 +32,31 @@ namespace Enigma::Editor {
 	private:
 		Core::ID m_WindowID;
 		
+		// Context Variables
 		ref<Scene> m_Context;
 		Entity m_Selected;
 
-		float m_CameraSpeed;
-		i32 m_GizmoType;
+		// Render Variables
+		Engine::ECS::RenderSystem2DConfig m_RenderSystemConfig;
+		ref<Engine::ECS::RenderSystem2D> m_RenderSystem;
+		ref<Renderer::Texture> m_Frame;
+		ref<Renderer::Camera> m_Camera;
 
-		bool m_Hovered;
+		// Input Variables
+		bool m_Hovered; // Is the user hovering the scene view image
+		bool m_Focused; // Is the scene view window focused
+		bool m_GizmoHovered; // Is the user hovering a gizmo
 		Engine::Surface m_Surface;
 		ref<Engine::Input> m_InputContext;
+		
+		f32 m_CameraSpeed;
+		f32 m_ZoomSpeed;
+		f32 m_MaxZoom; // The most the user can be zoomed in
+		f32 m_MinZoom; // The most the user can be zoomed out
+		i32 m_GizmoType;
 
-		ref<Renderer::Texture> m_Frame;
-		ref<Engine::ECS::RenderSystem2D> m_RenderSystem;
-		ref<Renderer::Camera> m_Camera;
+		ref<Renderer::Shader> m_EntityPickerShader;
+		ref<Renderer::FrameBuffer> m_EntityPickerBuffer;
 	};
 
 }

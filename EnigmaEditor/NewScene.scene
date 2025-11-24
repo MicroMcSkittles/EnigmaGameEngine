@@ -43,7 +43,7 @@ Entities:
       Degrees: true
       EulerAngles: [0, -0, 0]
     Transform:
-      Position: [0.8142165, -0.5298867, 0]
+      Position: [1.2665591, 0.37479782, 0]
       Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
     ColoredQuad:
@@ -57,3 +57,29 @@ Entities:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
+  - Entity: 6774614023802723212
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Guy
+      Children:
+        - 4755910048389678621
+      Degrees: true
+      EulerAngles: [0, -0, 1.8983974]
+    Transform:
+      Position: [0.12924093, 1.7447495, 0]
+      Rotation: [0, 0, 0.016565885, 0.9998628]
+      Scale: [2.0499995, 2.0499995, 2.05]
+    ColoredQuad:
+      Tint: [0.2579121, 0.32144165, 0.84555984]
+  - Entity: 4755910048389678621
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Eye
+      Parent: 6774614023802723212
+      Degrees: true
+      EulerAngles: [0, -0, 0]
+    Transform:
+      Position: [0.012924135, 0.40064728, 0.5999996]
+      Rotation: [0, 0, 0, 1]
+      Scale: [0.27000004, 0.27000004, 0.26999983]
+      Parent: 6774614023802723212
+    ColoredQuad:
+      Tint: [1, 1, 1]

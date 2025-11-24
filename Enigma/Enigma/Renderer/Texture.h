@@ -38,5 +38,7 @@ namespace Enigma::Renderer {
 
 		virtual i32 GetWidth() = 0;
 		virtual i32 GetHeight() = 0;
+
+		virtual TextureConfig GetConfig() = 0;
 	};
 }

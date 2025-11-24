@@ -57,7 +57,7 @@ namespace Enigma::Core {
 
 	class MouseButton : public Event {
 	public:
-		EVENT_TYPE(MouseScroll);
+		EVENT_TYPE(MouseButton);
 		EVENT_CATEGORY(EventCategory::InputEvent |EventCategory::MouseEvent);
 
 		MouseButton(i32 button, i32 action, i32 mods)

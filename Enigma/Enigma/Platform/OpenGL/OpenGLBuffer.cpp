@@ -242,4 +242,18 @@ namespace Enigma::Platform::OpenGL {
 		}
 		return m_Attachments[m_DepthAttachmentID];
 	}
+
+	void OpenGLFrameBuffer::GetPixel(i32 x, i32 y, i32 attachment, void* data)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, m_Handle);
+
+		Renderer::TextureConfig attachmentConfig = m_Attachments[attachment]->GetConfig();
+		u32 format = Conversions::TexFormat(attachmentConfig.format);
+		u32 dataType = Conversions::DataType(attachmentConfig.dataType);
+		
+		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachment);
+		glReadPixels(x, y, 1, 1, format, dataType, data);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
 }

@@ -81,6 +81,7 @@ namespace Enigma::Editor {
 
 		m_SceneViewPanel->OnEvent(e);
 		m_SceneHierachyPanel->OnEvent(e);
+		m_InspectorPanel->OnEvent(e);
 
 		return false;
 	}
