@@ -23,6 +23,7 @@ namespace Enigma::Editor {
 	private:
 		void MainMenuBar();
 		void MainMenuBarFile();
+		void MainMenuBarHelp();
 		void SaveActiveScene();
 
 	private:

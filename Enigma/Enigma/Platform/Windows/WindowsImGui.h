@@ -15,10 +15,10 @@ namespace Enigma::Platform {
 		virtual void StartFrameImpl() override;
 		virtual void EndFrameImpl() override;
 
+		virtual void DockSpaceImpl(f32 x, f32 y, f32 widthOffset, f32 heightOffset) override;
+
 	private:
 		void InitOpenGL();
-
-		void StartDocking();
 
 	private:
 		ref<Core::Window> m_WindowInstance;

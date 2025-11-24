@@ -26,12 +26,16 @@ namespace Enigma::Core {
 		static void StartFrame() { s_CurrentContext->StartFrameImpl(); }
 		static void EndFrame() { s_CurrentContext->EndFrameImpl(); }
 
+		static void DockSpace(f32 x = 0, f32 y = 0, f32 widthOffset = 0, f32 heightOffset = 0) { s_CurrentContext->DockSpaceImpl(x,y, widthOffset, heightOffset); }
+
 	private:
 		
 		virtual void MadeCurrent() = 0;
 
 		virtual void StartFrameImpl() = 0;
 		virtual void EndFrameImpl() = 0;
+
+		virtual void DockSpaceImpl(f32 x, f32 y, f32 width, f32 height) = 0;
 
 	private:
 		inline static ref<ImGuiHandler> s_CurrentContext;

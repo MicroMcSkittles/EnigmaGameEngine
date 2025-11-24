@@ -121,7 +121,10 @@ namespace Enigma::Editor {
 		// Get entity at mouse position
 		Engine::ECS::EntityID entityID = 0;
 		m_EntityPickerBuffer->GetPixel(mouseX, mouseY, 0, &entityID);
-		if (entityID == 0) return;
+		if (entityID == 0) {
+			m_Selected = {};
+			return;
+		}
 		entityID -= 1;
 
 		// Create selection evet

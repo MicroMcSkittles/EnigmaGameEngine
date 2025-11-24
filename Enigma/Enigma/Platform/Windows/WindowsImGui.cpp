@@ -49,30 +49,6 @@ namespace Enigma::Platform {
 		}
 	}
 
-	void WindowsImGuiContext::StartDocking()
-	{
-		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
-			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-			ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus |
-			ImGuiWindowFlags_NoBackground;
-
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(viewport->Pos);
-		ImGui::SetNextWindowSize(viewport->Size);
-		ImGui::SetNextWindowViewport(viewport->ID);
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		ImGui::Begin("InvisibleWindow", nullptr, windowFlags);
-		ImGui::PopStyleVar(3);
-
-		ImGuiID dockSpaceId = ImGui::GetID("InvisibleWindowDockSpace");
-
-		ImGui::DockSpace(dockSpaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
-		ImGui::End();
-	}
-
 	void WindowsImGuiContext::MadeCurrent()
 	{
 		ImGui::SetCurrentContext(m_Context.get());
@@ -83,8 +59,6 @@ namespace Enigma::Platform {
 		ImGui_ImplWin32_NewFrame();
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui::NewFrame();
-
-		if (m_EnableDocking) StartDocking();
 	}
 	void WindowsImGuiContext::EndFrameImpl()
 	{
@@ -93,5 +67,47 @@ namespace Enigma::Platform {
 
 		//ImGui::UpdatePlatformWindows();
 		//ImGui::RenderPlatformWindowsDefault();
+	}
+
+	void Platform::WindowsImGuiContext::DockSpaceImpl(f32 x, f32 y, f32 widthOffset, f32 heightOffset)
+	{
+		if (!m_EnableDocking) {
+			LOG_WARNING("Docking isn't enabled");
+			return;
+		}
+
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
+			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus |
+			ImGuiWindowFlags_NoBackground;
+
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+		ImVec2 position = viewport->Pos;
+		ImVec2 size = viewport->Size;
+		//position.y += ImGui::GetFrameHeight();
+		position.x += x;
+		position.y += y;
+
+		size.x += widthOffset;
+		size.y += heightOffset;
+
+		ImGui::SetNextWindowPos(position);
+		ImGui::SetNextWindowSize(size);
+		ImGui::SetNextWindowViewport(viewport->ID);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("InvisibleWindow", nullptr, windowFlags);
+		ImGui::PopStyleVar(3);
+
+		ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
+		dockspaceFlags |= ImGuiDockNodeFlags_PassthruCentralNode;
+
+		ImGuiID dockSpaceId = ImGui::GetID("InvisibleWindowDockSpace");
+
+		ImGui::DockSpace(dockSpaceId, ImVec2(0.0f, 0.0f), dockspaceFlags);
+		ImGui::End();
 	}
 }

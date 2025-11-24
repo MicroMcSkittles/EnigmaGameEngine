@@ -101,6 +101,8 @@ namespace Enigma::Editor {
 		ImGuizmo::BeginFrame();
 
 		MainMenuBar();
+		Core::ImGuiHandler::DockSpace(0, ImGui::GetFrameHeight(), 0, -ImGui::GetFrameHeight());
+		//Core::ImGuiHandler::DockSpace();
 
 		m_InspectorPanel->ShowGui();
 		m_SceneHierachyPanel->ShowGui();
@@ -110,7 +112,9 @@ namespace Enigma::Editor {
 	{
 		if (!ImGui::BeginMainMenuBar()) return;
 
+		// Show tabs
 		MainMenuBarFile();
+		MainMenuBarHelp();
 
 		ImGui::EndMainMenuBar();
 	}
@@ -143,6 +147,25 @@ namespace Enigma::Editor {
 				Core::Application::EventCallback(e);
 			}
 		}
+		ImGui::EndMenu();
+	}
+
+	void EditorProcess::MainMenuBarHelp()
+	{
+		if (!ImGui::BeginMenu("Help")) return;
+
+		// TODO: this
+
+		if (ImGui::MenuItem("Scene Hierachy")) {
+
+		}
+		if (ImGui::MenuItem("Scene View")) {
+
+		}
+		if (ImGui::MenuItem("Inspector")) {
+
+		}
+
 		ImGui::EndMenu();
 	}
 
