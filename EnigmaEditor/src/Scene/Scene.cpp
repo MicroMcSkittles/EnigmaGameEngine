@@ -26,6 +26,11 @@ namespace Enigma::Editor {
 		root.CreateComponent<EntityMetaData>(name);
 	}
 
+	Scene::~Scene()
+	{
+		//LOG_WARNING("Destroying scene %s", GetName().c_str());
+	}
+
 	Entity Scene::GetEntity(Engine::UUID uuid) { return m_EntityUUIDs[uuid]; }
 	EntityMetaData&       Scene::GetRoot()     { return Entity(0, this).GetComponent<EntityMetaData>(); }
 	ref<Engine::ECS::ECS> Scene::GetECS()      { return m_ECS; }

@@ -1,5 +1,6 @@
 #include "Editor.h"
 #include "EditorImGui.h"
+#include "EditorEvents.h"
 #include "Serialization/SceneSerializer.h"
 
 #include <Enigma/Core/System.h>
@@ -58,10 +59,6 @@ namespace Enigma::Editor {
 		// Configure Scene Hierachy
 		m_SceneHierachyPanel = CreateUnique<SceneHierachyPanel>();
 		m_SceneHierachyPanel->SetContext(m_ActiveScene);
-		m_SceneHierachyPanel->SetSelectionCallback([&](Entity selected) {
-			m_SceneViewPanel->SetSelected(selected);
-			m_InspectorPanel->SetContext(EntityInspectorContext::Create(selected));
-		});
 	}
 	void EditorProcess::ShutDown()
 	{
@@ -77,7 +74,13 @@ namespace Enigma::Editor {
 			return false;
 		});
 
+		handler.Dispatch<EntitySelected>([&](EntitySelected& e) {
+			m_InspectorPanel->SetContext(EntityInspectorContext::Create(e.GetEntity()));
+			return false; 
+		});
+
 		m_SceneViewPanel->OnEvent(e);
+		m_SceneHierachyPanel->OnEvent(e);
 
 		return false;
 	}
@@ -105,8 +108,15 @@ namespace Enigma::Editor {
 	void EditorProcess::MainMenuBar()
 	{
 		if (!ImGui::BeginMainMenuBar()) return;
-		if (!ImGui::BeginMenu("File")) goto EndMainMenuBar;
 
+		MainMenuBarFile();
+
+		ImGui::EndMainMenuBar();
+	}
+
+	void EditorProcess::MainMenuBarFile()
+	{
+		if (!ImGui::BeginMenu("File")) return;
 		if (ImGui::MenuItem("Save Scene")) {
 			// Open file dialog if there is no scene path
 			if (m_ActiveScene->GetFileName().empty()) {
@@ -128,15 +138,11 @@ namespace Enigma::Editor {
 				SceneSerializer serializer(m_ActiveScene);
 				serializer.Deserialize(scenePath);
 
-				m_SceneHierachyPanel->SetContext(m_ActiveScene);
-				m_SceneViewPanel->SetContext(m_ActiveScene);
-				m_InspectorPanel->SetContext(nullptr);
+				SceneChange e(m_ActiveScene);
+				Core::Application::EventCallback(e);
 			}
 		}
 		ImGui::EndMenu();
-
-		EndMainMenuBar:
-		ImGui::EndMainMenuBar();
 	}
 
 	void EditorProcess::SaveActiveScene()

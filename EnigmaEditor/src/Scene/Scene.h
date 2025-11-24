@@ -15,6 +15,7 @@ namespace Enigma::Editor {
 		static ref<Scene> Create();
 		Scene();
 		Scene(const std::string& name);
+		~Scene();
 
 		Entity CreateEntity(const std::string& name = "");
 		Entity CreateEntity(Entity parent, const std::string& name = "");

@@ -1,5 +1,8 @@
 #include "Panels/SceneHierarchyPanel.h"
 #include "EditorImGui.h"
+#include "EditorEvents.h"
+
+#include <Enigma/Core/Process/Application.h>
 
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
@@ -10,6 +13,17 @@ namespace Enigma::Editor {
 		m_OpenEntitySettings = false;
 		m_RenameEntity = false;
 	}
+
+	void SceneHierachyPanel::OnEvent(Core::Event& e)
+	{
+		Core::EventHandler handler(e);
+
+		handler.Dispatch<SceneChange>([&](SceneChange& e) {
+			SetContext(e.GetScene());
+			return false;
+		});
+	}
+
 	void SceneHierachyPanel::ShowGui()
 	{
 		ImGui::Begin("Scene Hierachy");
@@ -84,7 +98,9 @@ namespace Enigma::Editor {
 		// Handle clicks
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
 			m_Selected = entity;
-			m_SelectionCallback(m_Selected);
+			//m_SelectionCallback(m_Selected);
+			EntitySelected e(m_Selected);
+			Core::Application::EventCallback(e);
 		}
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
 			m_EntitySettingsContext = entity;
@@ -149,7 +165,9 @@ namespace Enigma::Editor {
 			m_EntityToRename = m_SceneContext->CreateEntity(m_EntitySettingsContext, "New Entity");
 			m_Selected = m_EntityToRename;
 			m_RenameEntity = true;
-			m_SelectionCallback(m_Selected);
+			//m_SelectionCallback(m_Selected);
+			EntitySelected e(m_Selected);
+			Core::Application::EventCallback(e);
 		}
 
 		if (ImGui::MenuItem("Remove")) {
@@ -166,7 +184,9 @@ namespace Enigma::Editor {
 			m_EntityToRename = m_SceneContext->CreateEntity("New Entity");
 			m_Selected = m_EntityToRename;
 			m_RenameEntity = true;
-			m_SelectionCallback(m_Selected);
+			//m_SelectionCallback(m_Selected);
+			EntitySelected e(m_Selected);
+			Core::Application::EventCallback(e);
 		}
 
 		ImGui::EndPopup();

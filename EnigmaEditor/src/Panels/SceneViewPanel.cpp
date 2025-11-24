@@ -1,6 +1,7 @@
 #include "Panels/SceneViewPanel.h"
 #include "Scene/Components.h"
 #include "EditorImGui.h"
+#include "EditorEvents.h"
 
 #include <Enigma/Core/Process/Application.h>
 #include <Enigma/Core/Window.h>
@@ -60,6 +61,15 @@ namespace Enigma::Editor {
 	{
 		Core::EventHandler handler(e);
 		handler.Dispatch<Core::Keyboard>([&](Core::Keyboard& e) { OnKeyboard(e); return false; });
+		
+		handler.Dispatch<EntitySelected>([&](EntitySelected& e) {
+			m_Selected = e.GetEntity();
+			return false;
+		});
+		handler.Dispatch<SceneChange>([&](SceneChange& e) {
+			SetContext(e.GetScene());
+			return false;
+		});
 	}
 	void SceneViewPanel::OnKeyboard(Core::Keyboard& e)
 	{

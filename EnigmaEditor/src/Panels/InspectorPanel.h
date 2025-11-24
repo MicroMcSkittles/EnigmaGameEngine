@@ -1,4 +1,5 @@
 #pragma once
+#include <Enigma/Core/Event/Event.h>
 #include <Enigma/Core/Types.h>
 
 namespace Enigma::Editor {
@@ -13,6 +14,7 @@ namespace Enigma::Editor {
 		InspectorPanel() = default;
 
 		void SetContext(ref<InspectorContext> context);
+		void OnEvent(Core::Event& e);
 
 		void ShowGui();
 
