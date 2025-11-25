@@ -49,6 +49,9 @@ namespace Enigma::Editor {
 		SceneSerializer serializer(m_ActiveScene);
 		serializer.Deserialize("Scene.scene");
 
+		// Create action handler
+		m_ActionHandler = CreateUnique<ActionHandler>();
+
 		// Configure Inspector
 		m_InspectorPanel = CreateUnique<InspectorPanel>();
 
@@ -74,10 +77,12 @@ namespace Enigma::Editor {
 			return false;
 		});
 
-		handler.Dispatch<EntitySelected>([&](EntitySelected& e) {
+		handler.Dispatch<Event::EntitySelected>([&](Event::EntitySelected& e) {
 			m_InspectorPanel->SetContext(EntityInspectorContext::Create(e.GetEntity()));
 			return false; 
 		});
+
+		m_ActionHandler->OnEvent(e);
 
 		m_SceneViewPanel->OnEvent(e);
 		m_SceneHierachyPanel->OnEvent(e);
@@ -102,7 +107,18 @@ namespace Enigma::Editor {
 
 		MainMenuBar();
 		Core::ImGuiHandler::DockSpace(0, ImGui::GetFrameHeight(), 0, -ImGui::GetFrameHeight());
-		//Core::ImGuiHandler::DockSpace();
+
+		// TODO: add custom key binds
+		// Shortcuts
+		ImGuiInputFlags shortcutFlags = ImGuiInputFlags_RouteAlways;
+
+		// Undo/Redo
+		if (ImGui::Shortcut(ImGuiKey_Z | ImGuiMod_Ctrl, shortcutFlags) && m_ActionHandler->CanUndo()) m_ActionHandler->Undo();
+		if (ImGui::Shortcut(ImGuiKey_Y | ImGuiMod_Ctrl, shortcutFlags) && m_ActionHandler->CanRedo()) m_ActionHandler->Redo();
+
+		// File
+		if (ImGui::Shortcut(ImGuiKey_S | ImGuiMod_Ctrl, shortcutFlags)) SaveActiveScene();
+		if (ImGui::Shortcut(ImGuiKey_O | ImGuiMod_Ctrl, shortcutFlags)) OpenScene();
 
 		m_InspectorPanel->ShowGui();
 		m_SceneHierachyPanel->ShowGui();
@@ -114,6 +130,7 @@ namespace Enigma::Editor {
 
 		// Show tabs
 		MainMenuBarFile();
+		MainMenuBarEdit();
 		MainMenuBarHelp();
 
 		ImGui::EndMainMenuBar();
@@ -122,31 +139,19 @@ namespace Enigma::Editor {
 	void EditorProcess::MainMenuBarFile()
 	{
 		if (!ImGui::BeginMenu("File")) return;
-		if (ImGui::MenuItem("Save Scene")) {
-			// Open file dialog if there is no scene path
-			if (m_ActiveScene->GetFileName().empty()) {
-				m_ActiveScene->GetFileName() = Core::System::SaveFileDialog("Enigma Scene (*.scene)\0*.scene\0", m_WindowID);
-			}
+		if (ImGui::MenuItem("Save Scene", "CTRL+S"))       SaveActiveScene();
+		if (ImGui::MenuItem("Save Scene As"))              SaveActiveScene(true);
+		if (ImGui::MenuItem("Open Scene", "CTRL+O")) OpenScene();
+		ImGui::EndMenu();
+	}
 
-			SaveActiveScene();
-		}
-		if (ImGui::MenuItem("Save Scene As")) {
-			// Get filename from a filedialog
-			m_ActiveScene->GetFileName() = Core::System::SaveFileDialog("Enigma Scene (*.scene)\0*.scene\0", m_WindowID);
+	void EditorProcess::MainMenuBarEdit()
+	{
+		if (!ImGui::BeginMenu("Edit")) return;
 
-			SaveActiveScene();
-		}
-		if (ImGui::MenuItem("Open Scene")) {
-			std::string scenePath = Core::System::OpenFileDialog("Enigma Scene (*.scene)\0*.scene\0", m_WindowID);
-			if (!scenePath.empty()) {
-				m_ActiveScene = Scene::Create();
-				SceneSerializer serializer(m_ActiveScene);
-				serializer.Deserialize(scenePath);
+		if (ImGui::MenuItem("Undo", "CTRL+Z", false, m_ActionHandler->CanUndo())) m_ActionHandler->Undo();
+		if (ImGui::MenuItem("Redo", "CTRL+Y", false, m_ActionHandler->CanRedo())) m_ActionHandler->Redo();
 
-				SceneChange e(m_ActiveScene);
-				Core::Application::EventCallback(e);
-			}
-		}
 		ImGui::EndMenu();
 	}
 
@@ -169,9 +174,11 @@ namespace Enigma::Editor {
 		ImGui::EndMenu();
 	}
 
-	void EditorProcess::SaveActiveScene()
+	void EditorProcess::SaveActiveScene(bool dialog)
 	{
-		if (m_ActiveScene->GetFileName().empty()) return;
+		if (m_ActiveScene->GetFileName().empty() || dialog) {
+			m_ActiveScene->GetFileName() = Core::System::SaveFileDialog("Enigma Scene (*.scene)\0*.scene\0", m_WindowID);
+		}
 
 		// Make sure filepath has the proper extension
 		std::filesystem::path scenePath = m_ActiveScene->GetFileName();
@@ -181,6 +188,17 @@ namespace Enigma::Editor {
 
 		SceneSerializer serializer(m_ActiveScene);
 		serializer.Serialize(m_ActiveScene->GetFileName());
+	}
+	void EditorProcess::OpenScene()
+	{
+		std::string scenePath = Core::System::OpenFileDialog("Enigma Scene (*.scene)\0*.scene\0", m_WindowID);
+		if (!scenePath.empty()) {
+			m_ActiveScene = Scene::Create();
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.Deserialize(scenePath);
 
+			Event::SceneChange e(m_ActiveScene);
+			Core::Application::EventCallback(e);
+		}
 	}
 }

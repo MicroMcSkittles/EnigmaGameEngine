@@ -258,10 +258,15 @@ namespace Enigma::Editor {
 	}
 
 	// Float Inputs =====================
-	bool EditorGui::InputFloat(const std::string& lable, f32& value, f32 resetValue, f32 columnWidth)
+	bool EditorGui::InputFloat(const std::string& lable, f32& value, f32 resetValue, f32 columnWidth, u32 floatPrecision)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		ImFont* boldFont = io.Fonts->Fonts[static_cast<i32>(EditorFont::Bold)];
+
+		std::string floatPrecisionStr = "%." + std::to_string(floatPrecision) + "f";
+		std::string tooltipTextStr = "Reset the %s field to " + floatPrecisionStr;
+		const char* floatPrecisionCStr = floatPrecisionStr.c_str();
+		const char* tooltipTextCStr = tooltipTextStr.c_str();
 
 		ImGui::PushID(lable.c_str());
 
@@ -282,21 +287,21 @@ namespace Enigma::Editor {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImVec(s_Data->style.pressedColorX));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ToImVec(s_Data->style.colorX));
 		ImGui::PushFont(boldFont);
-		if (ImGui::Button("X", buttonSize)) {
+		if (ImGui::Button("X", buttonSize) && resetValue != value) {
 			value = resetValue;
 			edited = true;
 		}
 		if (ImGui::BeginItemTooltip()) {
-			ImGui::Text("Reset the X field to %.2f", resetValue);
+			ImGui::Text(tooltipTextCStr, "X", resetValue);
 			ImGui::EndTooltip();
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##X", &value, 0.1f, 0.0f, 0.0f, "%.2f")) {
-			edited = true;
-		}
+		ImGui::DragFloat("##X", &value, 0.1f, 0.0f, 0.0f, floatPrecisionCStr);
+		if (ImGui::IsItemDeactivatedAfterEdit()) edited = true;
+
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -306,10 +311,15 @@ namespace Enigma::Editor {
 
 		return edited;
 	}
-	bool EditorGui::InputVec2(const std::string& lable, glm::vec2& value, f32 resetValue, f32 columnWidth)
+	bool EditorGui::InputVec2(const std::string& lable, glm::vec2& value, f32 resetValue, f32 columnWidth, u32 floatPrecision)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		ImFont* boldFont = io.Fonts->Fonts[static_cast<i32>(EditorFont::Bold)];
+
+		std::string floatPrecisionStr = "%." + std::to_string(floatPrecision) + "f";
+		std::string tooltipTextStr = "Reset the %s field to " + floatPrecisionStr;
+		const char* floatPrecisionCStr = floatPrecisionStr.c_str();
+		const char* tooltipTextCStr = tooltipTextStr.c_str();
 
 		bool edited = false;
 
@@ -330,21 +340,21 @@ namespace Enigma::Editor {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImVec(s_Data->style.pressedColorX));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ToImVec(s_Data->style.colorX));
 		ImGui::PushFont(boldFont);
-		if (ImGui::Button("X", buttonSize)) {
+		if (ImGui::Button("X", buttonSize) && resetValue != value.x) {
 			value.x = resetValue;
 			edited = true;
 		}
 		if (ImGui::BeginItemTooltip()) {
-			ImGui::Text("Reset the X field to %.2f", resetValue);
+			ImGui::Text(tooltipTextCStr, "X", resetValue);
 			ImGui::EndTooltip();
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##X", &value.x, 0.1f, 0.0f, 0.0f, "%.2f")) {
-			edited = true;
-		}
+		ImGui::DragFloat("##X", &value.x, 0.1f, 0.0f, 0.0f, floatPrecisionCStr);
+		if (ImGui::IsItemDeactivatedAfterEdit()) edited = true;
+
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -352,21 +362,21 @@ namespace Enigma::Editor {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImVec(s_Data->style.pressedColorY));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ToImVec(s_Data->style.colorY));
 		ImGui::PushFont(boldFont);
-		if (ImGui::Button("Y", buttonSize)) {
+		if (ImGui::Button("Y", buttonSize) && resetValue != value.y) {
 			value.y = resetValue;
 			edited = true;
 		}
 		if (ImGui::BeginItemTooltip()) {
-			ImGui::Text("Reset the Y field to %.2f", resetValue);
+			ImGui::Text(tooltipTextCStr, "Y", resetValue);
 			ImGui::EndTooltip();
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##Y", &value.y, 0.1f, 0.0f, 0.0f, "%.2f")) {
-			edited = true;
-		}
+		ImGui::DragFloat("##Y", &value.y, 0.1f, 0.0f, 0.0f, floatPrecisionCStr);
+		if (ImGui::IsItemDeactivatedAfterEdit()) edited = true;
+
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -376,10 +386,15 @@ namespace Enigma::Editor {
 
 		return edited;
 	}
-	bool EditorGui::InputVec3(const std::string& lable, glm::vec3& value, f32 resetValue, f32 columnWidth)
+	bool EditorGui::InputVec3(const std::string& lable, glm::vec3& value, f32 resetValue, f32 columnWidth, u32 floatPrecision)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		ImFont* boldFont = io.Fonts->Fonts[static_cast<i32>(EditorFont::Bold)];
+
+		std::string floatPrecisionStr = "%." + std::to_string(floatPrecision) + "f";
+		std::string tooltipTextStr = "Reset the %s field to " + floatPrecisionStr;
+		const char* floatPrecisionCStr = floatPrecisionStr.c_str();
+		const char* tooltipTextCStr = tooltipTextStr.c_str();
 
 		bool edited = false;
 
@@ -400,21 +415,21 @@ namespace Enigma::Editor {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImVec(s_Data->style.pressedColorX));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ToImVec(s_Data->style.colorX));
 		ImGui::PushFont(boldFont);
-		if (ImGui::Button("X", buttonSize)) {
+		if (ImGui::Button("X", buttonSize) && resetValue != value.x) {
 			value.x = resetValue;
 			edited = true;
 		}
 		if (ImGui::BeginItemTooltip()) {
-			ImGui::Text("Reset the X field to %.2f", resetValue);
+			ImGui::Text(tooltipTextCStr, "X", resetValue);
 			ImGui::EndTooltip();
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##X", &value.x, 0.1f, 0.0f, 0.0f, "%.2f")) {
-			edited = true;
-		}
+		ImGui::DragFloat("##X", &value.x, 0.1f, 0.0f, 0.0f, floatPrecisionCStr);
+		if (ImGui::IsItemDeactivatedAfterEdit()) edited = true;
+		
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -422,21 +437,21 @@ namespace Enigma::Editor {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImVec(s_Data->style.pressedColorY));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ToImVec(s_Data->style.colorY));
 		ImGui::PushFont(boldFont);
-		if (ImGui::Button("Y", buttonSize)) {
+		if (ImGui::Button("Y", buttonSize) && resetValue != value.y) {
 			value.y = resetValue;
 			edited = true;
 		}
 		if (ImGui::BeginItemTooltip()) {
-			ImGui::Text("Reset the Y field to %.2f", resetValue);
+			ImGui::Text(tooltipTextCStr, "Y", resetValue);
 			ImGui::EndTooltip();
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##Y", &value.y, 0.1f, 0.0f, 0.0f, "%.2f")) {
-			edited = true;
-		}
+		ImGui::DragFloat("##Y", &value.y, 0.1f, 0.0f, 0.0f, floatPrecisionCStr);
+		if (ImGui::IsItemDeactivatedAfterEdit()) edited = true;
+
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -444,21 +459,21 @@ namespace Enigma::Editor {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImVec(s_Data->style.pressedColorZ));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ToImVec(s_Data->style.colorZ));
 		ImGui::PushFont(boldFont);
-		if (ImGui::Button("Z", buttonSize)) {
+		if (ImGui::Button("Z", buttonSize) && resetValue != value.z) {
 			value.z = resetValue;
 			edited = true;
 		}
 		if (ImGui::BeginItemTooltip()) {
-			ImGui::Text("Reset the Z field to %.2f", resetValue);
+			ImGui::Text(tooltipTextCStr, "Z", resetValue);
 			ImGui::EndTooltip();
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##Z", &value.z, 0.1f, 0.0f, 0.0f, "%.2f")) {
-			edited = true;
-		}
+		ImGui::DragFloat("##Z", &value.z, 0.1f, 0.0f, 0.0f, floatPrecisionCStr);
+		if (ImGui::IsItemDeactivatedAfterEdit()) edited = true;
+
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -468,10 +483,15 @@ namespace Enigma::Editor {
 
 		return edited;
 	}
-	bool EditorGui::InputVec4(const std::string& lable, glm::vec4& value, f32 resetValue, f32 columnWidth)
+	bool EditorGui::InputVec4(const std::string& lable, glm::vec4& value, f32 resetValue, f32 columnWidth, u32 floatPrecision)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		ImFont* boldFont = io.Fonts->Fonts[static_cast<i32>(EditorFont::Bold)];
+
+		std::string floatPrecisionStr = "%." + std::to_string(floatPrecision) + "f";
+		std::string tooltipTextStr = "Reset the %s field to " + floatPrecisionStr;
+		const char* floatPrecisionCStr = floatPrecisionStr.c_str();
+		const char* tooltipTextCStr = tooltipTextStr.c_str();
 
 		bool edited = false;
 
@@ -492,21 +512,21 @@ namespace Enigma::Editor {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImVec(s_Data->style.pressedColorX));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ToImVec(s_Data->style.colorX));
 		ImGui::PushFont(boldFont);
-		if (ImGui::Button("X", buttonSize)) {
+		if (ImGui::Button("X", buttonSize) && resetValue != value.x) {
 			value.x = resetValue;
 			edited = true;
 		}
 		if (ImGui::BeginItemTooltip()) {
-			ImGui::Text("Reset the X field to %.2f", resetValue);
+			ImGui::Text(tooltipTextCStr, "X", resetValue);
 			ImGui::EndTooltip();
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##X", &value.x, 0.1f, 0.0f, 0.0f, "%.2f")) {
-			edited = true;
-		}
+		ImGui::DragFloat("##X", &value.x, 0.1f, 0.0f, 0.0f, floatPrecisionCStr);
+		if (ImGui::IsItemDeactivatedAfterEdit()) edited = true;
+
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -514,21 +534,21 @@ namespace Enigma::Editor {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImVec(s_Data->style.pressedColorY));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ToImVec(s_Data->style.colorY));
 		ImGui::PushFont(boldFont);
-		if (ImGui::Button("Y", buttonSize)) {
+		if (ImGui::Button("Y", buttonSize) && resetValue != value.y) {
 			value.y = resetValue;
 			edited = true;
 		}
 		if (ImGui::BeginItemTooltip()) {
-			ImGui::Text("Reset the Y field to %.2f", resetValue);
+			ImGui::Text(tooltipTextCStr, "Y", resetValue);
 			ImGui::EndTooltip();
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##Y", &value.y, 0.1f, 0.0f, 0.0f, "%.2f")) {
-			edited = true;
-		}
+		ImGui::DragFloat("##Y", &value.y, 0.1f, 0.0f, 0.0f, floatPrecisionCStr);
+		if (ImGui::IsItemDeactivatedAfterEdit()) edited = true;
+
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -536,21 +556,21 @@ namespace Enigma::Editor {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImVec(s_Data->style.pressedColorZ));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ToImVec(s_Data->style.colorZ));
 		ImGui::PushFont(boldFont);
-		if (ImGui::Button("Z", buttonSize)) {
+		if (ImGui::Button("Z", buttonSize) && resetValue != value.z) {
 			value.z = resetValue;
 			edited = true;
 		}
 		if (ImGui::BeginItemTooltip()) {
-			ImGui::Text("Reset the Z field to %.2f", resetValue);
+			ImGui::Text(tooltipTextCStr, "Z", resetValue);
 			ImGui::EndTooltip();
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##Z", &value.z, 0.1f, 0.0f, 0.0f, "%.2f")) {
-			edited = true;
-		}
+		ImGui::DragFloat("##Z", &value.z, 0.1f, 0.0f, 0.0f, floatPrecisionCStr);
+		if (ImGui::IsItemDeactivatedAfterEdit()) edited = true;
+
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -558,21 +578,21 @@ namespace Enigma::Editor {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImVec(s_Data->style.pressedColorW));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ToImVec(s_Data->style.colorW));
 		ImGui::PushFont(boldFont);
-		if (ImGui::Button("W", buttonSize)) {
+		if (ImGui::Button("W", buttonSize) && resetValue != value.w) {
 			value.w = resetValue;
 			edited = true;
 		}
 		if (ImGui::BeginItemTooltip()) {
-			ImGui::Text("Reset the W field to %.2f", resetValue);
+			ImGui::Text(tooltipTextCStr, "W", resetValue);
 			ImGui::EndTooltip();
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##W", &value.w, 0.1f, 0.0f, 0.0f, "%.2f")) {
-			edited = true;
-		}
+		ImGui::DragFloat("##W", &value.w, 0.1f, 0.0f, 0.0f, floatPrecisionCStr);
+		if (ImGui::IsItemDeactivatedAfterEdit()) edited = true;
+
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -724,9 +744,9 @@ namespace Enigma::Editor {
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##R", &rgbValue.x, 0.1f, 0.0f, 0.0f, "%.2f")) {
-			edited = true;
-		}
+		ImGui::DragFloat("##R", &rgbValue.r, 0.1f, 0.0f, 0.0f, "%.2f");
+		if (ImGui::IsItemDeactivatedAfterEdit()) edited = true;
+
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -746,9 +766,9 @@ namespace Enigma::Editor {
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##G", &rgbValue.y, 0.1f, 0.0f, 0.0f, "%.2f")) {
-			edited = true;
-		}
+		ImGui::DragFloat("##G", &rgbValue.g, 0.1f, 0.0f, 0.0f, "%.2f");
+		if (ImGui::IsItemDeactivatedAfterEdit()) edited = true;
+
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -768,9 +788,9 @@ namespace Enigma::Editor {
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##B", &rgbValue.z, 0.1f, 0.0f, 0.0f, "%.2f")) {
-			edited = true;
-		}
+		if (ImGui::DragFloat("##B", &rgbValue.b, 0.1f, 0.0f, 0.0f, "%.2f"));
+		if (ImGui::IsItemDeactivatedAfterEdit()) edited = true;
+
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -778,6 +798,7 @@ namespace Enigma::Editor {
 
 		ImGui::SameLine();
 		ImGui::ColorEdit3("##ColorPicker", &value.r, ImGuiColorEditFlags_NoInputs);
+		if (ImGui::IsItemDeactivatedAfterEdit()) edited = true;
 
 		ImGui::EndColumns();
 

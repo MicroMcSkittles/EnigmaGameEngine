@@ -1,11 +1,15 @@
 #include "Scene/Entity.h"
 #include "Scene/Components.h"
 #include "EditorImGui.h"
+#include "EditorEvents.h"
 
+#include <Enigma/Core/Process/Application.h>
 #include <Enigma/Engine/Physics/PhysicsComponents.h>
 
 #include <tuple>
 #include <imgui.h>
+
+using namespace Enigma::Engine::ECS;
 
 namespace Enigma::Editor {
 	Entity::Entity() : m_EntityID(Engine::ECS::InvalidEntityID), m_Scene(nullptr) { }
@@ -33,62 +37,102 @@ namespace Enigma::Editor {
 		return true;
 	}
 
-	void TransformGui(Entity entity) {
-		Engine::ECS::Transform& transform = entity.GetComponent<Engine::ECS::Transform>();
+	bool TransformGui(Entity entity) {
+		Transform& transform = entity.GetComponent<Transform>();
 		EntityMetaData& metaData = entity.GetMetaData();
 
 		// TODO: add relative and degree controlls
+		
+		glm::vec3 originalEulerAngles = metaData.eulerAngles;
+		bool edited = false;
 
-		EditorGui::InputVec3("Position", transform.position);
+		// Show input guis
+		if (EditorGui::InputVec3("Position", transform.position))   edited = true;
+		if (EditorGui::InputVec3("Rotation", metaData.eulerAngles)) edited = true;
+		if (EditorGui::InputVec3("Scale", transform.scale, 1.0f))   edited = true;
 
-		if (EditorGui::InputVec3("Rotation", metaData.eulerAngles)) {
-			transform.rotation = glm::rotate(glm::quat(), glm::radians(metaData.eulerAngles));
+		// Update quaternion if the euler angles were changed
+		if (metaData.eulerAngles != originalEulerAngles) {
+			transform.rotation = glm::quat(glm::radians(metaData.eulerAngles));
 		}
 
-		EditorGui::InputVec3("Scale", transform.scale, 1.0f);
+		return edited;
 	}
-
-	void RidgidBody2DGui(Entity entity) {
+	bool RidgidBody2DGui(Entity entity) {
 		Engine::Physics::RidgidBody2D& ridgidBody2D = entity.GetComponent<Engine::Physics::RidgidBody2D>();
 
 		EditorGui::InputVec2("Linear Velocity", ridgidBody2D.linearVelocity, 0.0f, 125.0f);
 		EditorGui::InputFloat("Angular Velocity", ridgidBody2D.angularVelocity, 0.0f, 125.0f);
+
+		return false;
 	}
+	bool ColoredQuadGui(Entity entity) {
+		ColoredQuad& coloredQuad = entity.GetComponent<ColoredQuad>();
 
-	void ColoredQuadGui(Entity entity) {
-		Engine::ECS::ColoredQuad& coloredQuad = entity.GetComponent<Engine::ECS::ColoredQuad>();
+		bool edited = false;
 
-		EditorGui::InputColor("Color", coloredQuad.tint, 1.0f);
+		// Show input guis
+		edited = EditorGui::InputColor("Color", coloredQuad.tint, 1.0f);
+
+		return edited;
 	}
 
 	// Gui implementation
-
-	template<typename... Types>
+	template <typename... Types>
 	class ComponentGuiImpl {
 	private:
-		template <typename Tuple, u64... Indices>
-		static auto ComponentSelectorsImpl(Tuple& t, std::index_sequence<Indices...>) {
-			return std::vector<std::function<bool(Entity, const std::string&)>> {
-				[&t](Entity entity, const std::string& name) { 
-					if (entity.HasComponent<std::tuple_element_t<Indices, std::tuple<Types...>>>()) return false;
-					if (ImGui::Selectable(name.c_str())) {
-						entity.CreateComponent<std::tuple_element_t<Indices, std::tuple<Types...>>>();
-						return true;
-					}
-					return false;
-				}...
-			};
+		
 
+		template <typename Comp>
+		static void UndoRedoComponentAction(Entity entity, Comp other, bool* started) {
+			entity.GetComponent<Comp>() = other;
+			*started = false;
 		}
-		template <typename Tuple>
-		static auto ComponentSelectors(Tuple t) {
-			return ComponentSelectorsImpl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>{});
+		template <typename Comp>
+		static void CreateComponentActionEvent(Entity entity, const std::string& name, Comp component, Comp original, bool* started) {
+			Action action;
+			action.undoFunc = std::bind(UndoRedoComponentAction<Comp>, entity, original, started);
+			action.redoFunc = std::bind(UndoRedoComponentAction<Comp>, entity, component, started);
+			action.name = "Edited component ( " + name + " ) of entity \"" + entity.GetMetaData().name + "\"";
+
+			Event::NewAction e(action);
+			Core::Application::EventCallback(e);
+		}
+		
+		template <typename Comp>
+		static void AddComponent(Entity entity, Comp component) {
+			entity.CreateComponent<Comp>(component);
+		}
+		template <typename Comp>
+		static void RemoveComponent(Entity entity) {
+			entity.RemoveComponent<Comp>();
+		}
+		template <typename Comp>
+		static void CreateRemovedComponentActionEvent(Entity entity, const std::string& name) {
+			Action action;
+			action.undoFunc = std::bind(AddComponent<Comp>, entity, entity.GetComponent<Comp>());
+			action.redoFunc = std::bind(RemoveComponent<Comp>, entity);
+			action.name = "Removed component ( " + name + " ) from entity \"" + entity.GetMetaData().name + "\"";
+	
+			Event::NewAction e(action);
+			Core::Application::EventCallback(e);
+		}
+		template <typename Comp>
+		static void CreateAddedComponentActionEvent(Entity entity, const std::string& name) {
+			Action action;
+			action.undoFunc = std::bind(RemoveComponent<Comp>, entity);
+			action.redoFunc = std::bind(AddComponent<Comp>, entity, entity.GetComponent<Comp>());
+			action.name = "Created component ( " + name + " ) in entity \"" + entity.GetMetaData().name + "\"";
+
+			Event::NewAction e(action);
+			Core::Application::EventCallback(e);
 		}
 
 		template<typename T, typename Func>
 		static void ShowComponentGui(const std::string& name, Entity entity, Func function) {
 			if (!entity.HasComponent<T>()) return;
 
+			// Configure component dropdown
 			ImGuiTreeNodeFlags flags = 0;
 			flags |= ImGuiTreeNodeFlags_AllowOverlap;
 			flags |= ImGuiTreeNodeFlags_DefaultOpen;
@@ -97,10 +141,12 @@ namespace Enigma::Editor {
 			flags |= ImGuiTreeNodeFlags_OpenOnDoubleClick;
 			flags |= ImGuiTreeNodeFlags_Framed;
 
-			u64 componentHash = Engine::ECS::ECS::ComponentHasher<T>::Hash();
+			// Open component dropdown
+			u64 componentHash = ECS::ComponentHasher<T>::Hash();
 			ImGui::PushID(componentHash);
 			bool open = ImGui::TreeNodeEx(name.c_str(), flags);
 		
+			// Show component settings button
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 			ImGui::SameLine(ImGui::GetWindowWidth() - 24.0f);
 			if (ImGui::Button("...", ImVec2(20, 24))) {
@@ -108,11 +154,14 @@ namespace Enigma::Editor {
 			}
 			ImGui::PopStyleVar();
 
+			// Show component settings popup
 			bool removed = false;
 			if (ImGui::BeginPopup("ComponentSettings")) {
 
-				if (componentHash != Engine::ECS::ECS::ComponentHasher<Engine::ECS::Transform>::Hash()) {
+				// Show remove option for any component that isn't a transform
+				if (componentHash != ECS::ComponentHasher<Transform>::Hash()) {
 					if (ImGui::MenuItem("Remove")) {
+						CreateRemovedComponentActionEvent<T>(entity, name);
 						entity.RemoveComponent<T>();
 						removed = true;
 					}
@@ -121,6 +170,7 @@ namespace Enigma::Editor {
 				ImGui::EndPopup();
 			}
 
+			// End if removed
 			if (removed) {
 				if (open) ImGui::TreePop();
 				ImGui::PopID();
@@ -130,7 +180,26 @@ namespace Enigma::Editor {
 			if (open) {
 
 				if constexpr (std::is_invocable_v<Func, Entity>) {
-					function(entity);
+
+					// Store original component data
+					static bool started = false;
+					static Entity last;
+					static T original;
+					if (last != entity) {
+						started = false;
+					}
+					if (!started) {
+						started = true;
+						last = entity;
+						original = entity.GetComponent<T>();
+					}
+
+					// Create a action event if component was edited
+					if (function(entity)) {
+						started = false;
+						CreateComponentActionEvent(entity, name, entity.GetComponent<T>(), original, &started);
+						original = entity.GetComponent<T>();
+					}
 				}
 
 				ImGui::TreePop();
@@ -151,6 +220,26 @@ namespace Enigma::Editor {
 		template <typename Tuple>
 		static auto ComponentEditors(Tuple t) {
 			return ComponentEditorsImpl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>{});
+		}
+
+		template <typename Tuple, u64... Indices>
+		static auto ComponentSelectorsImpl(Tuple& t, std::index_sequence<Indices...>) {
+			return std::vector<std::function<bool(Entity, const std::string&)>> {
+				[&t](Entity entity, const std::string& name) {
+					if (entity.HasComponent<std::tuple_element_t<Indices, std::tuple<Types...>>>()) return false;
+					if (ImGui::Selectable(name.c_str())) {
+						entity.CreateComponent<std::tuple_element_t<Indices, std::tuple<Types...>>>();
+						CreateAddedComponentActionEvent< std::tuple_element_t<Indices, std::tuple<Types...>>>(entity, name);
+						return true;
+					}
+					return false;
+				}...
+			};
+
+		}
+		template <typename Tuple>
+		static auto ComponentSelectors(Tuple t) {
+			return ComponentSelectorsImpl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>{});
 		}
 
 	public:
@@ -181,12 +270,12 @@ namespace Enigma::Editor {
 
 	private:
 		static std::vector<std::string> s_Names;
-		static std::vector<std::function<void(Entity)>> s_UIFunctions;
+		static std::vector<std::function<bool(Entity)>> s_UIFunctions;
 	};
 
 	using ComponentGui = ComponentGuiImpl<
-		Engine::ECS::Transform,
-		Engine::ECS::ColoredQuad,
+		Transform,
+		ColoredQuad,
 		Engine::Physics::RidgidBody2D
 	>;
 
@@ -196,7 +285,7 @@ namespace Enigma::Editor {
 		"Ridgid Body 2D"
 	};
 
-	std::vector<std::function<void(Entity)>> ComponentGui::s_UIFunctions = {
+	std::vector<std::function<bool(Entity)>> ComponentGui::s_UIFunctions = {
 		TransformGui,
 		ColoredQuadGui,
 		RidgidBody2DGui

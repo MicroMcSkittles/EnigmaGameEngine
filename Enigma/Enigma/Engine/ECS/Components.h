@@ -21,6 +21,11 @@ namespace Enigma::Engine::ECS {
 		Transform ApplyParent(ref<ECS> ecs) const;
 		glm::mat4 GetRelativeMatrix() const;
 		glm::mat4 GetWorldMatrix(ref<ECS> ecs) const;
+
+		Transform() = default;
+		Transform(const Transform& other)
+			: position(other.position), rotation(other.rotation), 
+			scale(other.scale), parent(other.parent) { }
 	};
 
 	// Render components

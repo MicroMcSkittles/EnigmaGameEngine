@@ -5,12 +5,18 @@
 
 #include "Scene/Scene.h"
 #include "Scene/Entity.h"
+#include "UndoRedoAction.h"
 
-namespace Enigma::Editor {
+#include <functional>
+
+namespace Enigma::Editor::Event {
 	namespace EventType {
 		//const u64 Save           = Core::Hash("Save");
 		const u64 SceneChange    = Core::Hash("SceneChange");
 		const u64 EntitySelected = Core::Hash("EntitySelected");
+		const u64 NewAction      = Core::Hash("NewAction");
+		const u64 Undo           = Core::Hash("Undo");
+		const u64 Redo           = Core::Hash("Redo");
 	}
 
 	/*class Save : public Core::Event {
@@ -57,5 +63,39 @@ namespace Enigma::Editor {
 
 	private:
 		Entity m_Entity;
+	};
+
+	// Undo/Redo events
+
+	// Undoes the last recorded action
+	class Undo : public Core::Event {
+	public:
+		EVENT_TYPE(Undo);
+		EVENT_CATEGORY(Core::EventCategory::EventNone);
+
+		Undo() { }
+	};
+
+	// Redoes the last recorded action that was undone
+	class Redo : public Core::Event {
+	public:
+		EVENT_TYPE(Redo);
+		EVENT_CATEGORY(Core::EventCategory::EventNone);
+
+		Redo() { }
+	};
+
+	// A action that can happen
+	class NewAction : public Core::Event {
+	public:
+		EVENT_TYPE(NewAction);
+		EVENT_CATEGORY(Core::EventCategory::EventNone);
+
+		NewAction(const Action& action): m_Action(action) { }
+
+		Action GetAction() { return m_Action; }
+
+	private:
+		Action m_Action;
 	};
 }

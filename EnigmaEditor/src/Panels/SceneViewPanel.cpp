@@ -14,18 +14,35 @@
 #include <ImGuizmo.h>
 
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 namespace Enigma::Editor {
+
+	static void UndoRedoChangedTransform(Entity entity, Engine::ECS::Transform transform) {
+		entity.GetComponent<Engine::ECS::Transform>() = transform;
+	}
+	static void ChangedTransformAction(Entity entity, const Engine::ECS::Transform& original) {
+		Action action;
+		action.undoFunc = std::bind(UndoRedoChangedTransform, entity, original);
+		action.redoFunc = std::bind(UndoRedoChangedTransform, entity, entity.GetComponent<Engine::ECS::Transform>());
+		action.name = "Edited component ( Transform ) of entity \"" + entity.GetMetaData().name + "\"";
+
+		Event::NewAction e(action);
+		Core::Application::EventCallback(e);
+	}
+
 	SceneViewPanel::SceneViewPanel(Core::ID windowID) : m_WindowID(windowID)
 	{
-		m_Hovered = false;
-		m_Focused = false;
+		m_Hovered      = false;
+		m_Focused      = false;
 		m_GizmoHovered = false;
-		m_CameraSpeed = 7.5f;
-		m_ZoomSpeed = 0.125f;
-		m_MaxZoom = 1.0f;
-		m_MinZoom = 100.0f;
-		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+		m_UsingGizmo   = false;
+		m_CameraSpeed  = 7.5f;
+		m_ZoomSpeed    = 0.125f;
+		m_MaxZoom      = 1.0f;
+		m_MinZoom      = 100.0f;
+		m_GizmoType    = ImGuizmo::OPERATION::TRANSLATE;
 
 		ref<Core::Window> window = Core::Application::GetWindow(m_WindowID);
 		Core::Application::UseRenderAPI(window->GetAPI());
@@ -98,11 +115,11 @@ namespace Enigma::Editor {
 		handler.Dispatch<Core::MouseButton>([&](Core::MouseButton& e) { OnMouse(e); return false; });
 		handler.Dispatch<Core::MouseScroll>([&](Core::MouseScroll& e) { OnScroll(e); return false; });
 		
-		handler.Dispatch<EntitySelected>([&](EntitySelected& e) {
+		handler.Dispatch<Event::EntitySelected>([&](Event::EntitySelected& e) {
 			m_Selected = e.GetEntity();
 			return false;
 		});
-		handler.Dispatch<SceneChange>([&](SceneChange& e) {
+		handler.Dispatch<Event::SceneChange>([&](Event::SceneChange& e) {
 			m_Selected = {};
 			SetContext(e.GetScene());
 			return false;
@@ -129,7 +146,7 @@ namespace Enigma::Editor {
 
 		// Create selection evet
 		m_Selected = { entityID, m_Context.get() };
-		EntitySelected selectionEvent(m_Selected);
+		Event::EntitySelected selectionEvent(m_Selected);
 		Core::Application::EventCallback(selectionEvent);
 	}
 	void SceneViewPanel::OnScroll(Core::MouseScroll& e)
@@ -217,7 +234,6 @@ namespace Enigma::Editor {
 
 		// Show texture
 		ImGui::Image(m_Frame);
-		//ImGui::Image(m_EntityPickerBuffer->GetColorAttachment(0));
 
 		// Process window status
 		m_Hovered = ImGui::IsItemHovered();
@@ -248,20 +264,34 @@ namespace Enigma::Editor {
 
 		// Entity transform
 		Engine::ECS::Transform& transform = m_Selected.GetComponent<Engine::ECS::Transform>();
-		glm::mat4 transformWorldMatrix = transform.GetWorldMatrix(m_Context->GetECS());
+		glm::mat4 transformWorldMatrix = transform.ApplyParent(m_Context->GetECS()).GetRelativeMatrix();//= transform.GetWorldMatrix(m_Context->GetECS());
+		
+		glm::mat4 deltaMatrix = glm::mat4(1.0f);
 
 		ImGuizmo::Manipulate(
 			glm::value_ptr(cameraView),
 			glm::value_ptr(cameraProj),
 			static_cast<ImGuizmo::OPERATION>(m_GizmoType),
 			ImGuizmo::MODE::LOCAL,
-			glm::value_ptr(transformWorldMatrix)
+			glm::value_ptr(transformWorldMatrix),
+			glm::value_ptr(deltaMatrix)
 		);
 
-		// Process input
+		// Process gizmo states
 		m_GizmoHovered = ImGuizmo::IsOver();
-		if (!ImGuizmo::IsUsing()) return;
 
+		// Store the transform if the user just started to move the entity
+		if (!m_UsingGizmo && ImGuizmo::IsUsing()) {
+			m_OriginalTransform = transform;
+		}
+		// Create changed transform action when the user lets go
+		else if (m_UsingGizmo && !ImGuizmo::IsUsing()) {
+			ChangedTransformAction(m_Selected, m_OriginalTransform);
+		}
+		m_UsingGizmo = ImGuizmo::IsUsing();
+		if (!m_UsingGizmo) return;
+
+		// Process input
 		glm::mat4 transformLocalMatrix = transformWorldMatrix;
 
 		Entity parentEntity = { transform.parent, m_Context.get() };
@@ -274,13 +304,23 @@ namespace Enigma::Editor {
 			transformLocalMatrix = parentTransformMatrix * transformWorldMatrix;
 		}
 
+		glm::vec3 position = glm::vec3(0.0f);
 		glm::vec3 rotation = glm::vec3(0.0f);
-		ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transformLocalMatrix), &transform.position.x, &rotation.x, &transform.scale.x);
+		glm::vec3 scale = glm::vec3(0.0f);
+
+		ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transformLocalMatrix), &position.x, &rotation.x, &scale.x);
+		if (m_GizmoType == ImGuizmo::OPERATION::TRANSLATE) transform.position = position;
+		if (m_GizmoType == ImGuizmo::OPERATION::SCALE) transform.scale = scale;
+
+		ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(deltaMatrix), &position.x, &rotation.x, &scale.x);
+
+
+		if (m_GizmoType != ImGuizmo::OPERATION::ROTATE) return;
 
 		// Update rotation
 		EntityMetaData& metaData = m_Selected.GetComponent<EntityMetaData>();
-		metaData.eulerAngles = rotation;
-		transform.rotation = glm::rotate(glm::quat(), glm::radians(metaData.eulerAngles));
+		transform.rotation = glm::quat(glm::radians(rotation)) * transform.rotation;
+		metaData.eulerAngles = glm::degrees(glm::eulerAngles(transform.rotation));
 	}
 	void SceneViewPanel::ShowOverlayWindow(f32 x, f32 y)
 	{

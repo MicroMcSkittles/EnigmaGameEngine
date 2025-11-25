@@ -74,10 +74,10 @@ namespace Enigma::Editor {
 		static bool InputInt2(const std::string& lable, glm::ivec2& value, i32 resetValue = 0, f32 columnWidth = 100.0f);
 		static bool InputInt3(const std::string& lable, glm::ivec3& value, i32 resetValue = 0, f32 columnWidth = 100.0f);
 
-		static bool InputFloat(const std::string& lable, f32& value, f32 resetValue = 0.0f, f32 columnWidth = 100.0f);
-		static bool InputVec2(const std::string& lable, glm::vec2& value, f32 resetValue = 0.0f, f32 columnWidth = 100.0f);
-		static bool InputVec3(const std::string& lable, glm::vec3& value, f32 resetValue = 0.0f, f32 columnWidth = 100.0f);
-		static bool InputVec4(const std::string& lable, glm::vec4& value, f32 resetValue = 0.0f, f32 columnWidth = 100.0f);
+		static bool InputFloat(const std::string& lable, f32& value, f32 resetValue = 0.0f, f32 columnWidth = 100.0f, u32 floatPrecision = 2);
+		static bool InputVec2(const std::string& lable, glm::vec2& value, f32 resetValue = 0.0f, f32 columnWidth = 100.0f, u32 floatPrecision = 2);
+		static bool InputVec3(const std::string& lable, glm::vec3& value, f32 resetValue = 0.0f, f32 columnWidth = 100.0f, u32 floatPrecision = 2);
+		static bool InputVec4(const std::string& lable, glm::vec4& value, f32 resetValue = 0.0f, f32 columnWidth = 100.0f, u32 floatPrecision = 2);
 
 		static bool CheckBox(const std::string& lable, bool& value, f32 columnWidth = 100.0f);
 

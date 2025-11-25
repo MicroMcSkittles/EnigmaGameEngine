@@ -8,6 +8,8 @@
 #include "Panels/InspectorPanel.h"
 #include "Panels/SceneViewPanel.h"
 
+#include "UndoRedoAction.h"
+
 namespace Enigma::Editor {
 	class EditorProcess : public Core::SubProcess {
 	public:
@@ -23,14 +25,19 @@ namespace Enigma::Editor {
 	private:
 		void MainMenuBar();
 		void MainMenuBarFile();
+		void MainMenuBarEdit();
 		void MainMenuBarHelp();
-		void SaveActiveScene();
+
+		void SaveActiveScene(bool dialog = false);
+		void OpenScene();
 
 	private:
 		Core::ID m_WindowID;
 
 		ref<Scene> m_ActiveScene;
 		Entity m_Entity;
+
+		unique<ActionHandler> m_ActionHandler;
 
 		unique<SceneHierachyPanel> m_SceneHierachyPanel;
 		unique<SceneViewPanel> m_SceneViewPanel;

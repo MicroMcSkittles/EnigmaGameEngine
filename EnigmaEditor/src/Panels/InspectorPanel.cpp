@@ -11,7 +11,7 @@ namespace Enigma::Editor {
 	void InspectorPanel::OnEvent(Core::Event& e)
 	{
 		Core::EventHandler handler(e);
-		handler.Dispatch<SceneChange>([&](SceneChange& e) {
+		handler.Dispatch<Event::SceneChange>([&](Event::SceneChange& e) {
 			SetContext(nullptr);
 			return false;
 		});

@@ -293,7 +293,8 @@ namespace Enigma::Editor {
 			u64 childCount = 0;
 			for (const YAML::Node& child : data["Children"]) {
 				UUID childID = child.as<UUID>();
-				metaData.children.Create(childCount++, m_Scene->m_EntityUUIDs[childID]);
+				Entity entity = m_Scene->m_EntityUUIDs[childID];
+				metaData.children.Create(entity.GetID(), entity);
 			}
 		}
 

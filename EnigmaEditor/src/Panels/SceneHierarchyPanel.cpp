@@ -1,6 +1,7 @@
 #include "Panels/SceneHierarchyPanel.h"
 #include "EditorImGui.h"
 #include "EditorEvents.h"
+#include "UndoRedoAction.h"
 
 #include <Enigma/Core/Process/Application.h>
 
@@ -8,21 +9,79 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 namespace Enigma::Editor {
+
+	// Undo/Redo action functions
+
+	static void UndoRedoEntityRename(Entity entity, std::string name) {
+		entity.GetMetaData().name = name;
+	}
+	static void CreateEntityRenameAction(Entity entity, const std::string& name, const std::string& old) {
+		Action action;
+		action.undoFunc = std::bind(UndoRedoEntityRename, entity, old);
+		action.redoFunc = std::bind(UndoRedoEntityRename, entity, name);
+		action.name = "Renamed entity \"" + old + "\" to \"" + name + "\"";
+
+		Event::NewAction e(action);
+		Core::Application::EventCallback(e);
+	}
+
+	static void UndoRedoCreateEntity(ref<Scene> scene, std::string name, Entity parent) {
+		if (parent) scene->CreateEntity(parent, name);
+		else scene->CreateEntity(name);
+	}
+	static void UndoRedoRemoveEntity(ref<Scene> scene, Entity entity) {
+		scene->RemoveEntity(entity);
+	}
+	static void CreateEntityAction(ref<Scene> scene, Entity entity) {
+		Action action;
+		action.undoFunc = std::bind(UndoRedoRemoveEntity, scene, entity);
+		action.redoFunc = std::bind(UndoRedoCreateEntity, scene, entity.GetMetaData().name, entity.GetMetaData().parent);
+		action.name = "Created entity \"" + entity.GetMetaData().name + "\"";
+
+		Event::NewAction e(action);
+		Core::Application::EventCallback(e);
+	}
+	static void RemoveEntityAction(ref<Scene> scene, Entity entity) {
+		Action action;
+		// TODO: restore components on undo
+		action.undoFunc = std::bind(UndoRedoCreateEntity, scene, entity.GetMetaData().name, entity.GetMetaData().parent);
+		action.redoFunc = std::bind(UndoRedoRemoveEntity, scene, entity);
+		action.name = "Removed entity \"" + entity.GetMetaData().name + "\"";
+
+		Event::NewAction e(action);
+		Core::Application::EventCallback(e);
+	}
+
+	static void UndoRedoChangeParent(ref<Scene> scene, Entity entity, Entity parent) {
+		scene->ChangeParent(entity, parent);
+	}
+	static void ChangeEntityParentAction(ref<Scene> scene, Entity entity, Entity parent) {
+		Action action;
+		action.undoFunc = std::bind(UndoRedoChangeParent, scene, entity, entity.GetMetaData().parent);
+		action.redoFunc = std::bind(UndoRedoChangeParent, scene, entity, parent);
+		if (parent) action.name = "Changed entity's \"" + entity.GetMetaData().name + "\" parent to \"" + parent.GetMetaData().name + "\"";
+		else action.name = "Changed entity's \"" + entity.GetMetaData().name + "\" parent to \"Root\"";
+
+		Event::NewAction e(action);
+		Core::Application::EventCallback(e);
+	}
+
 	SceneHierachyPanel::SceneHierachyPanel()
 	{
 		m_OpenEntitySettings = false;
 		m_RenameEntity = false;
+		m_FromCreate = false;
 	}
 
 	void SceneHierachyPanel::OnEvent(Core::Event& e)
 	{
 		Core::EventHandler handler(e);
 
-		handler.Dispatch<EntitySelected>([&](EntitySelected& e) {
+		handler.Dispatch<Event::EntitySelected>([&](Event::EntitySelected& e) {
 			m_Selected = e.GetEntity();
 			return false;
 		});
-		handler.Dispatch<SceneChange>([&](SceneChange& e) {
+		handler.Dispatch<Event::SceneChange>([&](Event::SceneChange& e) {
 			m_Selected = { };
 			SetContext(e.GetScene());
 			return false;
@@ -104,7 +163,7 @@ namespace Enigma::Editor {
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
 			m_Selected = entity;
 			//m_SelectionCallback(m_Selected);
-			EntitySelected e(m_Selected);
+			Event::EntitySelected e(m_Selected);
 			Core::Application::EventCallback(e);
 		}
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
@@ -130,7 +189,9 @@ namespace Enigma::Editor {
 	void SceneHierachyPanel::EntityRenameGui()
 	{
 		EntityMetaData& metaData = m_EntityToRename.GetComponent<EntityMetaData>();
-		
+	
+		if (m_OldName.empty()) m_OldName = metaData.name;
+
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 		
 		// Set Keyboard focus on the text box
@@ -142,13 +203,18 @@ namespace Enigma::Editor {
 		// Show text box
 		ImGuiInputTextFlags inputFlags = ImGuiInputTextFlags_EnterReturnsTrue;
 		std::string buffer = metaData.name;
+		Entity entity = m_EntityToRename;
 		if (ImGui::InputText("##EntityRenameBox", &buffer, inputFlags)) {
 			metaData.name = buffer;
 			m_EntityToRename = { };
 		}
-		if (ImGui::IsItemDeactivated()) {
+		if (ImGui::IsItemDeactivated()) {		
 			metaData.name = buffer;
 			m_EntityToRename = { };
+		}
+		if (m_EntityToRename == Entity() && !m_FromCreate) {
+			CreateEntityRenameAction(entity, metaData.name, m_OldName);
+			m_OldName = "";
 		}
 
 		ImGui::PopStyleVar();
@@ -164,18 +230,23 @@ namespace Enigma::Editor {
 			m_EntityToRename = m_EntitySettingsContext;
 			m_Selected = m_EntitySettingsContext;
 			m_RenameEntity = true;
+			m_FromCreate = false;
 		}
 
 		if (ImGui::MenuItem("Create Child")) {
 			m_EntityToRename = m_SceneContext->CreateEntity(m_EntitySettingsContext, "New Entity");
 			m_Selected = m_EntityToRename;
 			m_RenameEntity = true;
+			m_FromCreate = true;
 			//m_SelectionCallback(m_Selected);
-			EntitySelected e(m_Selected);
+			Event::EntitySelected e(m_Selected);
 			Core::Application::EventCallback(e);
+
+			CreateEntityAction(m_SceneContext, m_Selected);
 		}
 
 		if (ImGui::MenuItem("Remove")) {
+			RemoveEntityAction(m_SceneContext, m_Selected);
 			m_SceneContext->RemoveEntity(m_EntitySettingsContext);
 		}
 
@@ -189,9 +260,12 @@ namespace Enigma::Editor {
 			m_EntityToRename = m_SceneContext->CreateEntity("New Entity");
 			m_Selected = m_EntityToRename;
 			m_RenameEntity = true;
+			m_FromCreate = true;
 			
-			EntitySelected e(m_Selected);
+			Event::EntitySelected e(m_Selected);
 			Core::Application::EventCallback(e);
+
+			CreateEntityAction(m_SceneContext, m_Selected);
 		}
 
 		ImGui::EndPopup();
@@ -242,16 +316,17 @@ namespace Enigma::Editor {
 		if (std::string(payload->DataType) != "Entity") goto CloseGui;
 
 		// Makes sure the user can't nest an entity in itself
-		Entity other = *static_cast<Entity*>(payload->Data);
-		if (m_SceneContext->IsChild(entity, other)) goto CloseGui;
+		Entity child = *static_cast<Entity*>(payload->Data);
+		if (m_SceneContext->IsChild(entity, child)) goto CloseGui;
 
 		// Accept the payload
 		ImGui::AcceptDragDropPayload("Entity");
 		if (!payload->IsDelivery()) goto CloseGui;
 
 		// Update other entity parent
-		EntityMetaData& otherMetaData = other.GetComponent<EntityMetaData>();
-		m_SceneContext->ChangeParent(other, entity);
+		EntityMetaData& otherMetaData = child.GetComponent<EntityMetaData>();
+		ChangeEntityParentAction(m_SceneContext, child, entity);
+		m_SceneContext->ChangeParent(child, entity);
 
 		// Close dragdrop target
 		CloseGui:

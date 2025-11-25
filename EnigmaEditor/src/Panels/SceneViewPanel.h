@@ -46,6 +46,8 @@ namespace Enigma::Editor {
 		bool m_Hovered; // Is the user hovering the scene view image
 		bool m_Focused; // Is the scene view window focused
 		bool m_GizmoHovered; // Is the user hovering a gizmo
+		bool m_UsingGizmo; // Is the user using a gizmo
+		Engine::ECS::Transform m_OriginalTransform; // The original transform of the entity currently being moved
 		Engine::Surface m_Surface;
 		ref<Engine::Input> m_InputContext;
 		
