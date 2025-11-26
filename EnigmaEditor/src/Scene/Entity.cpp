@@ -77,11 +77,12 @@ namespace Enigma::Editor {
 		return edited;
 	}
 
+	// TODO: fix the undo redo stuff
+
 	// Gui implementation
 	template <typename... Types>
 	class ComponentGuiImpl {
 	private:
-		
 
 		template <typename Comp>
 		static void UndoRedoComponentAction(Entity entity, Comp other, bool* started) {
@@ -93,7 +94,7 @@ namespace Enigma::Editor {
 			Action action;
 			action.undoFunc = std::bind(UndoRedoComponentAction<Comp>, entity, original, started);
 			action.redoFunc = std::bind(UndoRedoComponentAction<Comp>, entity, component, started);
-			action.name = "Edited component ( " + name + " ) of entity \"" + entity.GetMetaData().name + "\"";
+			action.name = "Edited component \"" + name + "\" of entity \"" + entity.GetMetaData().name + "\"";
 
 			Event::NewAction e(action);
 			Core::Application::EventCallback(e);
@@ -112,7 +113,7 @@ namespace Enigma::Editor {
 			Action action;
 			action.undoFunc = std::bind(AddComponent<Comp>, entity, entity.GetComponent<Comp>());
 			action.redoFunc = std::bind(RemoveComponent<Comp>, entity);
-			action.name = "Removed component ( " + name + " ) from entity \"" + entity.GetMetaData().name + "\"";
+			action.name = "Removed component \"" + name + "\" from entity \"" + entity.GetMetaData().name + "\"";
 	
 			Event::NewAction e(action);
 			Core::Application::EventCallback(e);
@@ -122,10 +123,28 @@ namespace Enigma::Editor {
 			Action action;
 			action.undoFunc = std::bind(RemoveComponent<Comp>, entity);
 			action.redoFunc = std::bind(AddComponent<Comp>, entity, entity.GetComponent<Comp>());
-			action.name = "Created component ( " + name + " ) in entity \"" + entity.GetMetaData().name + "\"";
+			action.name = "Created component \"" + name + "\" in entity \"" + entity.GetMetaData().name + "\"";
 
 			Event::NewAction e(action);
 			Core::Application::EventCallback(e);
+		}
+
+		// this is cursed btw, like the rest of this class isn't :(
+		template<typename T>
+		static bool AreComponentsEqual(T& first, T& second) {
+
+			constexpr u64 ComponentByteSize = sizeof(T);
+
+			// Get pointers to the byte data of the components
+			u8* firstBytes = reinterpret_cast<u8*>(&first);
+			u8* secondBytes = reinterpret_cast<u8*>(&second);
+
+			// Check each byte aganst each other
+			for (u64 i = 0; i < ComponentByteSize; ++i) {
+				if (*firstBytes++ != *secondBytes++) return false;
+			}
+
+			return true;
 		}
 
 		template<typename T, typename Func>
@@ -177,33 +196,44 @@ namespace Enigma::Editor {
 				return;
 			}
 
-			if (open) {
+			// Exit if component isn't open
+			if (!open) {
+				ImGui::PopID();
+				return;
+			}
 
-				if constexpr (std::is_invocable_v<Func, Entity>) {
+			if constexpr (std::is_invocable_v<Func, Entity>) {
 
-					// Store original component data
-					static bool started = false;
-					static Entity last;
-					static T original;
-					if (last != entity) {
-						started = false;
-					}
-					if (!started) {
-						started = true;
-						last = entity;
-						original = entity.GetComponent<T>();
-					}
+				// Store original component data
+				static bool started = false;
+				static bool edited = false;
+				static Entity last;
+				static T original;
 
-					// Create a action event if component was edited
-					if (function(entity)) {
-						started = false;
-						CreateComponentActionEvent(entity, name, entity.GetComponent<T>(), original, &started);
-						original = entity.GetComponent<T>();
-					}
+				T& component = entity.GetComponent<T>();
+
+				// Update static vars if inspector was just opened
+				if (last != entity) started = false;
+				if (!started) {
+					started = true;
+					last = entity;
+					original = component;
+				}
+				// Update original if component was edited by something other than the inspector
+				else if (!edited && !AreComponentsEqual(original, component)) original = component;
+
+				// Create a action event if component was edited
+				if (function(entity)) {
+					started = false;
+					CreateComponentActionEvent(entity, name, component, original, &started);
+					original = component;
 				}
 
-				ImGui::TreePop();
+				// Check if component was edited by the inspector
+				edited = !AreComponentsEqual(original, component);
 			}
+
+			ImGui::TreePop();
 
 			ImGui::PopID();
 		}

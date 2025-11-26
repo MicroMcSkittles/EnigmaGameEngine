@@ -3,7 +3,21 @@
 #include <functional>
 #include <string>
 
+#include "Scene/Scene.h"
+#include "Scene/Entity.h"
+
 namespace Enigma::Editor {
+
+	namespace UndoRedoFunctions {
+		void RenameEntity(Entity entity, std::string name);
+		void CreateEntity(ref<Scene> scene, std::string name, Entity parent);
+		void RemoveEntity(ref<Scene> scene, Entity entity);
+		void ChangeParent(ref<Scene> scene, Entity entity, Entity parent);
+	}
+	void RenameEntityAction(Entity entity, const std::string& newName, const std::string& oldName);
+	void CreateEntityAction(ref<Scene> scene, Entity entity);
+	void RemoveEntityAction(ref<Scene> scene, Entity entity);
+	void ChangeParentAction(ref<Scene> scene, Entity entity, Entity parent);
 
 	struct Action {
 		std::function<void()> undoFunc; // undoes the action

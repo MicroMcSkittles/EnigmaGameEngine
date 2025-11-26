@@ -2,6 +2,7 @@
 
 #include <misc/cpp/imgui_stdlib.h>
 #include <imgui_internal.h>
+#include <ImGuizmo.h>
 
 namespace Enigma::Editor {
 
@@ -10,6 +11,7 @@ namespace Enigma::Editor {
 
 	void EditorGui::SetStyle(const EditorStyle& style)
 	{
+		// ImGui Style Config
 		s_Data->style = style;
 
 		ImVec4 (&colors)[60] = ImGui::GetStyle().Colors;
@@ -37,12 +39,23 @@ namespace Enigma::Editor {
 		colors[ImGuiCol_TitleBgActive]      = ToImVec(style.titleBackground);
 		colors[ImGuiCol_TitleBgCollapsed]   = ToImVec(style.titleBackground);
 
+		// ImGui Font Config
 		ImGuiIO& io = ImGui::GetIO();
 		io.Fonts->AddFontFromFileTTF(style.regularFont.c_str(), style.fontSize);
 		io.Fonts->AddFontFromFileTTF(style.italicFont.c_str(), style.fontSize);
 		io.Fonts->AddFontFromFileTTF(style.boldFont.c_str(), style.fontSize);
 
 		io.FontDefault = io.Fonts->Fonts[static_cast<i32>(style.defaultFont)];
+
+		// ImGuizmo Style Config
+		ImGuizmo::Style gizmoStyle = ImGuizmo::GetStyle();
+		gizmoStyle.Colors[ImGuizmo::COLOR::DIRECTION_X] = ToImVec(style.colorX);
+		gizmoStyle.Colors[ImGuizmo::COLOR::DIRECTION_Y] = ToImVec(style.colorY);
+		gizmoStyle.Colors[ImGuizmo::COLOR::DIRECTION_Z] = ToImVec(style.colorZ);
+
+		gizmoStyle.Colors[ImGuizmo::COLOR::PLANE_X]     = ToImVec(style.colorX);
+		gizmoStyle.Colors[ImGuizmo::COLOR::PLANE_Y]     = ToImVec(style.colorY);
+		gizmoStyle.Colors[ImGuizmo::COLOR::PLANE_Z]     = ToImVec(style.colorZ);
 	}
 
 	// Int Inputs =======================

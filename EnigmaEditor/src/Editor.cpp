@@ -16,6 +16,8 @@
 
 #include <Enigma/Core/Utilities/Utilities.h>
 
+
+
 namespace Enigma::Editor {
 	void EditorProcess::StartUp()
 	{

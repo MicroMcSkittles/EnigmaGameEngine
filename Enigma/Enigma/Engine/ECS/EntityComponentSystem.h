@@ -136,13 +136,15 @@ namespace Enigma::Engine::ECS {
 			// Get the entity's component mask
 			ComponentMask& mask = m_EntityComponentMasks.Get(entityID);
 
-			// Move the entity to the new group
+			// Remove entity from old group
 			m_EntityGroups[mask].Remove(entityID);
 			if (!m_EntityGroups.count(mask)) m_EntityGroups.insert({ mask, {} });
-			m_EntityGroups[mask].Create(entityID, entityID);
 
 			// Update bit mask
 			mask[m_ComponentPoolBits[componentHash]] = false;
+
+			// Place entity in new group
+			m_EntityGroups[mask].Create(entityID, entityID);
 
 			// Get the component pool
 			ref<ComponentPool<T>> pool = CastRef<ComponentPool<T>>(m_ComponentPools[componentHash]);

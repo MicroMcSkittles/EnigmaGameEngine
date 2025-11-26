@@ -20,14 +20,18 @@ namespace Enigma::Editor {
 		void ShowGui();
 
 	private:
-		void OnMouse(Core::MouseButton& e);
 		void OnScroll(Core::MouseScroll& e);
 		void OnKeyboard(Core::Keyboard& e);
 
 		void EntityPicker();
 
+		void ShowEntityMenu();
+		void ShowGizmoMenu();
+
 		void ShowGizmos();
 		void ShowOverlayWindow(f32 x, f32 y);
+
+		Entity GetHoveredEntity();
 
 	private:
 		Core::ID m_WindowID;
@@ -42,21 +46,25 @@ namespace Enigma::Editor {
 		ref<Renderer::Texture> m_Frame;
 		ref<Renderer::Camera> m_Camera;
 
-		// Input Variables
-		bool m_Hovered; // Is the user hovering the scene view image
-		bool m_Focused; // Is the scene view window focused
-		bool m_GizmoHovered; // Is the user hovering a gizmo
-		bool m_UsingGizmo; // Is the user using a gizmo
-		Engine::ECS::Transform m_OriginalTransform; // The original transform of the entity currently being moved
+		// Input Context
 		Engine::Surface m_Surface;
 		ref<Engine::Input> m_InputContext;
+
+		// Gizmo Variables
+		bool m_GizmoHovered; // Is the user hovering a gizmo
+		bool m_UsingGizmo; // Is the user using a gizmo
+		i32 m_GizmoType;
+		Engine::ECS::Transform m_OriginalTransform; // The original transform of the entity currently being moved
 		
+		// Editor Camera Input Variables
+		bool m_Hovered; // Is the user hovering the scene view image
+		bool m_Focused; // Is the scene view window focused
 		f32 m_CameraSpeed;
 		f32 m_ZoomSpeed;
 		f32 m_MaxZoom; // The most the user can be zoomed in
 		f32 m_MinZoom; // The most the user can be zoomed out
-		i32 m_GizmoType;
 
+		// Entity Picker Variables
 		ref<Renderer::Shader> m_EntityPickerShader;
 		ref<Renderer::FrameBuffer> m_EntityPickerBuffer;
 	};

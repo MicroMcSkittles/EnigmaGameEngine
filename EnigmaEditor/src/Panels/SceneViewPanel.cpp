@@ -10,6 +10,7 @@
 #include <Enigma/Engine/InputCodes.h>
 
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <Enigma/ImGui/EnigmaWidgets.h>
 #include <ImGuizmo.h>
 
@@ -21,12 +22,13 @@ namespace Enigma::Editor {
 
 	static void UndoRedoChangedTransform(Entity entity, Engine::ECS::Transform transform) {
 		entity.GetComponent<Engine::ECS::Transform>() = transform;
+		entity.GetMetaData().eulerAngles = glm::degrees(glm::eulerAngles(transform.rotation));
 	}
 	static void ChangedTransformAction(Entity entity, const Engine::ECS::Transform& original) {
 		Action action;
 		action.undoFunc = std::bind(UndoRedoChangedTransform, entity, original);
 		action.redoFunc = std::bind(UndoRedoChangedTransform, entity, entity.GetComponent<Engine::ECS::Transform>());
-		action.name = "Edited component ( Transform ) of entity \"" + entity.GetMetaData().name + "\"";
+		action.name = "Edited component \"Transform\" of entity \"" + entity.GetMetaData().name + "\"";
 
 		Event::NewAction e(action);
 		Core::Application::EventCallback(e);
@@ -112,7 +114,6 @@ namespace Enigma::Editor {
 	{
 		Core::EventHandler handler(e);
 		handler.Dispatch<Core::Keyboard>([&](Core::Keyboard& e) { OnKeyboard(e); return false; });
-		handler.Dispatch<Core::MouseButton>([&](Core::MouseButton& e) { OnMouse(e); return false; });
 		handler.Dispatch<Core::MouseScroll>([&](Core::MouseScroll& e) { OnScroll(e); return false; });
 		
 		handler.Dispatch<Event::EntitySelected>([&](Event::EntitySelected& e) {
@@ -124,30 +125,6 @@ namespace Enigma::Editor {
 			SetContext(e.GetScene());
 			return false;
 		});
-	}
-	void SceneViewPanel::OnMouse(Core::MouseButton& e)
-	{
-		if (!m_Hovered) return;
-		if (m_GizmoHovered) return;
-		if (e.GetButton() != Engine::KeyCode::MouseButtonLeft) return;
-
-		// Get mouse position
-		i32 mouseX = Engine::Input::GetMouseX();
-		i32 mouseY = m_Surface.scale.y - Engine::Input::GetMouseY();
-
-		// Get entity at mouse position
-		Engine::ECS::EntityID entityID = 0;
-		m_EntityPickerBuffer->GetPixel(mouseX, mouseY, 0, &entityID);
-		if (entityID == 0) {
-			m_Selected = {};
-			return;
-		}
-		entityID -= 1;
-
-		// Create selection evet
-		m_Selected = { entityID, m_Context.get() };
-		Event::EntitySelected selectionEvent(m_Selected);
-		Core::Application::EventCallback(selectionEvent);
 	}
 	void SceneViewPanel::OnScroll(Core::MouseScroll& e)
 	{
@@ -249,7 +226,71 @@ namespace Enigma::Editor {
 		// Show overlay window
 		ShowOverlayWindow(overlayPosition.x, overlayPosition.y);
 
+		// Process mouse input
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && m_Hovered) {
+			if (m_Selected = GetHoveredEntity()) {
+				Event::EntitySelected selectionEvent(m_Selected);
+				Core::Application::EventCallback(selectionEvent);
+			}
+		}
+		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && m_Hovered) {
+			if (m_Selected = GetHoveredEntity()) {
+				Event::EntitySelected selectionEvent(m_Selected);
+				Core::Application::EventCallback(selectionEvent);
+				ImGui::OpenPopup("EntityMenu"); 
+			}
+		}
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && m_GizmoHovered) {
+			ImGui::OpenPopup("GizmoMenu");
+		}
+
+		// Show menu popups
+		ShowEntityMenu();
+		ShowGizmoMenu();
+
 		ImGui::End();
+	}
+	void SceneViewPanel::ShowEntityMenu()
+	{
+		if (!ImGui::BeginPopup("EntityMenu")) return;
+		
+		// Get entity name and cap its length
+		std::string entityName = m_Selected.GetMetaData().name;
+		constexpr u64 maxNameLength = 16;
+		if (entityName.size() > maxNameLength) {
+			entityName.resize(maxNameLength);
+			memset(entityName.data() + maxNameLength - 3, '.', 3);
+		}
+
+		std::string uuidString = m_Selected.GetUUID();
+		std::string ecsIDString = std::to_string(m_Selected.GetID());
+
+		// Show entity info
+		ImGui::Text("%s", entityName.c_str());
+		ImGui::SameLine();
+		ImGui::TextDisabled("ECS ID: %s", ecsIDString.c_str());
+		if (ImGui::BeginItemTooltip()) {
+			ImGui::TextDisabled("UUID: %s", uuidString.c_str());
+			ImGui::EndTooltip();
+		}
+
+		ImGui::Separator();
+
+		// Options
+		if (ImGui::MenuItem("Remove")) {
+			RemoveEntityAction(m_Context, m_Selected);
+			m_Context->RemoveEntity(m_Selected);
+		}
+
+		ImGui::EndPopup();
+	}
+	void SceneViewPanel::ShowGizmoMenu()
+	{
+		if (!ImGui::BeginPopup("GizmoMenu")) return;
+		if (ImGui::MenuItem("Transform", "W")) m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+		if (ImGui::MenuItem("Scale",     "E")) m_GizmoType = ImGuizmo::OPERATION::SCALE;
+		if (ImGui::MenuItem("Rotate",    "R")) m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+		ImGui::EndPopup();
 	}
 	void SceneViewPanel::ShowGizmos()
 	{
@@ -314,7 +355,6 @@ namespace Enigma::Editor {
 
 		ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(deltaMatrix), &position.x, &rotation.x, &scale.x);
 
-
 		if (m_GizmoType != ImGuizmo::OPERATION::ROTATE) return;
 
 		// Update rotation
@@ -374,18 +414,22 @@ namespace Enigma::Editor {
 
 		ImGui::End();
 	}
-	
-	void SceneViewPanel::Render()
+
+	Entity SceneViewPanel::GetHoveredEntity()
 	{
-		if (m_Context == nullptr) return;
+		// Get mouse position
+		i32 mouseX = Engine::Input::GetMouseX();
+		i32 mouseY = m_Surface.scale.y - Engine::Input::GetMouseY();
 
-		EntityPicker();
-
-		m_RenderSystem->StartFrame(m_Camera);
-
-		m_RenderSystem->EndFrame();
+		// Get entity at mouse position
+		Engine::ECS::EntityID entityID = 0;
+		m_EntityPickerBuffer->GetPixel(mouseX, mouseY, 0, &entityID);
+		if (entityID == 0) {
+			return {};
+		}
+		
+		return { entityID - 1, m_Context.get() };
 	}
-
 	void SceneViewPanel::EntityPicker()
 	{
 		using namespace Engine::ECS;
@@ -418,5 +462,16 @@ namespace Enigma::Editor {
 		m_EntityPickerShader->Unbind();
 
 		m_EntityPickerBuffer->Unbind();
+	}
+
+	void SceneViewPanel::Render()
+	{
+		if (m_Context == nullptr) return;
+
+		EntityPicker();
+
+		m_RenderSystem->StartFrame(m_Camera);
+
+		m_RenderSystem->EndFrame();
 	}
 }

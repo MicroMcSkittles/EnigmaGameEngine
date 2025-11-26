@@ -1,7 +1,63 @@
 #include "UndoRedoAction.h"
 #include "EditorEvents.h"
+#include "Scene/Components.h"
+
+#include <Enigma/Core/Process/Application.h>
 
 namespace Enigma::Editor {
+	void UndoRedoFunctions::RenameEntity(Entity entity, std::string name) {
+		entity.GetMetaData().name = name;
+	}
+	void UndoRedoFunctions::CreateEntity(ref<Scene> scene, std::string name, Entity parent) {
+		if (parent) scene->CreateEntity(parent, name);
+		else scene->CreateEntity(name);
+	}
+	void UndoRedoFunctions::RemoveEntity(ref<Scene> scene, Entity entity) {
+		scene->RemoveEntity(entity);
+	}
+	void UndoRedoFunctions::ChangeParent(ref<Scene> scene, Entity entity, Entity parent) {
+		scene->ChangeParent(entity, parent);
+	}
+
+	void RenameEntityAction(Entity entity, const std::string& newName, const std::string& oldName) {
+		Action action;
+		action.undoFunc = std::bind(UndoRedoFunctions::RenameEntity, entity, oldName);
+		action.redoFunc = std::bind(UndoRedoFunctions::RenameEntity, entity, newName);
+		action.name = "Renamed entity \"" + oldName + "\" to \"" + newName + "\"";
+
+		Event::NewAction e(action);
+		Core::Application::EventCallback(e);
+	}
+	void CreateEntityAction(ref<Scene> scene, Entity entity) {
+		Action action;
+		action.undoFunc = std::bind(UndoRedoFunctions::RemoveEntity, scene, entity);
+		action.redoFunc = std::bind(UndoRedoFunctions::CreateEntity, scene, entity.GetMetaData().name, entity.GetMetaData().parent);
+		action.name = "Created entity \"" + entity.GetMetaData().name + "\"";
+
+		Event::NewAction e(action);
+		Core::Application::EventCallback(e);
+	}
+	void RemoveEntityAction(ref<Scene> scene, Entity entity) {
+		Action action;
+		// TODO: restore components on undo
+		action.undoFunc = std::bind(UndoRedoFunctions::CreateEntity, scene, entity.GetMetaData().name, entity.GetMetaData().parent);
+		action.redoFunc = std::bind(UndoRedoFunctions::RemoveEntity, scene, entity);
+		action.name = "Removed entity \"" + entity.GetMetaData().name + "\"";
+
+		Event::NewAction e(action);
+		Core::Application::EventCallback(e);
+	}
+	void ChangeParentAction(ref<Scene> scene, Entity entity, Entity parent) {
+		Action action;
+		action.undoFunc = std::bind(UndoRedoFunctions::ChangeParent, scene, entity, entity.GetMetaData().parent);
+		action.redoFunc = std::bind(UndoRedoFunctions::ChangeParent, scene, entity, parent);
+		if (parent) action.name = "Changed entity's \"" + entity.GetMetaData().name + "\" parent to \"" + parent.GetMetaData().name + "\"";
+		else action.name = "Changed entity's \"" + entity.GetMetaData().name + "\" parent to \"Root\"";
+
+		Event::NewAction e(action);
+		Core::Application::EventCallback(e);
+	}
+
 	ActionHandler::ActionHandler()
 	{
 		m_ActionPointer = InvalidActionPointer;

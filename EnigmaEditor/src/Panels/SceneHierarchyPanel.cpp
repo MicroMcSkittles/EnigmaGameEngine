@@ -10,62 +10,6 @@
 
 namespace Enigma::Editor {
 
-	// Undo/Redo action functions
-
-	static void UndoRedoEntityRename(Entity entity, std::string name) {
-		entity.GetMetaData().name = name;
-	}
-	static void CreateEntityRenameAction(Entity entity, const std::string& name, const std::string& old) {
-		Action action;
-		action.undoFunc = std::bind(UndoRedoEntityRename, entity, old);
-		action.redoFunc = std::bind(UndoRedoEntityRename, entity, name);
-		action.name = "Renamed entity \"" + old + "\" to \"" + name + "\"";
-
-		Event::NewAction e(action);
-		Core::Application::EventCallback(e);
-	}
-
-	static void UndoRedoCreateEntity(ref<Scene> scene, std::string name, Entity parent) {
-		if (parent) scene->CreateEntity(parent, name);
-		else scene->CreateEntity(name);
-	}
-	static void UndoRedoRemoveEntity(ref<Scene> scene, Entity entity) {
-		scene->RemoveEntity(entity);
-	}
-	static void CreateEntityAction(ref<Scene> scene, Entity entity) {
-		Action action;
-		action.undoFunc = std::bind(UndoRedoRemoveEntity, scene, entity);
-		action.redoFunc = std::bind(UndoRedoCreateEntity, scene, entity.GetMetaData().name, entity.GetMetaData().parent);
-		action.name = "Created entity \"" + entity.GetMetaData().name + "\"";
-
-		Event::NewAction e(action);
-		Core::Application::EventCallback(e);
-	}
-	static void RemoveEntityAction(ref<Scene> scene, Entity entity) {
-		Action action;
-		// TODO: restore components on undo
-		action.undoFunc = std::bind(UndoRedoCreateEntity, scene, entity.GetMetaData().name, entity.GetMetaData().parent);
-		action.redoFunc = std::bind(UndoRedoRemoveEntity, scene, entity);
-		action.name = "Removed entity \"" + entity.GetMetaData().name + "\"";
-
-		Event::NewAction e(action);
-		Core::Application::EventCallback(e);
-	}
-
-	static void UndoRedoChangeParent(ref<Scene> scene, Entity entity, Entity parent) {
-		scene->ChangeParent(entity, parent);
-	}
-	static void ChangeEntityParentAction(ref<Scene> scene, Entity entity, Entity parent) {
-		Action action;
-		action.undoFunc = std::bind(UndoRedoChangeParent, scene, entity, entity.GetMetaData().parent);
-		action.redoFunc = std::bind(UndoRedoChangeParent, scene, entity, parent);
-		if (parent) action.name = "Changed entity's \"" + entity.GetMetaData().name + "\" parent to \"" + parent.GetMetaData().name + "\"";
-		else action.name = "Changed entity's \"" + entity.GetMetaData().name + "\" parent to \"Root\"";
-
-		Event::NewAction e(action);
-		Core::Application::EventCallback(e);
-	}
-
 	SceneHierachyPanel::SceneHierachyPanel()
 	{
 		m_OpenEntitySettings = false;
@@ -213,7 +157,7 @@ namespace Enigma::Editor {
 			m_EntityToRename = { };
 		}
 		if (m_EntityToRename == Entity() && !m_FromCreate) {
-			CreateEntityRenameAction(entity, metaData.name, m_OldName);
+			RenameEntityAction(entity, metaData.name, m_OldName);
 			m_OldName = "";
 		}
 
@@ -325,7 +269,7 @@ namespace Enigma::Editor {
 
 		// Update other entity parent
 		EntityMetaData& otherMetaData = child.GetComponent<EntityMetaData>();
-		ChangeEntityParentAction(m_SceneContext, child, entity);
+		ChangeParentAction(m_SceneContext, child, entity);
 		m_SceneContext->ChangeParent(child, entity);
 
 		// Close dragdrop target
