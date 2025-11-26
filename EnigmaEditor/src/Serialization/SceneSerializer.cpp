@@ -2,10 +2,8 @@
 #include "Scene/Components.h"
 
 #include <Enigma/Core/System.h>
-#include <yaml-cpp/yaml.h>
 #include <fstream>
 #include <filesystem>
-
 
 namespace YAML {
 	// Custom YAML converters
@@ -207,12 +205,7 @@ namespace Enigma::Editor {
 
 		out << YAML::EndMap;
 	}
-
 	void SceneSerializer::SerializeEntity(YAML::Emitter& out, Entity entity) {
-
-		std::string sceneFileName = std::filesystem::path(m_Scene->m_FileName).filename().string();
-		LOG_MESSAGE("Serializing entity \"%s\" to file \"%s\"", 5, entity.GetMetaData().name.c_str(), sceneFileName.c_str());
-
 		// Start Entity Node
 		out << YAML::BeginMap;
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
@@ -240,6 +233,8 @@ namespace Enigma::Editor {
 		// Push entity data
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 		m_Scene->ForEach([&](Entity entity) {
+			std::string sceneFileName = std::filesystem::path(m_Scene->m_FileName).filename().string();
+			LOG_MESSAGE("Serializing entity \"%s\" to file \"%s\"", 5, entity.GetMetaData().name.c_str(), sceneFileName.c_str());
 			SerializeEntity(out, entity);
 		});
 		out << YAML::EndSeq;
@@ -261,6 +256,54 @@ namespace Enigma::Editor {
 	void SceneSerializer::SerializeBinary(const std::string& filename)
 	{
 		LOG_WARNING("function ( SceneSerializer::SerializeBinary(const std::string& filename) ) not impl yet!");
+	}
+
+	YAML::Node SceneSerializer::SerializeEntityToNode(Entity entity)
+	{
+		YAML::Emitter out;
+
+		out << YAML::BeginSeq;
+		for (Entity& child : entity.GetMetaData().children.GetData()) {
+			SerializeEntity(out, child);
+		}
+		SerializeEntity(out, entity);
+		out << YAML::EndSeq;
+
+		return YAML::Load(out.c_str());;
+	}
+	Entity SceneSerializer::DeserializeEntityFromNode(const YAML::Node& data) {
+
+		Entity entity;
+
+		for (YAML::Node entityData : data) {
+			entity = { m_Scene->m_ECS->CreateEntity(), m_Scene.get() };
+
+			// "Store" entity to the scene root if it doesn't have a parent
+			if (!entityData["EntityMetaData"]["Parent"]) {
+				EntityMetaData& sceneRoot = Entity(0, m_Scene.get()).GetComponent<EntityMetaData>();
+				sceneRoot.children.Create(entity.GetID(), entity);
+			}
+
+			// Create UUID
+			UUID uuid = entityData["Entity"].as<UUID>();
+			entity.CreateComponent<UUID>(uuid);
+
+			m_Scene->m_EntityUUIDs.insert({ uuid, entity });
+		}
+
+		// Load the components for each entity
+		for (YAML::Node entityData : data) {
+			UUID uuid = entityData["Entity"].as<UUID>();
+			Entity entity = m_Scene->m_EntityUUIDs[uuid];
+			DeserializeEntity(entityData, entity);
+		}
+
+		if (entity.GetMetaData().parent) {
+			EntityMetaData& metaData = entity.GetMetaData().parent.GetMetaData();
+			metaData.children.Create(entity.GetID(), entity);
+		}
+
+		return entity;
 	}
 
 	// Deserialization
@@ -319,6 +362,11 @@ namespace Enigma::Editor {
 	void SceneSerializer::DeserializeColoredQuad(const YAML::Node& data, Entity entity, ECS::ColoredQuad& quad) {
 		quad.tint = data["Tint"].as<glm::vec3>();
 	}
+	void SceneSerializer::DeserializeEntity(const YAML::Node& data, Entity entity) {
+		DeserializeComponent<EntityMetaData>("EntityMetaData", entity, data, &SceneSerializer::DeserializeEntityMetaData, this);
+		DeserializeComponent<ECS::Transform>("Transform",      entity, data, &SceneSerializer::DeserializeTransform,      this);
+		DeserializeComponent<ECS::ColoredQuad>("ColoredQuad",  entity, data, &SceneSerializer::DeserializeColoredQuad,    this);
+	}
 
 	bool SceneSerializer::Deserialize(const std::string& filename)
 	{
@@ -361,15 +409,9 @@ namespace Enigma::Editor {
 
 		// Load the components for each entity
 		for (YAML::Node entityData : entities) {
-
 			UUID uuid = entityData["Entity"].as<UUID>();
 			Entity entity = m_Scene->m_EntityUUIDs[uuid];
-
-			// Deserialize components
-			DeserializeComponent<EntityMetaData>("EntityMetaData", entity, entityData, &SceneSerializer::DeserializeEntityMetaData, this);
-			DeserializeComponent<ECS::Transform>("Transform",      entity, entityData, &SceneSerializer::DeserializeTransform,      this);
-			DeserializeComponent<ECS::ColoredQuad>("ColoredQuad",  entity, entityData, &SceneSerializer::DeserializeColoredQuad,    this);
-
+			DeserializeEntity(entityData, entity);
 			LOG_MESSAGE("Deserialized entity \"%s\", UUID: %s", 5, entity.GetComponent<EntityMetaData>().name.c_str(), static_cast<std::string>(uuid).c_str());
 		}
 		

@@ -190,9 +190,6 @@ namespace Enigma::Editor {
 	{
 		ImGui::Begin("Scene View");
 
-		Engine::Input::MakeCurrent(m_InputContext);
-		ImGui::Text("Mouse Pos ( %.1f, %.1f ), Selected Entity: %u", Engine::Input::GetMouseX(), Engine::Input::GetMouseY(), m_Selected.GetID());
-
 		// Get the size of ImGui window
 		glm::vec2 region = FromImVec(ImGui::GetContentRegionAvail());
 		m_Surface.position = FromImVec(ImGui::GetCursorScreenPos());
@@ -280,6 +277,9 @@ namespace Enigma::Editor {
 		if (ImGui::MenuItem("Remove")) {
 			RemoveEntityAction(m_Context, m_Selected);
 			m_Context->RemoveEntity(m_Selected);
+
+			Event::EntitySelected e({});
+			Core::Application::EventCallback(e);
 		}
 
 		ImGui::EndPopup();

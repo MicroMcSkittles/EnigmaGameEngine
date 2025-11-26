@@ -66,7 +66,7 @@ namespace Enigma::Editor {
 			bool relative = (transform.parent != InvalidEntityID);
 			if (EditorGui::CheckBox("Relative", relative)) {
 				if (relative) transform.parent = entity.GetMetaData().parent.GetID();
-				else transform.parent = {};
+				else transform.parent = InvalidEntityID;
 				edited = true;
 			}
 		}

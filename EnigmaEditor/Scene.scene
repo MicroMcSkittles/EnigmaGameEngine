@@ -10,7 +10,7 @@ Entities:
       Position: [-0.1344532, 0.6722693, 0]
       Rotation: [0, 0, -0.90307873, -0.42947495]  # Quaternion
       Scale: [0.92, 0.92, 0.92]
-      Degrees: true
+      Degrees: false
       EulerAngles: [-0, -0, 2.25377]  # Radians
     ColoredQuad:
       Tint: [1, 1, 1]

@@ -3,6 +3,8 @@
 #include <functional>
 #include <string>
 
+#include <yaml-cpp/yaml.h>
+
 #include "Scene/Scene.h"
 #include "Scene/Entity.h"
 
@@ -11,7 +13,8 @@ namespace Enigma::Editor {
 	namespace UndoRedoFunctions {
 		void RenameEntity(Entity entity, std::string name);
 		void CreateEntity(ref<Scene> scene, std::string name, Entity parent);
-		void RemoveEntity(ref<Scene> scene, Entity entity);
+		void DeserializeEntity(ref<Scene> scene, YAML::Node data);
+		void RemoveEntity(ref<Scene> scene, Engine::UUID uuid);
 		void ChangeParent(ref<Scene> scene, Entity entity, Entity parent);
 	}
 	void RenameEntityAction(Entity entity, const std::string& newName, const std::string& oldName);

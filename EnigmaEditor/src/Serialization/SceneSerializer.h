@@ -1,10 +1,7 @@
 #pragma once
 #include "Scene/Scene.h"
 
-namespace YAML {
-	class Node;
-	class Emitter;
-}
+#include <yaml-cpp/yaml.h>
 
 namespace Enigma::Editor {
 
@@ -22,6 +19,9 @@ namespace Enigma::Editor {
 		bool Deserialize(const std::string& filename);
 		bool DeserializeBinary(const std::string& filename);
 
+		YAML::Node SerializeEntityToNode(Entity entity);
+		Entity DeserializeEntityFromNode(const YAML::Node& data);
+
 	private:
 		void SerializeEntityMetaData(YAML::Emitter& out, Entity entity, EntityMetaData& entityMetaData);
 		void SerializeTransform(YAML::Emitter& out, Entity entity, Engine::ECS::Transform& transform);
@@ -31,6 +31,7 @@ namespace Enigma::Editor {
 		void DeserializeEntityMetaData(const YAML::Node& data, Entity entity, EntityMetaData& metaData);
 		void DeserializeTransform(const YAML::Node& data, Entity entity, Engine::ECS::Transform& transform);
 		void DeserializeColoredQuad(const YAML::Node& data, Entity entity, Engine::ECS::ColoredQuad& quad);
+		void DeserializeEntity(const YAML::Node& data, Entity entity);
 
 	private:
 		ref<Scene> m_Scene;

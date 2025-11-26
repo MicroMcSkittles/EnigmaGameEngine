@@ -1,6 +1,7 @@
 #include "UndoRedoAction.h"
 #include "EditorEvents.h"
 #include "Scene/Components.h"
+#include "Serialization/SceneSerializer.h"
 
 #include <Enigma/Core/Process/Application.h>
 
@@ -12,8 +13,13 @@ namespace Enigma::Editor {
 		if (parent) scene->CreateEntity(parent, name);
 		else scene->CreateEntity(name);
 	}
-	void UndoRedoFunctions::RemoveEntity(ref<Scene> scene, Entity entity) {
-		scene->RemoveEntity(entity);
+	void UndoRedoFunctions::DeserializeEntity(ref<Scene> scene, YAML::Node data)
+	{
+		SceneSerializer serializer(scene);
+		serializer.DeserializeEntityFromNode(data);
+	}
+	void UndoRedoFunctions::RemoveEntity(ref<Scene> scene, Engine::UUID uuid) {
+		scene->RemoveEntity(scene->GetEntity(uuid));
 	}
 	void UndoRedoFunctions::ChangeParent(ref<Scene> scene, Entity entity, Entity parent) {
 		scene->ChangeParent(entity, parent);
@@ -30,7 +36,7 @@ namespace Enigma::Editor {
 	}
 	void CreateEntityAction(ref<Scene> scene, Entity entity) {
 		Action action;
-		action.undoFunc = std::bind(UndoRedoFunctions::RemoveEntity, scene, entity);
+		action.undoFunc = std::bind(UndoRedoFunctions::RemoveEntity, scene, entity.GetUUID());
 		action.redoFunc = std::bind(UndoRedoFunctions::CreateEntity, scene, entity.GetMetaData().name, entity.GetMetaData().parent);
 		action.name = "Created entity \"" + entity.GetMetaData().name + "\"";
 
@@ -40,8 +46,8 @@ namespace Enigma::Editor {
 	void RemoveEntityAction(ref<Scene> scene, Entity entity) {
 		Action action;
 		// TODO: restore components on undo
-		action.undoFunc = std::bind(UndoRedoFunctions::CreateEntity, scene, entity.GetMetaData().name, entity.GetMetaData().parent);
-		action.redoFunc = std::bind(UndoRedoFunctions::RemoveEntity, scene, entity);
+		action.undoFunc = std::bind(UndoRedoFunctions::DeserializeEntity, scene, SceneSerializer(scene).SerializeEntityToNode(entity));
+		action.redoFunc = std::bind(UndoRedoFunctions::RemoveEntity, scene, entity.GetUUID());
 		action.name = "Removed entity \"" + entity.GetMetaData().name + "\"";
 
 		Event::NewAction e(action);

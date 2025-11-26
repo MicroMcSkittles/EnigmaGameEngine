@@ -40,10 +40,12 @@ namespace Enigma::Editor {
 	Entity Scene::CreateEntity(const std::string& name)
 	{
 		Entity entity = { m_ECS->CreateEntity(), this };
-		entity.CreateComponent<Engine::UUID>();
 		entity.CreateComponent<EntityMetaData>(name);
 		entity.CreateComponent<Transform>();
 		entity.CreateComponent<TransformMetaData>();
+
+		Engine::UUID uuid = entity.CreateComponent<Engine::UUID>();
+		m_EntityUUIDs.insert({ uuid, entity });
 
 		EntityMetaData& root = Entity(0, this).GetMetaData();
 		root.children.Create(entity.GetID(), entity);
@@ -54,8 +56,10 @@ namespace Enigma::Editor {
 	{
 		// Create child entity
 		Entity entity = { m_ECS->CreateEntity(), this };
-		entity.CreateComponent<Engine::UUID>();
 		entity.CreateComponent<EntityMetaData>(name, parent);
+
+		Engine::UUID uuid = entity.CreateComponent<Engine::UUID>();
+		m_EntityUUIDs.insert({ uuid, entity });
 
 		// Create and set transform
 		entity.CreateComponent<TransformMetaData>();
@@ -126,6 +130,14 @@ namespace Enigma::Editor {
 			EntityMetaData& root = Entity(0, this).GetMetaData();
 			root.children.Remove(entity.GetID());
 		}
+
+		// Remove child entities
+		for (Entity& child : entityMetaData.children.GetData()) {
+			RemoveEntity(child);
+		}
+
+		// Remove uuid from map
+		m_EntityUUIDs.erase(entity.GetUUID());
 
 		m_ECS->RemoveEntity(entity.GetID());
 	}
