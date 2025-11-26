@@ -40,11 +40,12 @@ namespace Enigma::Editor {
 	Entity Scene::CreateEntity(const std::string& name)
 	{
 		Entity entity = { m_ECS->CreateEntity(), this };
-		entity.CreateComponent<EntityMetaData>(name);
 		entity.CreateComponent<Engine::UUID>();
+		entity.CreateComponent<EntityMetaData>(name);
 		entity.CreateComponent<Transform>();
+		entity.CreateComponent<TransformMetaData>();
 
-		EntityMetaData& root = Entity(0, this).GetComponent<EntityMetaData>();
+		EntityMetaData& root = Entity(0, this).GetMetaData();
 		root.children.Create(entity.GetID(), entity);
 
 		return entity;
@@ -53,15 +54,16 @@ namespace Enigma::Editor {
 	{
 		// Create child entity
 		Entity entity = { m_ECS->CreateEntity(), this };
-		entity.CreateComponent<EntityMetaData>(name, parent);
 		entity.CreateComponent<Engine::UUID>();
+		entity.CreateComponent<EntityMetaData>(name, parent);
 
 		// Create and set transform
+		entity.CreateComponent<TransformMetaData>();
 		Transform& transform = entity.CreateComponent<Transform>();
 		transform.parent = parent.GetID();
 
 		// Update parent entity
-		EntityMetaData& metaData = parent.GetComponent<EntityMetaData>();
+		EntityMetaData& metaData = parent.GetMetaData();
 		metaData.children.Create(entity.GetID(), entity);
 
 		return entity;
@@ -69,28 +71,28 @@ namespace Enigma::Editor {
 
 	void Scene::ChangeParent(Entity entity, Entity parent)
 	{
-		EntityMetaData& entityMetaData = entity.GetComponent<EntityMetaData>();
+		EntityMetaData& entityMetaData = entity.GetMetaData();
 
 		// Make sure the new parent isn't the same as the old one
 		if (entityMetaData.parent == parent) return;
 
 		// Update old parent metadata
 		if (entityMetaData.parent) {
-			EntityMetaData& originalParent = entityMetaData.parent.GetComponent<EntityMetaData>();
+			EntityMetaData& originalParent = entityMetaData.parent.GetMetaData();
 			originalParent.children.Remove(entity.GetID());
 		}
 		else {
-			EntityMetaData& root = Entity(0, this).GetComponent<EntityMetaData>();
+			EntityMetaData& root = Entity(0, this).GetMetaData();
 			root.children.Remove(entity.GetID());
 		}
 
 		// Update new parent metadata
 		if (parent) {
-			EntityMetaData& parentMetaData = parent.GetComponent<EntityMetaData>();
+			EntityMetaData& parentMetaData = parent.GetMetaData();
 			parentMetaData.children.Create(entity.GetID(), entity);
 		}
 		else {
-			EntityMetaData& root = Entity(0, this).GetComponent<EntityMetaData>();
+			EntityMetaData& root = Entity(0, this).GetMetaData();
 			root.children.Create(entity.GetID(), entity);
 		}
 
@@ -115,13 +117,13 @@ namespace Enigma::Editor {
 		if (!entity) return;
 
 		// update entity and parent entity metadata
-		EntityMetaData& entityMetaData = entity.GetComponent<EntityMetaData>();
+		EntityMetaData& entityMetaData = entity.GetMetaData();
 		if (entityMetaData.parent) {
-			EntityMetaData& parentMetaData = entityMetaData.parent.GetComponent<EntityMetaData>();
+			EntityMetaData& parentMetaData = entityMetaData.parent.GetMetaData();
 			parentMetaData.children.Remove(entity.GetID());
 		}
 		else {
-			EntityMetaData& root = Entity(0, this).GetComponent<EntityMetaData>();
+			EntityMetaData& root = Entity(0, this).GetMetaData();
 			root.children.Remove(entity.GetID());
 		}
 

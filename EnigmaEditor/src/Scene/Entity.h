@@ -46,7 +46,15 @@ namespace Enigma::Editor {
 		virtual void ShowGui() override;
 
 	private:
+		void HeaderGui();
+		void RenameGui();
+
+	private:
 		Entity m_Entity;
+
+		bool m_StartRename;
+		bool m_EndRename;
+		std::string m_OriginalName;
 	};
 }
 

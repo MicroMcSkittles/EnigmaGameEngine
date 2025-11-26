@@ -1,87 +1,29 @@
 # An Enigma scene file
 Scene: Untitled Scene
 Entities:
-  - Entity: 17819971743026343214
+  - Entity: 2839810922040287596
     EntityMetaData:  # Extra data needed by the editor
-      Name: Cube
+      Name: Parent Entity
       Children:
-        - 3309148762156736941
-        - 6372347871745484202
-      Degrees: true
-      EulerAngles: [0, -0, 52.38889]
+        - 3988970037366462985
     Transform:
-      Position: [-1.46042, 1.1760902, 0]
-      Rotation: [0, 0, 0.44141886, 0.8973012]
-      Scale: [0.57973003, 0.15000002, 0.15000004]
-    ColoredQuad:
-      Tint: [1, 0, 0]
-  - Entity: 3309148762156736941
-    EntityMetaData:  # Extra data needed by the editor
-      Name: Child 1
-      Parent: 17819971743026343214
+      Position: [-0.1344532, 0.6722693, 0]
+      Rotation: [0, 0, -0.90307873, -0.42947495]  # Quaternion
+      Scale: [0.92, 0.92, 0.92]
       Degrees: true
-      EulerAngles: [0, 0, 0]
-    Transform:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0, 1]
-      Scale: [1, 1, 1]
-      Parent: 17819971743026343214
-  - Entity: 6372347871745484202
-    EntityMetaData:  # Extra data needed by the editor
-      Name: Child 2
-      Parent: 17819971743026343214
-      Degrees: true
-      EulerAngles: [0, 0, 0]
-    Transform:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0, 1]
-      Scale: [1, 1, 1]
-      Parent: 17819971743026343214
-  - Entity: 1011743532427908353
-    EntityMetaData:  # Extra data needed by the editor
-      Name: Box even
-      Degrees: true
-      EulerAngles: [0, -0, 0]
-    Transform:
-      Position: [1.5193278, -1.1697478, 0]
-      Rotation: [0, 0, 0, 1]
-      Scale: [1, 1, 1]
-    ColoredQuad:
-      Tint: [0.64478767, 0, 0.62736124]
-  - Entity: 17834252377480884730
-    EntityMetaData:  # Extra data needed by the editor
-      Name: Circle
-      Degrees: true
-      EulerAngles: [0, -0, 0]
-    Transform:
-      Position: [0.77544445, 2.067851, 0]
-      Rotation: [0, 0, 0, 1]
-      Scale: [0.27000004, 0.27000004, 0.27000004]
-    ColoredQuad:
-      Tint: [0.32254916, 0.7027027, 0.18720652]
-  - Entity: 4387206210017822307
-    EntityMetaData:  # Extra data needed by the editor
-      Name: Dude
-      Children:
-        - 10204132956233327431
-      Degrees: true
-      EulerAngles: [0, 0, 0]
-    Transform:
-      Position: [-2.9042017, 0.013445854, 0]
-      Rotation: [0, 0, 0, 1]
-      Scale: [0.71000004, 0.71000004, 0.71000004]
+      EulerAngles: [-0, -0, 2.25377]  # Radians
     ColoredQuad:
       Tint: [1, 1, 1]
-  - Entity: 10204132956233327431
+  - Entity: 3988970037366462985
     EntityMetaData:  # Extra data needed by the editor
-      Name: Gun Or Something
-      Parent: 4387206210017822307
-      Degrees: true
-      EulerAngles: [0, 0, 0]
+      Name: Child Entity
+      Parent: 2839810922040287596
     Transform:
-      Position: [0.6722691, 0.3899159, 0.7]
-      Rotation: [0, 0, 0, 1]
-      Scale: [0.5368772, 0.13647945, 0.38]
-      Parent: 4387206210017822307
+      Parent: 2839810922040287596
+      Position: [-2.4836054, 0.37093097, 0]
+      Rotation: [0, 0, 0.49380285, 0.86957407]  # Quaternion
+      Scale: [1, 1, 1]
+      Degrees: true
+      EulerAngles: [0, -0, 1.032915]  # Radians
     ColoredQuad:
-      Tint: [0, 0, 0]
+      Tint: [0.71814674, 0.10813793, 0.10813793]

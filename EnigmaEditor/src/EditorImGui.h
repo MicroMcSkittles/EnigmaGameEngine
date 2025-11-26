@@ -69,6 +69,7 @@ namespace Enigma::Editor {
 	class EditorGui {
 	public:
 		static void SetStyle(const EditorStyle& style);
+		static EditorStyle& GetStyle();
 
 		static bool InputInt(const std::string& lable, i32& value, i32 resetValue = 0, f32 columnWidth = 100.0f);
 		static bool InputInt2(const std::string& lable, glm::ivec2& value, i32 resetValue = 0, f32 columnWidth = 100.0f);

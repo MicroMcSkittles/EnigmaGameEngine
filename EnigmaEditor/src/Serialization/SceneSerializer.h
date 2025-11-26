@@ -23,14 +23,14 @@ namespace Enigma::Editor {
 		bool DeserializeBinary(const std::string& filename);
 
 	private:
-		void SerializeEntityMetaData(YAML::Emitter& out, EntityMetaData& entityMetaData);
-		void SerializeTransform(YAML::Emitter& out, Engine::ECS::Transform& transform);
-		void SerializeColoredQuad(YAML::Emitter& out, Engine::ECS::ColoredQuad& quad);
+		void SerializeEntityMetaData(YAML::Emitter& out, Entity entity, EntityMetaData& entityMetaData);
+		void SerializeTransform(YAML::Emitter& out, Entity entity, Engine::ECS::Transform& transform);
+		void SerializeColoredQuad(YAML::Emitter& out, Entity entity, Engine::ECS::ColoredQuad& quad);
 		void SerializeEntity(YAML::Emitter& out, Entity entity);
 
-		void DeserializeEntityMetaData(const YAML::Node& data, EntityMetaData& metaData);
-		void DeserializeTransform(const YAML::Node& data, Engine::ECS::Transform& transform);
-		void DeserializeColoredQuad(const YAML::Node& data, Engine::ECS::ColoredQuad& quad);
+		void DeserializeEntityMetaData(const YAML::Node& data, Entity entity, EntityMetaData& metaData);
+		void DeserializeTransform(const YAML::Node& data, Entity entity, Engine::ECS::Transform& transform);
+		void DeserializeColoredQuad(const YAML::Node& data, Entity entity, Engine::ECS::ColoredQuad& quad);
 
 	private:
 		ref<Scene> m_Scene;

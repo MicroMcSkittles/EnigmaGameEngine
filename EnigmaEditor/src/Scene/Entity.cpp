@@ -6,8 +6,10 @@
 #include <Enigma/Core/Process/Application.h>
 #include <Enigma/Engine/Physics/PhysicsComponents.h>
 
-#include <tuple>
 #include <imgui.h>
+#include <misc/cpp/imgui_stdlib.h>
+
+#include <tuple>
 
 using namespace Enigma::Engine::ECS;
 
@@ -37,26 +39,47 @@ namespace Enigma::Editor {
 		return true;
 	}
 
+	void BlankMenuGui(Entity entity) { }
+
 	bool TransformGui(Entity entity) {
 		Transform& transform = entity.GetComponent<Transform>();
-		EntityMetaData& metaData = entity.GetMetaData();
+		TransformMetaData& metaData = entity.GetComponent<TransformMetaData>();
 
-		// TODO: add relative and degree controlls
-		
-		glm::vec3 originalEulerAngles = metaData.eulerAngles;
+		// Angle values
+		glm::vec3 originalEulerAngles = (metaData.degrees) ? glm::degrees(metaData.eulerAngles) : metaData.eulerAngles;
+		glm::vec3 eulerAngles = originalEulerAngles;
 		bool edited = false;
 
 		// Show input guis
-		if (EditorGui::InputVec3("Position", transform.position))   edited = true;
-		if (EditorGui::InputVec3("Rotation", metaData.eulerAngles)) edited = true;
-		if (EditorGui::InputVec3("Scale", transform.scale, 1.0f))   edited = true;
+		if (EditorGui::InputVec3("Position", transform.position)) edited = true;
+		if (EditorGui::InputVec3("Rotation", eulerAngles))        edited = true;
+		if (EditorGui::InputVec3("Scale", transform.scale, 1.0f)) edited = true;
 
 		// Update quaternion if the euler angles were changed
-		if (metaData.eulerAngles != originalEulerAngles) {
-			transform.rotation = glm::quat(glm::radians(metaData.eulerAngles));
+		if (eulerAngles != originalEulerAngles) {
+			metaData.eulerAngles = (metaData.degrees) ? glm::radians(eulerAngles) : eulerAngles;
+			transform.rotation = glm::quat(metaData.eulerAngles);
+		}
+
+		// Relative controls
+		if (entity.GetMetaData().parent) {
+			bool relative = (transform.parent != InvalidEntityID);
+			if (EditorGui::CheckBox("Relative", relative)) {
+				if (relative) transform.parent = entity.GetMetaData().parent.GetID();
+				else transform.parent = {};
+				edited = true;
+			}
 		}
 
 		return edited;
+	}
+	void TransformMenuGui(Entity entity) {
+		TransformMetaData& metaData = entity.GetComponent<TransformMetaData>();
+		ImGui::Checkbox("Degrees", &metaData.degrees);
+		if (ImGui::BeginItemTooltip()) {
+			ImGui::Text("Show rotation in degrees");
+			ImGui::EndTooltip();
+		}
 	}
 	bool RidgidBody2DGui(Entity entity) {
 		Engine::Physics::RidgidBody2D& ridgidBody2D = entity.GetComponent<Engine::Physics::RidgidBody2D>();
@@ -147,8 +170,8 @@ namespace Enigma::Editor {
 			return true;
 		}
 
-		template<typename T, typename Func>
-		static void ShowComponentGui(const std::string& name, Entity entity, Func function) {
+		template<typename T, typename MenuFunc, typename Func>
+		static void ShowComponentGui(const std::string& name, Entity entity, MenuFunc menuFunction, Func function) {
 			if (!entity.HasComponent<T>()) return;
 
 			// Configure component dropdown
@@ -185,6 +208,8 @@ namespace Enigma::Editor {
 						removed = true;
 					}
 				}
+
+				menuFunction(entity);
 
 				ImGui::EndPopup();
 			}
@@ -242,7 +267,7 @@ namespace Enigma::Editor {
 		static auto ComponentEditorsImpl(Tuple& t, std::index_sequence<Indices...>) {
 			return std::vector<std::function<void(Entity, const std::string&)>> {
 				[&t](Entity entity, const std::string& name) {
-					ShowComponentGui<std::tuple_element_t<Indices, std::tuple<Types...>>>(name, entity, s_UIFunctions[Indices]);
+					ShowComponentGui<std::tuple_element_t<Indices, std::tuple<Types...>>>(name, entity, s_UIMenuFunctions[Indices], s_UIFunctions[Indices]);
 				}...
 			};
 
@@ -301,6 +326,7 @@ namespace Enigma::Editor {
 	private:
 		static std::vector<std::string> s_Names;
 		static std::vector<std::function<bool(Entity)>> s_UIFunctions;
+		static std::vector<std::function<void(Entity)>> s_UIMenuFunctions;
 	};
 
 	using ComponentGui = ComponentGuiImpl<
@@ -320,20 +346,27 @@ namespace Enigma::Editor {
 		ColoredQuadGui,
 		RidgidBody2DGui
 	};
+	std::vector<std::function<void(Entity)>> ComponentGui::s_UIMenuFunctions = {
+		TransformMenuGui,
+		BlankMenuGui,
+		BlankMenuGui
+	};
 
 	EntityInspectorContext::EntityInspectorContext(Entity entity)
 	{
 		m_Entity = entity;
+		m_StartRename = false;
+		m_EndRename = true;
 	}
 	void EntityInspectorContext::ShowGui()
 	{
 		if (!m_Entity) return;
 		ImGui::PushID(m_Entity.GetID());
-		EntityMetaData& metaData = m_Entity.GetMetaData();
 
-		std::string uuid = m_Entity.GetUUID();
+		if (m_EndRename) HeaderGui();
+		else RenameGui();
 
-		ImGui::Text("%s | Entity ID: %u | UUID: %s", metaData.name.c_str(), m_Entity.GetID(), uuid.c_str());
+		ImGui::Separator();
 
 		ComponentGui::ShowComponents(m_Entity);
 
@@ -348,6 +381,72 @@ namespace Enigma::Editor {
 			ImGui::EndPopup();
 		}
 		ImGui::PopID();
+	}
+
+	void EntityInspectorContext::HeaderGui()
+	{
+		EntityMetaData& metaData = m_Entity.GetMetaData();
+
+		// Get entity name and cap its length
+		std::string entityName = metaData.name;
+		constexpr u64 maxNameLength = 32;
+		if (entityName.size() > maxNameLength) {
+			entityName.resize(maxNameLength);
+			memset(entityName.data() + maxNameLength - 3, '.', 3);
+		}
+
+		// Get IDs as strings
+		std::string uuidString = m_Entity.GetUUID();
+		std::string ecsIDString = std::to_string(m_Entity.GetID());
+
+		ImGui::Text("%s", entityName.c_str());
+		// Start rename gui if name is double clicked
+		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+			m_StartRename = true;
+			m_EndRename = false;
+			m_OriginalName = metaData.name;
+		}
+
+		// Show IDs
+		ImGui::SameLine();
+		ImGui::TextDisabled("ECS ID: %s", ecsIDString.c_str());
+		if (ImGui::BeginItemTooltip()) {
+			ImGui::TextDisabled("UUID: %s", uuidString.c_str());
+			ImGui::EndTooltip();
+		}
+	}
+
+	void EntityInspectorContext::RenameGui()
+	{
+		EntityMetaData& metaData = m_Entity.GetMetaData();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, ToImVec(EditorGui::GetStyle().windowBackground));
+
+		// Set Keyboard focus on the text box
+		if (m_StartRename) {
+			ImGui::SetKeyboardFocusHere();
+			m_StartRename = false;
+		}
+
+		// Show text box
+		ImGuiInputTextFlags inputFlags = ImGuiInputTextFlags_EnterReturnsTrue;
+		std::string buffer = metaData.name;
+		if (ImGui::InputText("##EntityRenameBox", &buffer, inputFlags)) {
+			metaData.name = buffer;
+			m_EndRename = true;
+		}
+		if (ImGui::IsItemDeactivated()) {
+			metaData.name = buffer;
+			m_EndRename = true;
+		}
+		if (m_EndRename) {
+			if (metaData.name != m_OriginalName) RenameEntityAction(m_Entity, metaData.name, m_OriginalName);
+			m_OriginalName = "";
+		}
+
+		ImGui::PopStyleColor();
+		ImGui::PopStyleVar();
 	}
 	
 }

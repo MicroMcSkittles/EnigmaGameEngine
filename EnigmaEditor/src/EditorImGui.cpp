@@ -58,6 +58,11 @@ namespace Enigma::Editor {
 		gizmoStyle.Colors[ImGuizmo::COLOR::PLANE_Z]     = ToImVec(style.colorZ);
 	}
 
+	EditorStyle& EditorGui::GetStyle()
+	{
+		return s_Data->style;
+	}
+
 	// Int Inputs =======================
 	bool EditorGui::InputInt(const std::string& lable, i32& value, i32 resetValue, f32 columnWidth)
 	{

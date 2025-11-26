@@ -145,16 +145,16 @@ namespace Enigma::Editor {
 		if (!entity.HasComponent<T>()) return;
 
 		// Make sure the function is valid
-		if constexpr (!std::is_invocable_v<Func, SceneSerializer&, YAML::Emitter&, T&>) {
+		if constexpr (!std::is_invocable_v<Func, SceneSerializer&, YAML::Emitter&, Entity, T&>) {
 			LOG_ERROR("Invalid serialization function");
 		}
 
 		// Call serialization function
 		T& component = entity.GetComponent<T>();
-		(serializer->*func)(out, component);
+		(serializer->*func)(out, entity, component);
 	}
 	
-	void SceneSerializer::SerializeEntityMetaData(YAML::Emitter& out, EntityMetaData& entityMetaData) {
+	void SceneSerializer::SerializeEntityMetaData(YAML::Emitter& out, Entity entity, EntityMetaData& entityMetaData) {
 		// Start EntityMetaData Node
 		out << YAML::Key << "EntityMetaData" << YAML::Comment("Extra data needed by the editor");
 		out << YAML::BeginMap;
@@ -174,29 +174,30 @@ namespace Enigma::Editor {
 			out << YAML::EndSeq;
 		}
 
-		// Push other data
-		out << YAML::Key << "Degrees" << YAML::Value << entityMetaData.degrees;
-		out << YAML::Key << "EulerAngles" << entityMetaData.eulerAngles;
-
 		out << YAML::EndMap;
 	}
-	void SceneSerializer::SerializeTransform(YAML::Emitter& out, ECS::Transform& transform) {
+	void SceneSerializer::SerializeTransform(YAML::Emitter& out, Entity entity, ECS::Transform& transform) {
 		// Start Transform Node
 		out << YAML::Key << "Transform";
 		out << YAML::BeginMap;
-		
-		// Push transform data
-		out << YAML::Key << "Position" << YAML::Value << transform.position;
-		out << YAML::Key << "Rotation" << YAML::Value << transform.rotation;
-		out << YAML::Key << "Scale"    << YAML::Value << transform.scale;
 
 		// Push parent if it exists
 		Entity parent = { transform.parent, m_Scene.get() };
 		if (parent) out << YAML::Key << "Parent" << YAML::Value << parent.GetUUID();
 
+		// Push transform data
+		out << YAML::Key << "Position" << YAML::Value << transform.position;
+		out << YAML::Key << "Rotation" << YAML::Value << transform.rotation << YAML::Comment("Quaternion");
+		out << YAML::Key << "Scale"    << YAML::Value << transform.scale;
+
+		// Push meta data
+		TransformMetaData& metaData = entity.GetComponent<TransformMetaData>();
+		out << YAML::Key << "Degrees"     << YAML::Value << metaData.degrees;
+		out << YAML::Key << "EulerAngles" << YAML::Value << metaData.eulerAngles << YAML::Comment("Radians");
+
 		out << YAML::EndMap;
 	}
-	void SceneSerializer::SerializeColoredQuad(YAML::Emitter& out, ECS::ColoredQuad& quad) {
+	void SceneSerializer::SerializeColoredQuad(YAML::Emitter& out, Entity entity, ECS::ColoredQuad& quad) {
 		// Start ColoredQuad Node
 		out << YAML::Key << "ColoredQuad";
 		out << YAML::BeginMap;
@@ -210,7 +211,7 @@ namespace Enigma::Editor {
 	void SceneSerializer::SerializeEntity(YAML::Emitter& out, Entity entity) {
 
 		std::string sceneFileName = std::filesystem::path(m_Scene->m_FileName).filename().string();
-		LOG_MESSAGE("Serializing entity %s to ( %s )", 5, entity.GetMetaData().name.c_str(), sceneFileName.c_str());
+		LOG_MESSAGE("Serializing entity \"%s\" to file \"%s\"", 5, entity.GetMetaData().name.c_str(), sceneFileName.c_str());
 
 		// Start Entity Node
 		out << YAML::BeginMap;
@@ -226,7 +227,7 @@ namespace Enigma::Editor {
 
 	void SceneSerializer::Serialize(const std::string& filename) {
 
-		LOG_MESSAGE("Serializing scene %s to ( %s )", 5, m_Scene->GetName().c_str(), m_Scene->m_FileName.c_str());
+		LOG_MESSAGE("Serializing scene \"%s\" to file \"%s\"", 5, m_Scene->GetName().c_str(), m_Scene->m_FileName.c_str());
 
 		// Start emitting
 		YAML::Emitter out;
@@ -250,7 +251,7 @@ namespace Enigma::Editor {
 		std::ofstream file;
 		file.open(filename);
 		if (!file.is_open()) {
-			LOG_SOFT_ERROR("Failed to save to file ( %s )", filename.c_str());
+			LOG_SOFT_ERROR("Failed to save to file \"%s\"", filename.c_str());
 		}
 
 		// Save and close file
@@ -270,16 +271,16 @@ namespace Enigma::Editor {
 		if (!componentData) return;
 
 		// Make sure the function is valid
-		if constexpr (!std::is_invocable_v<Func, SceneSerializer&, const YAML::Node&, T&>) {
+		if constexpr (!std::is_invocable_v<Func, SceneSerializer&, const YAML::Node&, Entity, T&>) {
 			LOG_ERROR("Invalid deserialization function");
 		}
 
 		// Call deserialization function
 		T& component = entity.CreateComponent<T>();
-		(serializer->*func)(componentData, component);
+		(serializer->*func)(componentData, entity, component);
 	}
 
-	void SceneSerializer::DeserializeEntityMetaData(const YAML::Node& data, EntityMetaData& metaData) {
+	void SceneSerializer::DeserializeEntityMetaData(const YAML::Node& data, Entity entity, EntityMetaData& metaData) {
 		metaData.name = data["Name"].as<std::string>();
 
 		// Get parent entity if it exists
@@ -297,24 +298,25 @@ namespace Enigma::Editor {
 				metaData.children.Create(entity.GetID(), entity);
 			}
 		}
-
-		// Other info
-		metaData.degrees = data["Degrees"].as<bool>();
-		metaData.eulerAngles = data["EulerAngles"].as<glm::vec3>();
 	}
-	void SceneSerializer::DeserializeTransform(const YAML::Node& data, ECS::Transform& transform) {
-		// Deserialize transform data
-		transform.position = data["Position"].as<glm::vec3>();
-		transform.rotation = data["Rotation"].as<glm::quat>();
-		transform.scale    = data["Scale"].as<glm::vec3>();
-
+	void SceneSerializer::DeserializeTransform(const YAML::Node& data, Entity entity, ECS::Transform& transform) {
 		// Get parent entity if it exists
 		if (data["Parent"]) {
 			UUID uuid = data["Parent"].as<UUID>();
 			transform.parent = m_Scene->m_EntityUUIDs[uuid].GetID();
 		}
+		
+		// Deserialize transform data
+		transform.position = data["Position"].as<glm::vec3>();
+		transform.rotation = data["Rotation"].as<glm::quat>();
+		transform.scale    = data["Scale"].as<glm::vec3>();
+
+		// Get meta data
+		TransformMetaData& metaData = entity.CreateComponent<TransformMetaData>();
+		metaData.degrees     = data["Degrees"].as<bool>();
+		metaData.eulerAngles = data["EulerAngles"].as<glm::vec3>();
 	}
-	void SceneSerializer::DeserializeColoredQuad(const YAML::Node& data, ECS::ColoredQuad& quad) {
+	void SceneSerializer::DeserializeColoredQuad(const YAML::Node& data, Entity entity, ECS::ColoredQuad& quad) {
 		quad.tint = data["Tint"].as<glm::vec3>();
 	}
 
@@ -326,7 +328,7 @@ namespace Enigma::Editor {
 
 		// Make sure it is a Scene file
 		if (!data["Scene"]) {
-			LOG_WARNING("Failed to deserialize scene ( %s ), invalid format", filename.c_str());
+			LOG_WARNING("Failed to deserialize scene \"%s\", invalid format", filename.c_str());
 			return false;
 		}
 
@@ -334,7 +336,7 @@ namespace Enigma::Editor {
 
 		// Get Scene name
 		std::string sceneName = data["Scene"].as<std::string>();
-		LOG_MESSAGE("Deserializing scene \"%s\" from ( %s )", 5, sceneName.c_str(), filename.c_str());
+		LOG_MESSAGE("Deserializing scene \"%s\" from file \"%s\"", 5, sceneName.c_str(), filename.c_str());
 		
 		// Get scene entities
 		YAML::Node entities = data["Entities"];

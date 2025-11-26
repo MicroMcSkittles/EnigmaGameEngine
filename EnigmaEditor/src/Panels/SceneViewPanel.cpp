@@ -22,7 +22,7 @@ namespace Enigma::Editor {
 
 	static void UndoRedoChangedTransform(Entity entity, Engine::ECS::Transform transform) {
 		entity.GetComponent<Engine::ECS::Transform>() = transform;
-		entity.GetMetaData().eulerAngles = glm::degrees(glm::eulerAngles(transform.rotation));
+		entity.GetComponent<TransformMetaData>().eulerAngles = glm::eulerAngles(transform.rotation);
 	}
 	static void ChangedTransformAction(Entity entity, const Engine::ECS::Transform& original) {
 		Action action;
@@ -227,13 +227,13 @@ namespace Enigma::Editor {
 		ShowOverlayWindow(overlayPosition.x, overlayPosition.y);
 
 		// Process mouse input
-		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && m_Hovered) {
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && m_Hovered && !m_GizmoHovered) {
 			if (m_Selected = GetHoveredEntity()) {
 				Event::EntitySelected selectionEvent(m_Selected);
 				Core::Application::EventCallback(selectionEvent);
 			}
 		}
-		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && m_Hovered) {
+		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && m_Hovered && !m_GizmoHovered) {
 			if (m_Selected = GetHoveredEntity()) {
 				Event::EntitySelected selectionEvent(m_Selected);
 				Core::Application::EventCallback(selectionEvent);
@@ -358,9 +358,10 @@ namespace Enigma::Editor {
 		if (m_GizmoType != ImGuizmo::OPERATION::ROTATE) return;
 
 		// Update rotation
-		EntityMetaData& metaData = m_Selected.GetComponent<EntityMetaData>();
+		TransformMetaData& metaData = m_Selected.GetComponent<TransformMetaData>();
 		transform.rotation = glm::quat(glm::radians(rotation)) * transform.rotation;
-		metaData.eulerAngles = glm::degrees(glm::eulerAngles(transform.rotation));
+		//metaData.eulerAngles = glm::degrees(glm::eulerAngles(transform.rotation));
+		metaData.eulerAngles = glm::eulerAngles(transform.rotation);
 	}
 	void SceneViewPanel::ShowOverlayWindow(f32 x, f32 y)
 	{
