@@ -53,6 +53,7 @@ project "Enigma"
         "%{IncludeDir.Glad}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.ImGui}",
+        "%{IncludeDir.VulkanSDK}",
     }
 
     defines {
@@ -112,7 +113,19 @@ project "Enigma"
 		runtime "Debug"
 		symbols "on"
 
+        links {
+			"%{Library.ShaderC_Debug}",
+			"%{Library.SPIRV_Cross_Debug}",
+			"%{Library.SPIRV_Cross_GLSL_Debug}"
+		}
+
 	filter "configurations:Release"
         defines "RELEASE"
 		runtime "Release"
 		optimize "speed"
+
+        links {
+			"%{Library.ShaderC_Release}",
+			"%{Library.SPIRV_Cross_Release}",
+			"%{Library.SPIRV_Cross_GLSL_Release}"
+		}
