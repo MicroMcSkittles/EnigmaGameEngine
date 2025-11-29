@@ -1,19 +1,19 @@
-[submodule "Vendor/GLFW/GLFW"]
-	path = Vendor/GLFW/GLFW
+[submodule "Enigma/vendor/GLFW/GLFW"]
+	path = Enigma/vendor/GLFW/GLFW
 	url = https://github.com/glfw/glfw.git
-[submodule "Vendor/GLM/GLM"]
-	path = Vendor/GLM/GLM
+[submodule "vendor/glm/glm"]
+	path = vendor/glm/glm
 	url = https://github.com/icaven/glm.git
-[submodule "Vendor/stb/stb"]
-	path = Vendor/stb/stb
+[submodule "EnigmaSerialization/vendor/stb/stb"]
+	path = EnigmaSerialization/vendor/stb/stb
 	url = https://github.com/nothings/stb.git
-[submodule "Vendor/ImGui/ImGui"]
-	path = Vendor/ImGui/ImGui
+[submodule "vendor/ImGui/ImGui"]
+	path = vendor/ImGui/ImGui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
-[submodule "Vendor/ImGuizmo/ImGuizmo"]
-	path = Vendor/ImGuizmo/ImGuizmo
+[submodule "EnigmaEditor/vendor/ImGuizmo/ImGuizmo"]
+	path = EnigmaEditor/vendor/ImGuizmo/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
-[submodule "Vendor/yaml-cpp/yaml-cpp"]
-	path = Vendor/yaml-cpp/yaml-cpp
+[submodule "EnigmaEditor/vendor/yaml-cpp/yaml-cpp"]
+	path = EnigmaEditor/vendor/yaml-cpp/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp.git
