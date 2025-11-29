@@ -31,7 +31,10 @@ namespace Enigma::Editor {
 		//LOG_WARNING("Destroying scene %s", GetName().c_str());
 	}
 
-	Entity Scene::GetEntity(Engine::UUID uuid) { return m_EntityUUIDs[uuid]; }
+	Entity Scene::GetEntity(Engine::UUID uuid) { 
+		if (!m_EntityUUIDs.count(uuid)) return {};
+		return m_EntityUUIDs[uuid]; 
+	}
 	EntityMetaData&       Scene::GetRoot()     { return Entity(0, this).GetComponent<EntityMetaData>(); }
 	ref<Engine::ECS::ECS> Scene::GetECS()      { return m_ECS; }
 	std::string&          Scene::GetName()     { return GetRoot().name; }
@@ -52,6 +55,21 @@ namespace Enigma::Editor {
 
 		return entity;
 	}
+	Entity Scene::CreateEntity(const std::string& name, Engine::UUID uuid)
+	{
+		Entity entity = { m_ECS->CreateEntity(), this };
+		entity.CreateComponent<EntityMetaData>(name);
+		entity.CreateComponent<Transform>();
+		entity.CreateComponent<TransformMetaData>();
+
+		entity.CreateComponent<Engine::UUID>(uuid);
+		m_EntityUUIDs.insert({ uuid, entity });
+
+		EntityMetaData& root = Entity(0, this).GetMetaData();
+		root.children.Create(entity.GetID(), entity);
+
+		return entity;
+	}
 	Entity Scene::CreateEntity(Entity parent, const std::string& name)
 	{
 		// Create child entity
@@ -59,6 +77,27 @@ namespace Enigma::Editor {
 		entity.CreateComponent<EntityMetaData>(name, parent);
 
 		Engine::UUID uuid = entity.CreateComponent<Engine::UUID>();
+		m_EntityUUIDs.insert({ uuid, entity });
+
+		// Create and set transform
+		entity.CreateComponent<TransformMetaData>();
+		Transform& transform = entity.CreateComponent<Transform>();
+		transform.parent = parent.GetID();
+
+		// Update parent entity
+		EntityMetaData& metaData = parent.GetMetaData();
+		metaData.children.Create(entity.GetID(), entity);
+
+		return entity;
+	}
+
+	Entity Scene::CreateEntity(Entity parent, const std::string& name, Engine::UUID uuid)
+	{
+		// Create child entity
+		Entity entity = { m_ECS->CreateEntity(), this };
+		entity.CreateComponent<EntityMetaData>(name, parent);
+
+		entity.CreateComponent<Engine::UUID>(uuid);
 		m_EntityUUIDs.insert({ uuid, entity });
 
 		// Create and set transform

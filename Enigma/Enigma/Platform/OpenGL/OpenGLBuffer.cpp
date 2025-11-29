@@ -9,10 +9,11 @@
 
 namespace Enigma::Platform::OpenGL {
 
+	// Vertex buffer
+
 	OpenGLVertexBuffer::OpenGLVertexBuffer(const std::vector<Renderer::DataType>& layout, Renderer::Usage usage)
+		: m_Layout(layout), m_Usage(Conversions::Usage(usage))
 	{
-		m_Layout = layout;
-		m_Usage = Conversions::Usage(usage);
 		glGenBuffers(1, &m_Handle);
 	}
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
@@ -34,12 +35,12 @@ namespace Enigma::Platform::OpenGL {
 			offset += Conversions::DataTypeSize(type);
 		}
 	}
-	void OpenGLVertexBuffer::SetData(void* vertices, i32 size)
+	void OpenGLVertexBuffer::SetData(void* vertices, u32 size)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_Handle);
 		glBufferData(GL_ARRAY_BUFFER, size, vertices, m_Usage);
 	}
-	void OpenGLVertexBuffer::SetSubData(void* vertices, i32 size, i32 offset)
+	void OpenGLVertexBuffer::SetSubData(void* vertices, u32 size, u32 offset)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_Handle);
 		glBufferSubData(GL_ARRAY_BUFFER, offset, size, vertices);
@@ -53,47 +54,68 @@ namespace Enigma::Platform::OpenGL {
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
+	// Index buffer
 
 	OpenGLIndexBuffer::OpenGLIndexBuffer(Renderer::DataType type, Renderer::Usage usage)
+		: m_IndicesCount(0), m_Type(type), m_Usage(Conversions::Usage(usage))
 	{
-		m_IndicesCount = 0;
-		m_Usage = Conversions::Usage(usage);
-		m_Type = type;
 		glGenBuffers(1, &m_Handle);
 	}
-	OpenGLIndexBuffer::~OpenGLIndexBuffer()
-	{
+	OpenGLIndexBuffer::~OpenGLIndexBuffer() {
 		glDeleteBuffers(1, &m_Handle);
 	}
-	int OpenGLIndexBuffer::GetIndexCount()
-	{
+	i32 OpenGLIndexBuffer::GetIndexCount() {
 		return m_IndicesCount;
 	}
-	Renderer::DataType OpenGLIndexBuffer::GetIndexType()
-	{
+	Renderer::DataType OpenGLIndexBuffer::GetIndexType() {
 		return m_Type;
 	}
-	void OpenGLIndexBuffer::SetData(void* indices, i32 size)
-	{
+	void OpenGLIndexBuffer::SetData(void* indices, u32 size) {
 		m_IndicesCount = size / Conversions::DataTypeSize(m_Type);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Handle);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, m_Usage);
 	}
-	void OpenGLIndexBuffer::SetSubData(void* indices, i32 size, i32 offset)
-	{
+	void OpenGLIndexBuffer::SetSubData(void* indices, u32 size, u32 offset) {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Handle);
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, indices);
 	}
-	void OpenGLIndexBuffer::Bind()
-	{
+	void OpenGLIndexBuffer::Bind() {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Handle);
 	}
-	void OpenGLIndexBuffer::Unbind()
-	{
+	void OpenGLIndexBuffer::Unbind() {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
+	// Uniform buffer
+
+	OpenGLUniformBuffer::OpenGLUniformBuffer(u32 size, u32 binding, Renderer::Usage usage)
+		: m_Binding(binding), m_Size(size), m_Usage(Conversions::Usage(usage)) 
+	{
+		// Create buffer
+		glGenBuffers(1, &m_Handle);
+		glBindBuffer(GL_UNIFORM_BUFFER, m_Handle);
+		glBufferData(GL_UNIFORM_BUFFER, m_Size, nullptr, m_Usage);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		glBindBufferBase(GL_UNIFORM_BUFFER, m_Binding, m_Handle);
+	}
+	OpenGLUniformBuffer::~OpenGLUniformBuffer() {
+		glDeleteBuffers(1, &m_Handle);
+	}
+	void OpenGLUniformBuffer::SetData(void* data, u32 size, u32 offset) {
+		glBindBuffer(GL_UNIFORM_BUFFER, m_Handle);
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
+	void OpenGLUniformBuffer::Bind() {
+		glBindBuffer(GL_UNIFORM_BUFFER, m_Handle);
+	}
+	void OpenGLUniformBuffer::Unbind() {
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
+
+	// Frame buffer
 
 	OpenGLFrameBuffer::OpenGLFrameBuffer(const Renderer::FrameBufferConfig& config)
 	{
@@ -256,4 +278,5 @@ namespace Enigma::Platform::OpenGL {
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
+	
 }

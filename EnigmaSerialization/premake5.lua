@@ -1,32 +1,30 @@
+-- Start EnigmaSerialization Project ====
 project "EnigmaSerialization"
     kind "StaticLib"
+    staticruntime "On"
+    systemversion "latest"
+
+-- Configure C++ ========================
     language "C++"
     cppdialect "C++17"
 
--- Output Directories ===============
-    rootdir = "../"
-    targetdir (rootdir .. "bin/" .. outputdir .. "/%{prj.name}")
-    objdir (rootdir .. "bin-int/" .. outputdir .. "/%{prj.name}")
+-- Output Directories ===================
+    targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
-    --pchheader "Enigma/EnigmaPCH.h"
-    --pchsource "../Enigma/EnigmaPCH.cpp"
-
--- Include all c/c++ files in project
-    files
-	{
+-- Include all c/c++ files in project ===
+    files {
         "EnigmaSerialization/**.hpp",
         "EnigmaSerialization/**.h",
         "EnigmaSerialization/**.cpp",
         "EnigmaSerialization/**.c",
-
-        rootdir .. "Vendor/stb/stb/stb_image.h",
     }
+    
     includedirs {
         "./",
-        rootdir .. "Enigma",
-        --rootdir .. "Enigma/Enigma",
-        rootdir .. "Vendor/GLM/GLM",
-        rootdir .. "Vendor/stb",
+        "%{wks.location}/Enigma",
+        "%{IncludeDir.glm}",
+        "%{IncludeDir.stb}",
     }
 
     defines {
@@ -34,30 +32,27 @@ project "EnigmaSerialization"
         "GLM_ENABLE_EXPERIMENTAL"
     }
 
--- Link libraries ===================
+-- Link libraries =======================
 
     links {
         "Enigma"
     }
 
--- Windows ==========================
+-- Windows ==============================
     filter "system:windows"
-        --location "../"
-		systemversion "latest"
-		staticruntime "On"
 
         defines {
             "PLATFORM_WINDOWS"
         }
 
--- Linux ============================
+-- Linux ================================
     filter "system:linux"
 
         defines {
             "PLATFORM_LINUX"
         }
 
--- Configurations ===================
+-- Configurations =======================
     filter "configurations:Debug"
         defines "DEBUG"
 		runtime "Debug"

@@ -34,6 +34,10 @@ namespace Enigma::Editor {
 		Core::Application::EventCallback(e);
 	}
 
+	struct CameraData {
+		glm::mat4 viewProjection;
+	};
+
 	SceneViewPanel::SceneViewPanel(Core::ID windowID) : m_WindowID(windowID)
 	{
 		m_Hovered      = false;
@@ -69,41 +73,43 @@ namespace Enigma::Editor {
 		// Create camera
 		Renderer::ViewBox view = Renderer::ViewBox::SurfaceViewBox(m_Surface);
 		m_Camera = Renderer::OrthographicCamera::Create(view, 4, { 0.0f,0.0f, view.far - 1.0f });
-		
+		m_CameraUniformBuffer = Renderer::UniformBuffer::Create(sizeof(CameraData), 0, Renderer::Usage::DynamicDraw);
+
 		// Configure render system for when a context is set
-		m_RenderSystemConfig.renderAPI = window->GetAPI();
-		m_RenderSystemConfig.surface = m_Surface;
+		//m_RenderSystemConfig.renderAPI = window->GetAPI();
+		//m_RenderSystemConfig.surface = m_Surface;
 
 		// Configure entity picker shader
-		Renderer::ShaderConfig entityPickerShaderConfig;
-		entityPickerShaderConfig.vertexPath = "assets/DefaultShaders/EntityPicker.vert";
-		entityPickerShaderConfig.pixelPath = "assets/DefaultShaders/EntityPicker.frag";
-		m_EntityPickerShader = Renderer::Shader::Create(entityPickerShaderConfig);
+		//Renderer::ShaderConfig entityPickerShaderConfig;
+		//entityPickerShaderConfig.vertexPath = "assets/DefaultShaders/EntityPicker.vert";
+		//entityPickerShaderConfig.pixelPath = "assets/DefaultShaders/EntityPicker.frag";
+		//m_EntityPickerShader = Renderer::Shader::Create(entityPickerShaderConfig);
 
-		// Configure entity picker buffer
-		Renderer::FrameBufferConfig entityPickerBufferConfig;
-		entityPickerBufferConfig.width = m_Surface.scale.x;
-		entityPickerBufferConfig.height = m_Surface.scale.y;
+		//// Configure entity picker buffer
+		//Renderer::FrameBufferConfig entityPickerBufferConfig;
+		//entityPickerBufferConfig.width = m_Surface.scale.x;
+		//entityPickerBufferConfig.height = m_Surface.scale.y;
 
-		Renderer::Attachment entityPickerAttachment;
-		entityPickerAttachment.type           = Renderer::AttachmentType::ColorAttachment;
-		entityPickerAttachment.internalFormat = Renderer::TexFormat::RED32I;
-		entityPickerAttachment.format         = Renderer::TexFormat::RED_INT;
+		//Renderer::Attachment entityPickerAttachment;
+		//entityPickerAttachment.type           = Renderer::AttachmentType::ColorAttachment;
+		//entityPickerAttachment.internalFormat = Renderer::TexFormat::RED32I;
+		//entityPickerAttachment.format         = Renderer::TexFormat::RED_INT;
 
-		entityPickerBufferConfig.attachments = { entityPickerAttachment };
-		m_EntityPickerBuffer = Renderer::FrameBuffer::Create(entityPickerBufferConfig);
+		//entityPickerBufferConfig.attachments = { entityPickerAttachment };
+		//m_EntityPickerBuffer = Renderer::FrameBuffer::Create(entityPickerBufferConfig);
 	}
 	void SceneViewPanel::SetContext(ref<Scene> context)
 	{
 		m_Context = context;
 
 		if (context == nullptr) {
-			m_RenderSystem = nullptr;
+			m_RendererContext = nullptr;
 			return;
 		}
 
-		m_RenderSystem = Engine::ECS::RenderSystem2D::Create(m_RenderSystemConfig, m_Context->GetECS());
-		m_RenderSystem->Resize(m_Surface.scale.x, m_Surface.scale.y);
+		ref<Core::Window> window = Core::Application::GetWindow(m_WindowID);
+		m_RendererContext = Renderer::Renderer2D::Create(window->GetAPI(), m_Surface);
+		m_RendererContext->Resize(m_Surface.scale.x, m_Surface.scale.y);
 	}
 	void SceneViewPanel::SetSelected(Entity entity)
 	{
@@ -197,17 +203,18 @@ namespace Enigma::Editor {
 		// Make sure the texture is the right size
 		if (m_Surface.scale != region) {
 			m_Surface.Resize(region.x, region.y);
-			m_RenderSystem->Resize(region.x, region.y);
-			m_EntityPickerBuffer->Resize(region.x, region.y);
+			m_RendererContext->Resize(region.x, region.y);
+			//m_EntityPickerBuffer->Resize(region.x, region.y);
 			m_Camera->Resize(region.x, region.y);
 		}
 
-		ImVec2 overlayPosition = ImGui::GetCursorScreenPos();
-		overlayPosition.x += 3;
-		overlayPosition.y += 3;
+		glm::vec2 topLeft = FromImVec(ImGui::GetCursorScreenPos());
 
 		// Show texture
 		ImGui::Image(m_Frame);
+
+		// Find overlay positions
+		m_GizmoWindowPosition = topLeft + glm::vec2(3.0f, 3.0f);
 
 		// Process window status
 		m_Hovered = ImGui::IsItemHovered();
@@ -220,8 +227,8 @@ namespace Enigma::Editor {
 		if (m_Selected && m_GizmoType != -1) ShowGizmos();
 		else m_GizmoHovered = false;
 
-		// Show overlay window
-		ShowOverlayWindow(overlayPosition.x, overlayPosition.y);
+		// Show overlay windows
+		ShowGizmoOverlayWindow();
 
 		// Process mouse input
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && m_Hovered && !m_GizmoHovered) {
@@ -284,6 +291,7 @@ namespace Enigma::Editor {
 
 		ImGui::EndPopup();
 	}
+	
 	void SceneViewPanel::ShowGizmoMenu()
 	{
 		if (!ImGui::BeginPopup("GizmoMenu")) return;
@@ -363,10 +371,10 @@ namespace Enigma::Editor {
 		//metaData.eulerAngles = glm::degrees(glm::eulerAngles(transform.rotation));
 		metaData.eulerAngles = glm::eulerAngles(transform.rotation);
 	}
-	void SceneViewPanel::ShowOverlayWindow(f32 x, f32 y)
+	void SceneViewPanel::ShowGizmoOverlayWindow()
 	{
 		// Configure window
-		ImGui::SetNextWindowPos(ImVec2(x, y));
+		ImGui::SetNextWindowPos(ToImVec(m_GizmoWindowPosition));
 		ImGui::SetNextWindowSize(ImVec2(57, 35));
 		ImGui::SetNextWindowBgAlpha(0.5f);
 
@@ -416,6 +424,25 @@ namespace Enigma::Editor {
 		ImGui::End();
 	}
 
+	void SceneViewPanel::ShowRuntimeOverlayWindow()
+	{
+		// Configure window
+		ImGui::SetNextWindowPos(ToImVec(m_RuntimeWindowPosition));
+		//ImGui::SetNextWindowSize(ImVec2(57, 35));
+		ImGui::SetNextWindowBgAlpha(0.5f);
+
+		ImGuiWindowFlags overlayFlags = 0;
+		overlayFlags |= ImGuiWindowFlags_NoDocking;
+		overlayFlags |= ImGuiWindowFlags_NoFocusOnAppearing;
+		overlayFlags |= ImGuiWindowFlags_NoMove;
+		overlayFlags |= ImGuiWindowFlags_NoResize;
+		overlayFlags |= ImGuiWindowFlags_NoTitleBar;
+
+		ImGui::Begin("SceneViewRuntimeWindow", nullptr, overlayFlags);
+		ImGui::Button("Run");
+		ImGui::End();
+	}
+
 	Entity SceneViewPanel::GetHoveredEntity()
 	{
 		// Get mouse position
@@ -424,18 +451,19 @@ namespace Enigma::Editor {
 
 		// Get entity at mouse position
 		Engine::ECS::EntityID entityID = 0;
-		m_EntityPickerBuffer->GetPixel(mouseX, mouseY, 0, &entityID);
+		//m_EntityPickerBuffer->GetPixel(mouseX, mouseY, 0, &entityID);
+		m_RendererContext->GetFrameBuffer()->GetPixel(mouseX, mouseY, 1, &entityID);
 		if (entityID == 0) {
 			return {};
 		}
 		
 		return { entityID - 1, m_Context.get() };
 	}
-	void SceneViewPanel::EntityPicker()
+	/*void SceneViewPanel::EntityPicker()
 	{
 		using namespace Engine::ECS;
 
-		Core::Application::UseRenderAPI(m_RenderSystem->GetConfig().renderAPI);
+		Core::Application::UseRenderAPI(m_RendererContext->GetConfig().renderAPI);
 		Renderer::RenderAPI::Clear();
 
 		m_EntityPickerBuffer->Bind();
@@ -444,9 +472,6 @@ namespace Enigma::Editor {
 		m_EntityPickerShader->Bind();
 
 		View<Transform, ColoredQuad> coloredQuadView(m_Context->GetECS());
-
-		glm::mat4 viewProjection = m_Camera->GetViewProjection();
-		m_EntityPickerShader->SetUniform("ViewProjection", &viewProjection);
 
 		RenderSystem2D::GetQuad()->Bind();
 		coloredQuadView.ForEach([&](EntityID entity, Transform& transform, ColoredQuad& quad) {
@@ -463,16 +488,16 @@ namespace Enigma::Editor {
 		m_EntityPickerShader->Unbind();
 
 		m_EntityPickerBuffer->Unbind();
-	}
+	}*/
 
 	void SceneViewPanel::Render()
 	{
 		if (m_Context == nullptr) return;
 
-		EntityPicker();
+		//EntityPicker();
 
-		m_RenderSystem->StartFrame(m_Camera);
+		m_RendererContext->StartScene(m_Context->GetECS(), m_Camera);
 
-		m_RenderSystem->EndFrame();
+		m_RendererContext->EndScene();
 	}
 }

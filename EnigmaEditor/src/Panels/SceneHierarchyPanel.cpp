@@ -10,11 +10,23 @@
 
 namespace Enigma::Editor {
 
+	static void UndoRedoSceneRename(ref<Scene> scene, std::string name) {
+		scene->GetName() = name;
+	}
+	static void RenameSceneAction(const ref<Scene>& scene, const std::string& newName, const std::string& oldName) {
+		Action action;
+		action.undoFunc = std::bind(UndoRedoSceneRename, scene, oldName);
+		action.redoFunc = std::bind(UndoRedoSceneRename, scene, newName);
+		action.name = "Renamed scene \"" + oldName + "\" to \"" + newName + "\"";
+
+		Event::NewAction e(action);
+		Core::Application::EventCallback(e);
+	}
+
 	SceneHierachyPanel::SceneHierachyPanel()
 	{
 		m_OpenEntitySettings = false;
 		m_RenameEntity = false;
-		m_FromCreate = false;
 	}
 
 	void SceneHierachyPanel::OnEvent(Core::Event& e)
@@ -42,7 +54,15 @@ namespace Enigma::Editor {
 			return;
 		}
 
-		ImGui::BeginChild("SceneHierachyView", ImVec2(0, 0), ImGuiChildFlags_ResizeY);
+		ImGui::BeginChild("SceneHierachyView", ImVec2(0, 0));
+
+		// Scene name
+		std::string original;
+		if (EditorGui::RenamableText(m_SceneContext->GetName(), "SceneNameBox", nullptr, &original)) {
+			RenameSceneAction(m_SceneContext, m_SceneContext->GetName(), original);
+		}
+
+		ImGui::Separator();
 
 		// Show root entities
 		for (Entity entity : m_SceneContext->GetRoot().children.GetData()) {
@@ -62,7 +82,6 @@ namespace Enigma::Editor {
 			m_OpenEntitySettings = false;
 		}
 		EntitySettings();
-		
 
 		EntityDragDropTarget({});
 
@@ -134,7 +153,7 @@ namespace Enigma::Editor {
 	{
 		EntityMetaData& metaData = m_EntityToRename.GetComponent<EntityMetaData>();
 	
-		if (m_OldName.empty()) m_OldName = metaData.name;
+		if (m_OriginalName.empty()) m_OriginalName = metaData.name;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 		
@@ -156,9 +175,9 @@ namespace Enigma::Editor {
 			metaData.name = buffer;
 			m_EntityToRename = { };
 		}
-		if (m_EntityToRename == Entity() && !m_FromCreate) {
-			RenameEntityAction(entity, metaData.name, m_OldName);
-			m_OldName = "";
+		if (m_EntityToRename == Entity()) {
+			RenameEntityAction(m_SceneContext, entity, metaData.name, m_OriginalName);
+			m_OriginalName = "";
 		}
 
 		ImGui::PopStyleVar();
@@ -174,15 +193,13 @@ namespace Enigma::Editor {
 			m_EntityToRename = m_EntitySettingsContext;
 			m_Selected = m_EntitySettingsContext;
 			m_RenameEntity = true;
-			m_FromCreate = false;
 		}
 
 		if (ImGui::MenuItem("Create Child")) {
 			m_EntityToRename = m_SceneContext->CreateEntity(m_EntitySettingsContext, "New Entity");
 			m_Selected = m_EntityToRename;
 			m_RenameEntity = true;
-			m_FromCreate = true;
-			//m_SelectionCallback(m_Selected);
+
 			Event::EntitySelected e(m_Selected);
 			Core::Application::EventCallback(e);
 
@@ -204,7 +221,6 @@ namespace Enigma::Editor {
 			m_EntityToRename = m_SceneContext->CreateEntity("New Entity");
 			m_Selected = m_EntityToRename;
 			m_RenameEntity = true;
-			m_FromCreate = true;
 			
 			Event::EntitySelected e(m_Selected);
 			Core::Application::EventCallback(e);

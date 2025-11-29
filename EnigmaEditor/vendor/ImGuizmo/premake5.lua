@@ -1,28 +1,47 @@
--- Start glm Project ================
-project "glm"
+-- Start ImGuizmo Project ===========
+project "ImGuizmo"
     kind "StaticLib"
-    staticruntime "On"
-    systemversion "latest"
+	staticruntime "On"
+	systemversion "latest"
 
 -- Configure C++ ====================
     language "C++"
-    
+	cppdialect "C++17"
+
 -- Output Directories ===============
-    targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
     objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
+    targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 
 -- Include all c/c++ files in project
     files {
-        "glm/**.hpp",
-        "glm/**.h"
-    }
+		"ImGuizmo/*.h",
+		"ImGuizmo/*.cpp",
+	}
+
     includedirs {
-        "glm"
+        "ImGuizmo",
+        "%{IncludeDir.ImGui}"
+    }
+    links {
+        "ImGui"
     }
 
-    defines {
-        "GLM_ENABLE_EXPERIMENTAL"
-    }
+-- Windows ==========================
+    filter "system:windows"
+
+		defines { 
+			"_GLFW_WIN32",
+			"_CRT_SECURE_NO_WARNINGS"
+		}
+
+-- Linux ============================
+	filter "system:linux"
+		pic "On"
+
+		defines {
+			"_GLFW_X11",
+			"_CRT_SECURE_NO_WARNINGS"
+		}
 
 -- Configurations ===================
     filter "configurations:Debug"

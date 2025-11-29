@@ -10,15 +10,15 @@ namespace Enigma::Platform::OpenGL {
 
 		virtual void InitAttribs() override;
 
-		virtual void SetData(void* vertices, i32 size) override;
-		virtual void SetSubData(void* vertices, i32 size, i32 offset) override;
+		virtual void SetData(void* vertices, u32 size) override;
+		virtual void SetSubData(void* vertices, u32 size, u32 offset) override;
 
 		virtual void Bind() override;
 		virtual void Unbind() override;
 
 	private:
 		u32 m_Handle;
-		i32 m_Usage;
+		u32 m_Usage;
 		std::vector<Renderer::DataType> m_Layout;
 	};
 
@@ -30,19 +30,36 @@ namespace Enigma::Platform::OpenGL {
 		virtual i32 GetIndexCount() override;
 		virtual Renderer::DataType GetIndexType() override;
 
-		virtual void SetData(void* indices, i32 size) override;
-		virtual void SetSubData(void* indices, i32 size, i32 offset) override;
+		virtual void SetData(void* indices, u32 size) override;
+		virtual void SetSubData(void* indices, u32 size, u32 offset) override;
 
 		virtual void Bind() override;
 		virtual void Unbind() override;
 
 	private:
 		u32 m_Handle;
+		u32 m_IndicesCount;
+		u32 m_Usage;
 		Renderer::DataType m_Type;
-		i32 m_IndicesCount;
-		i32 m_Usage;
 	};
 	
+	class OpenGLUniformBuffer : public Renderer::UniformBuffer {
+	public:
+		OpenGLUniformBuffer(u32 size, u32 binding, Renderer::Usage usage);
+		~OpenGLUniformBuffer();
+
+		virtual void SetData(void* data, u32 size, u32 offset) override;
+
+		virtual void Bind() override;
+		virtual void Unbind() override;
+
+	private:
+		u32 m_Handle;
+		u32 m_Binding;
+		u32 m_Usage;
+		u32 m_Size;
+	};
+
 	class OpenGLFrameBuffer : public Renderer::FrameBuffer {
 	public:
 		OpenGLFrameBuffer(const Renderer::FrameBufferConfig& config);

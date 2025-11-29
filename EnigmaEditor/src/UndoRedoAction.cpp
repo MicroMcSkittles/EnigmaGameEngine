@@ -6,29 +6,34 @@
 #include <Enigma/Core/Process/Application.h>
 
 namespace Enigma::Editor {
-	void UndoRedoFunctions::RenameEntity(Entity entity, std::string name) {
-		entity.GetMetaData().name = name;
+	void UndoRedoFunctions::RenameEntity(ref<Scene> scene, Engine::UUID entityUUID, std::string name) {
+		scene->GetEntity(entityUUID).GetMetaData().name = name;
 	}
-	void UndoRedoFunctions::CreateEntity(ref<Scene> scene, std::string name, Entity parent) {
-		if (parent) scene->CreateEntity(parent, name);
-		else scene->CreateEntity(name);
+	void UndoRedoFunctions::CreateEntity(ref<Scene> scene, std::string name, Engine::UUID entityUUID, Engine::UUID parentUUID) {
+		Entity parent = scene->GetEntity(parentUUID);
+		if (parent) scene->CreateEntity(parent, name, entityUUID);
+		else scene->CreateEntity(name, entityUUID);
 	}
 	void UndoRedoFunctions::DeserializeEntity(ref<Scene> scene, YAML::Node data)
 	{
 		SceneSerializer serializer(scene);
 		serializer.DeserializeEntityFromNode(data);
 	}
-	void UndoRedoFunctions::RemoveEntity(ref<Scene> scene, Engine::UUID uuid) {
-		scene->RemoveEntity(scene->GetEntity(uuid));
+	void UndoRedoFunctions::RemoveEntity(ref<Scene> scene, Engine::UUID entityUUID) {
+		scene->RemoveEntity(scene->GetEntity(entityUUID));
 	}
-	void UndoRedoFunctions::ChangeParent(ref<Scene> scene, Entity entity, Entity parent) {
-		scene->ChangeParent(entity, parent);
+	void UndoRedoFunctions::ChangeParentRoot(ref<Scene> scene, Engine::UUID entityUUID)
+	{
+		scene->ChangeParent(scene->GetEntity(entityUUID), {});
+	}
+	void UndoRedoFunctions::ChangeParent(ref<Scene> scene, Engine::UUID entityUUID, Engine::UUID parentUUID) {
+		scene->ChangeParent(scene->GetEntity(entityUUID), scene->GetEntity(parentUUID));
 	}
 
-	void RenameEntityAction(Entity entity, const std::string& newName, const std::string& oldName) {
+	void RenameEntityAction(ref<Scene> scene, Entity entity, const std::string& newName, const std::string& oldName) {
 		Action action;
-		action.undoFunc = std::bind(UndoRedoFunctions::RenameEntity, entity, oldName);
-		action.redoFunc = std::bind(UndoRedoFunctions::RenameEntity, entity, newName);
+		action.undoFunc = std::bind(UndoRedoFunctions::RenameEntity, scene, entity.GetUUID(), oldName);
+		action.redoFunc = std::bind(UndoRedoFunctions::RenameEntity, scene, entity.GetUUID(), newName);
 		action.name = "Renamed entity \"" + oldName + "\" to \"" + newName + "\"";
 
 		Event::NewAction e(action);
@@ -37,7 +42,7 @@ namespace Enigma::Editor {
 	void CreateEntityAction(ref<Scene> scene, Entity entity) {
 		Action action;
 		action.undoFunc = std::bind(UndoRedoFunctions::RemoveEntity, scene, entity.GetUUID());
-		action.redoFunc = std::bind(UndoRedoFunctions::CreateEntity, scene, entity.GetMetaData().name, entity.GetMetaData().parent);
+		action.redoFunc = std::bind(UndoRedoFunctions::CreateEntity, scene, entity.GetMetaData().name, entity.GetUUID(), entity.GetMetaData().parent.GetUUID());
 		action.name = "Created entity \"" + entity.GetMetaData().name + "\"";
 
 		Event::NewAction e(action);
@@ -54,9 +59,15 @@ namespace Enigma::Editor {
 		Core::Application::EventCallback(e);
 	}
 	void ChangeParentAction(ref<Scene> scene, Entity entity, Entity parent) {
+
 		Action action;
-		action.undoFunc = std::bind(UndoRedoFunctions::ChangeParent, scene, entity, entity.GetMetaData().parent);
-		action.redoFunc = std::bind(UndoRedoFunctions::ChangeParent, scene, entity, parent);
+		if (entity.GetMetaData().parent)
+			action.undoFunc = std::bind(UndoRedoFunctions::ChangeParent, scene, entity.GetUUID(), entity.GetMetaData().parent.GetUUID());
+		else action.undoFunc = std::bind(UndoRedoFunctions::ChangeParentRoot, scene, entity.GetUUID());
+		if (parent)
+			action.redoFunc = std::bind(UndoRedoFunctions::ChangeParent, scene, entity.GetUUID(), parent.GetUUID());
+		else action.redoFunc = std::bind(UndoRedoFunctions::ChangeParentRoot, scene, entity.GetUUID());
+		
 		if (parent) action.name = "Changed entity's \"" + entity.GetMetaData().name + "\" parent to \"" + parent.GetMetaData().name + "\"";
 		else action.name = "Changed entity's \"" + entity.GetMetaData().name + "\" parent to \"Root\"";
 

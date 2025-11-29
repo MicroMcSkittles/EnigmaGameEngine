@@ -40,21 +40,17 @@ namespace Enigma::Editor {
 
 	class EntityInspectorContext : public InspectorContext {
 	public:
-		static ref<EntityInspectorContext> Create(Entity entity) { return CreateRef<EntityInspectorContext>(entity); }
-		EntityInspectorContext(Entity entity);
+		static ref<EntityInspectorContext> Create(Entity entity, ref<Scene> scene) { return CreateRef<EntityInspectorContext>(entity, scene); }
+		EntityInspectorContext(Entity entity, ref<Scene> scene);
 
 		virtual void ShowGui() override;
 
 	private:
 		void HeaderGui();
-		void RenameGui();
 
 	private:
+		ref<Scene> m_Scene;
 		Entity m_Entity;
-
-		bool m_StartRename;
-		bool m_EndRename;
-		std::string m_OriginalName;
 	};
 }
 

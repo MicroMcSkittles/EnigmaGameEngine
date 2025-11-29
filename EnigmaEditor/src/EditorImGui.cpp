@@ -1,5 +1,8 @@
 #include "EditorImGui.h"
 
+#include <Enigma/Core/Core.h>
+#include <Enigma/Core/Utilities/Utilities.h>
+
 #include <misc/cpp/imgui_stdlib.h>
 #include <imgui_internal.h>
 #include <ImGuizmo.h>
@@ -668,6 +671,74 @@ namespace Enigma::Editor {
 
 		return edited;
 	}
+	bool EditorGui::RenamableText(std::string& text, const std::string& textID, bool* renaming, std::string* original)
+	{
+		// Calculate the ID
+		u64 id = ImGui::GetCurrentWindow()->ID;
+		id ^= Core::Hash(textID);
+
+		ImGui::PushID(textID.c_str());
+
+		// Init data
+		if (!s_Data->itemData.count(id)) {
+			RenamableTextData* data = new RenamableTextData;
+			data->started = false;
+			data->ended = true;
+			s_Data->itemData.insert({ id, data });
+		}
+		RenamableTextData* data = static_cast<RenamableTextData*>(s_Data->itemData[id]);
+
+		bool edited = false;
+
+		if (renaming != nullptr) *renaming = !data->ended;
+
+		// Show text
+		if (data->ended) {
+			ImGui::Text("%s", text.c_str());
+			// start renaming if double clicked
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+				data->started = true;
+				data->ended = false;
+				data->original = text;
+			}
+		}
+		// Show text box for renaming
+		else {
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+			ImGui::PushStyleColor(ImGuiCol_FrameBg, ToImVec(s_Data->style.windowBackground));
+
+			// Set Keyboard focus on the text box
+			if (data->started) {
+				ImGui::SetKeyboardFocusHere();
+				data->started = false;
+			}
+
+			// Show text box
+			ImGuiInputTextFlags inputFlags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll;
+			std::string buffer = text;
+			if (ImGui::InputText(("##" + textID).c_str(), &buffer, inputFlags)) {
+				text = buffer;
+				data->ended = true;
+			}
+			if (ImGui::IsItemDeactivated()) {
+				text = buffer;
+				data->ended = true;
+			}
+			if (data->ended) {
+				if (text != data->original) edited = true;
+				if (original != nullptr) *original = data->original;
+				data->original = "";
+			}
+
+			ImGui::PopStyleColor();
+			ImGui::PopStyleVar();
+		}
+
+		ImGui::PopID();
+
+		return edited;
+	}
+
 	bool EditorGui::ListBox(const std::string& lable, i32& selection, std::vector<std::string>& items, f32 columnWidth)
 	{
 		bool edited = false;

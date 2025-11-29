@@ -1,19 +1,23 @@
+-- Start Enigma Project =============
 project "Enigma"
     kind "StaticLib"
+    staticruntime "On"
+    systemversion "latest"
+
+-- Configure C++
     language "C++"
     cppdialect "C++17"
 
 -- Output Directories ===============
-    rootdir = "../"
-    targetdir (rootdir .. "bin/" .. outputdir .. "/%{prj.name}")
-    objdir (rootdir .. "bin-int/" .. outputdir .. "/%{prj.name}")
+    targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
+-- Setup precompiled headers
     pchheader "Enigma/EnigmaPCH.h"
     pchsource "Enigma/EnigmaPCH.cpp"
 
 -- Include all c/c++ files in project
-    files
-	{
+    files {
         "Enigma/Enigma.h",
         "Enigma/EnigmaPCH.h",
         "Enigma/EnigmaPCH.cpp",
@@ -43,11 +47,12 @@ project "Enigma"
         "Enigma/Platform/OpenGL/**.cpp",
         "Enigma/Platform/OpenGL/**.hpp",
     }
+
     includedirs {
         "./",
-        rootdir .. "Vendor/GLAD/GLAD/include",
-        rootdir .. "Vendor/GLM/GLM",
-        rootdir .. "Vendor/ImGui/ImGui",
+        "%{IncludeDir.Glad}",
+        "%{IncludeDir.glm}",
+        "%{IncludeDir.ImGui}",
     }
 
     defines {
@@ -57,18 +62,14 @@ project "Enigma"
 -- Link libraries ===================
 
     links {
-        "GLAD",
+        "Glad",
         "ImGui"
     }
 
 -- Windows ==========================
     filter "system:windows"
-        --location "../"
-		systemversion "latest"
-		staticruntime "On"
 
-        files
-        {
+        files {
             "Enigma/Platform/Windows/**.c",
             "Enigma/Platform/Windows/**.h",
             "Enigma/Platform/Windows/**.cpp",
@@ -87,8 +88,7 @@ project "Enigma"
 -- Linux ============================
     filter "system:linux"
 
-        files
-        {
+        files {
             "Enigma/Platform/Linux/**.c",
             "Enigma/Platform/Linux/**.h",
             "Enigma/Platform/Linux/**.cpp",
@@ -96,7 +96,7 @@ project "Enigma"
         }
 
         includedirs {
-            rootdir .. "Vendor/GLFW/GLFW/include",
+            "%{IncludeDir.GLFW}"
         }
         links {
             "GLFW"

@@ -4,6 +4,10 @@
 
 namespace Enigma::Renderer {
 
+	struct CameraData {
+		glm::mat4 viewProjection;
+	};
+
 	class Camera {
 	public:
 		Camera(const glm::vec3& position, const glm::vec3& direction)
@@ -19,6 +23,8 @@ namespace Enigma::Renderer {
 
 		void SetPosition(const glm::vec3& position) { m_Position = position; CalculateView(); }
 		void SetDirection(const glm::vec3& direction) { m_Direction = direction; CalculateView(); }
+
+		CameraData GetData() const { return { m_ViewProjection }; }
 
 		const glm::mat4& GetView() const { return m_View; }
 		const glm::mat4& GetInvView() const { return m_InvView; }

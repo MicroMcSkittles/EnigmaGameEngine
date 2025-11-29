@@ -12,8 +12,8 @@ namespace Enigma::Renderer {
 
 		virtual void InitAttribs() = 0;
 
-		virtual void SetData(void* vertices, i32 size) = 0;
-		virtual void SetSubData(void* vertices, i32 size, i32 offset) = 0;
+		virtual void SetData(void* vertices, u32 size) = 0;
+		virtual void SetSubData(void* vertices, u32 size, u32 offset) = 0;
 
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;
@@ -23,12 +23,22 @@ namespace Enigma::Renderer {
 	public:
 		static ref<IndexBuffer> Create(DataType type, Usage usage);
 
-		virtual int GetIndexCount() = 0;
+		virtual i32 GetIndexCount() = 0;
 		virtual DataType GetIndexType() = 0;
 
-		virtual void SetData(void* indices, i32 size) = 0;
-		virtual void SetSubData(void* indices, i32 size, i32 offset) = 0;
+		virtual void SetData(void* indices, u32 size) = 0;
+		virtual void SetSubData(void* indices, u32 size, u32 offset) = 0;
 
+		virtual void Bind() = 0;
+		virtual void Unbind() = 0;
+	};
+	
+	class UniformBuffer {
+	public:
+		static ref<UniformBuffer> Create(u32 size, u32 binding, Usage usage);
+
+		virtual void SetData(void* data, u32 size, u32 offset) = 0;
+	
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;
 	};
@@ -75,4 +85,5 @@ namespace Enigma::Renderer {
 
 		virtual void GetPixel(i32 x, i32 y, i32 attachment, void* data) = 0;
 	};
+
 }

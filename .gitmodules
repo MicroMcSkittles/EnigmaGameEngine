@@ -4,16 +4,17 @@
 [submodule "vendor/glm/glm"]
 	path = vendor/glm/glm
 	url = https://github.com/icaven/glm.git
-[submodule "EnigmaSerialization/vendor/stb/stb"]
-	path = EnigmaSerialization/vendor/stb/stb
-	url = https://github.com/nothings/stb.git
 [submodule "vendor/ImGui/ImGui"]
 	path = vendor/ImGui/ImGui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
-[submodule "EnigmaEditor/vendor/ImGuizmo/ImGuizmo"]
-	path = EnigmaEditor/vendor/ImGuizmo/ImGuizmo
-	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "EnigmaSerialization/vendor/stb/stb"]
+	path = EnigmaSerialization/vendor/stb/stb
+	url = https://github.com/nothings/stb.git
 [submodule "EnigmaEditor/vendor/yaml-cpp/yaml-cpp"]
 	path = EnigmaEditor/vendor/yaml-cpp/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp.git
+	ignore = dirty
+[submodule "EnigmaEditor/vendor/ImGuizmo/ImGuizmo"]
+	path = EnigmaEditor/vendor/ImGuizmo/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git

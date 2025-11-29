@@ -1,34 +1,34 @@
+-- Start EnigmaEditor Project =======
 project "EnigmaEditor"
     kind "ConsoleApp"
+    systemversion "latest"
+    staticruntime "On"
+
+-- Configure C++ ====================
     language "C++"
     cppdialect "C++17"
 
 -- Output Directories ===============
-    rootdir = "../"
-    targetdir (rootdir .. "bin/" .. outputdir .. "/%{prj.name}")
-    objdir (rootdir .. "bin-int/" .. outputdir .. "/%{prj.name}")
+    targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
-    --pchheader "Enigma/EnigmaPCH.h"
-    --pchsource "../Enigma/EnigmaPCH.cpp"
-
-    -- Include all c/c++ files in project
+-- Include all c/c++ files in project
     files {
         "src/**.c",
         "src/**.h",
         "src/**.cpp",
         "src/**.hpp",
         "src/**.inl",
-        rootdir .. "Vendor/stb/stb/stb_image.h",
     }
 
     includedirs {
         "src",
-        rootdir .. "Enigma",
-        rootdir .. "EnigmaSerialization",
-        rootdir .. "Vendor/GLM/GLM",
-        rootdir .. "Vendor/ImGui/ImGui",
-        rootdir .. "Vendor/ImGuizmo/ImGuizmo",
-        rootdir .. "Vendor/yaml-cpp/yaml-cpp/include",
+        "%{wks.location}/Enigma",
+        "%{wks.location}/EnigmaSerialization",
+        "%{IncludeDir.glm}",
+        "%{IncludeDir.ImGui}",
+        "%{IncludeDir.ImGuizmo}",
+        "%{IncludeDir.yaml_cpp}"
     }
 
     defines {
@@ -47,15 +47,14 @@ project "EnigmaEditor"
 
 -- Windows ==========================
     filter "system:windows"
-        staticruntime "On"
-        systemversion "latest"
 
         defines {
             "PLATFORM_WINDOWS"
         }
 
--- Linux ==========================
+-- Linux ============================
     filter "system:linux"
+
         links {
             "GLAD",
             "GLFW"

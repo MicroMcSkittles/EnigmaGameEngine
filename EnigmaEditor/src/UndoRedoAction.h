@@ -11,13 +11,14 @@
 namespace Enigma::Editor {
 
 	namespace UndoRedoFunctions {
-		void RenameEntity(Entity entity, std::string name);
-		void CreateEntity(ref<Scene> scene, std::string name, Entity parent);
+		void RenameEntity(ref<Scene> scene, Engine::UUID entityUUID, std::string name);
+		void CreateEntity(ref<Scene> scene, std::string name, Engine::UUID entityUUID, Engine::UUID parentUUID);
 		void DeserializeEntity(ref<Scene> scene, YAML::Node data);
-		void RemoveEntity(ref<Scene> scene, Engine::UUID uuid);
-		void ChangeParent(ref<Scene> scene, Entity entity, Entity parent);
+		void RemoveEntity(ref<Scene> scene, Engine::UUID entityUUID);
+		void ChangeParentRoot(ref<Scene> scene, Engine::UUID entityUUID);
+		void ChangeParent(ref<Scene> scene, Engine::UUID entityUUID, Engine::UUID parentUUID);
 	}
-	void RenameEntityAction(Entity entity, const std::string& newName, const std::string& oldName);
+	void RenameEntityAction(ref<Scene> scene, Entity entity, const std::string& newName, const std::string& oldName);
 	void CreateEntityAction(ref<Scene> scene, Entity entity);
 	void RemoveEntityAction(ref<Scene> scene, Entity entity);
 	void ChangeParentAction(ref<Scene> scene, Entity entity, Entity parent);

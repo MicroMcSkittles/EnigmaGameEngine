@@ -3,8 +3,9 @@
 #include "Scene/Entity.h"
 
 #include <Enigma/Core/Event/InputEvent.h>
-#include <Enigma/Engine/ECS/RenderSystem2D.h>
+//#include <Enigma/Engine/ECS/RenderSystem2D.h>
 #include <Enigma/Engine/Input.h>
+#include <Enigma/Renderer/Renderer2D.h>
 
 namespace Enigma::Editor {
 
@@ -23,13 +24,15 @@ namespace Enigma::Editor {
 		void OnScroll(Core::MouseScroll& e);
 		void OnKeyboard(Core::Keyboard& e);
 
-		void EntityPicker();
+		//void EntityPicker();
 
 		void ShowEntityMenu();
+		
 		void ShowGizmoMenu();
-
 		void ShowGizmos();
-		void ShowOverlayWindow(f32 x, f32 y);
+		void ShowGizmoOverlayWindow();
+
+		void ShowRuntimeOverlayWindow();
 
 		Entity GetHoveredEntity();
 
@@ -41,10 +44,13 @@ namespace Enigma::Editor {
 		Entity m_Selected;
 
 		// Render Variables
-		Engine::ECS::RenderSystem2DConfig m_RenderSystemConfig;
-		ref<Engine::ECS::RenderSystem2D> m_RenderSystem;
+		//Engine::ECS::RenderSystem2DConfig m_RenderSystemConfig;
+		//ref<Engine::ECS::RenderSystem2D> m_RenderSystem;
+		ref<Renderer::Renderer2D> m_RendererContext;
 		ref<Renderer::Texture> m_Frame;
 		ref<Renderer::Camera> m_Camera;
+
+		ref<Renderer::UniformBuffer> m_CameraUniformBuffer;
 
 		// Input Context
 		Engine::Surface m_Surface;
@@ -55,6 +61,7 @@ namespace Enigma::Editor {
 		bool m_UsingGizmo; // Is the user using a gizmo
 		i32 m_GizmoType;
 		Engine::ECS::Transform m_OriginalTransform; // The original transform of the entity currently being moved
+		glm::vec2 m_GizmoWindowPosition;
 		
 		// Editor Camera Input Variables
 		bool m_Hovered; // Is the user hovering the scene view image
@@ -65,8 +72,11 @@ namespace Enigma::Editor {
 		f32 m_MinZoom; // The most the user can be zoomed out
 
 		// Entity Picker Variables
-		ref<Renderer::Shader> m_EntityPickerShader;
-		ref<Renderer::FrameBuffer> m_EntityPickerBuffer;
+		//ref<Renderer::Shader> m_EntityPickerShader;
+		//ref<Renderer::FrameBuffer> m_EntityPickerBuffer;
+
+		// Other
+		glm::vec2 m_RuntimeWindowPosition;
 	};
 
 }

@@ -1,15 +1,18 @@
+-- Start ImGui Project ==============
 project "ImGui"
     kind "StaticLib"
-    language "C++"
+	staticruntime "On"
+	systemversion "latest"
 
+-- Configure C++ ====================
+    language "C++"
+	
 -- Output Directories ===============
-    rootdir = "../../"
-    objdir (rootdir .. "bin-int/" .. outputdir .. "/%{prj.name}")
-    targetdir (rootdir .. "bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
+    targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 
 -- Include all c/c++ files in project
-    files
-	{
+    files {
 		"ImGui/imconfig.h",
 		"ImGui/imgui_demo.cpp",
 		"ImGui/imgui_draw.cpp",
@@ -28,22 +31,19 @@ project "ImGui"
 
     includedirs {
         "ImGui",
-        rootdir .. "Vendor/GLFW/GLFW/include",
-        rootdir .. "Vendor/GLAD/GLAD/include",
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.Glad}"
     }
     links {
-        "GLAD",
+        "Glad",
         "GLFW"
     }
 
 -- Windows ==========================
     filter "system:windows"
-		systemversion "latest"
-		staticruntime "On"
-
+	
     -- Include windows specific files
-        files
-		{
+        files {
 			"ImGui/backends/imgui_impl_win32.cpp",
 			"ImGui/backends/imgui_impl_win32.h",
 			"ImGui/backends/imgui_impl_opengl3.cpp",
@@ -52,8 +52,7 @@ project "ImGui"
 		}
 
     -- Windows specific defines =====
-		defines 
-		{ 
+		defines { 
 			"_GLFW_WIN32",
 			"_CRT_SECURE_NO_WARNINGS"
 		}
@@ -61,9 +60,6 @@ project "ImGui"
 -- Linux ============================
 	filter "system:linux"
 		pic "On"
-
-		systemversion "latest"
-		staticruntime "On"
 
 		files {
 			"ImGui/backends/imgui_impl_glfw.cpp",

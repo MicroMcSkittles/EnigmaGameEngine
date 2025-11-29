@@ -27,6 +27,16 @@ namespace Enigma::Renderer {
 		}
 		return nullptr;
 	}
+	ref<UniformBuffer> UniformBuffer::Create(u32 size, u32 binding, Usage usage)
+	{
+		switch (RenderAPI::GetAPI())
+		{
+		case API::OpenGL: return CreateRef<Platform::OpenGL::OpenGLUniformBuffer>(size, binding, usage); break;
+		default:
+			LOG_ERROR("Can't create uniform buffer, API not supported");
+		}
+		return nullptr;
+	}
 	ref<FrameBuffer> FrameBuffer::Create(const FrameBufferConfig& config)
 	{
 		switch (RenderAPI::GetAPI())
@@ -37,5 +47,4 @@ namespace Enigma::Renderer {
 		}
 		return nullptr;
 	}
-	
 }

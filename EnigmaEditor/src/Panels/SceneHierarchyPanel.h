@@ -30,9 +30,8 @@ namespace Enigma::Editor {
 		Entity m_EntitySettingsContext;
 
 		bool m_RenameEntity; // Used to set keyboard focus on the entity being renamed
-		bool m_FromCreate;
 		Entity m_EntityToRename;
-		std::string m_OldName;
+		std::string m_OriginalName;
 	};
 
 }

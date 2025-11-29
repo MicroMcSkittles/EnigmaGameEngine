@@ -1,12 +1,13 @@
-#version 460 core
-out vec4 FragColor;
-in vec2 TexCoord;
+#version 450 core
+layout (location = 0) out vec4 FragColor;
 
-uniform sampler2D FrameTexture;
+layout (binding = 0) uniform sampler2D FrameTexture;
+
+struct VertexOutput {
+    vec2 texCoord;
+};
+layout (location = 0) in VertexOutput Input;
 
 void main() {    
-    vec4 frameColor = texture(FrameTexture, TexCoord);
-    //frameColor = 1.0 - frameColor;
-    FragColor = frameColor;
-    //FragColor = vec4(1,0,1,1);
+    FragColor = texture(FrameTexture, Input.texCoord);
 }

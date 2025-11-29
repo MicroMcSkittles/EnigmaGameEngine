@@ -1,11 +1,17 @@
+include "scripts/build/Dependencies.lua"
+
 workspace "EnigmaGameEngine"
     architecture "x64"
-    
+    startproject "EnigmaEditor"
+
     configurations {
         "Debug",
         "Release"
     }
 
+    flags {
+        "MultiProcessorCompile"
+    }
 
     filter "system:linux"
       toolset "clang"
@@ -15,17 +21,18 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 -- Libraries
 group "Dependencies"
-include "Vendor/GLFW" -- Temp
-include "Vendor/stb" -- Temp
-include "Vendor/yaml-cpp" -- Temp
+    include "Enigma/vendor/GLFW"
+    include "Enigma/vendor/Glad"
 
-include "Vendor/GLAD"
-include "Vendor/GLM"
+    include "EnigmaEditor/vendor/yaml-cpp"
+    include "EnigmaEditor/vendor/ImGuizmo"
 
-include "Vendor/ImGui"
-include "Vendor/ImGuizmo"
+    include "EnigmaSerialization/vendor/stb"
 
+    include "vendor/glm"
+    include "vendor/ImGui"
 group ""
+
 include "Enigma"
 include "EnigmaSerialization"
 

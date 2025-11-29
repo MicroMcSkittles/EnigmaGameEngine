@@ -383,8 +383,8 @@ namespace Enigma::Editor {
 		m_Scene->m_FileName = filename;
 
 		// Get Scene name
-		std::string sceneName = data["Scene"].as<std::string>();
-		LOG_MESSAGE("Deserializing scene \"%s\" from file \"%s\"", 5, sceneName.c_str(), filename.c_str());
+		m_Scene->GetName() = data["Scene"].as<std::string>();
+		LOG_MESSAGE("Deserializing scene \"%s\" from file \"%s\"", 5, m_Scene->GetName().c_str(), filename.c_str());
 		
 		// Get scene entities
 		YAML::Node entities = data["Entities"];

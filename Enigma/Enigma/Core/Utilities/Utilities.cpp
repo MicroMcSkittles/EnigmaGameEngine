@@ -3,6 +3,11 @@
 #include "Enigma/Core/Core.h"
 
 namespace Enigma::Core{
+	const u64 Hash(const std::string& str)
+	{
+		std::hash<std::string> hasher;
+		return hasher(str);
+	}
 	const uint64_t Hash(const char* str)
 	{
 		std::hash<std::string> hasher;

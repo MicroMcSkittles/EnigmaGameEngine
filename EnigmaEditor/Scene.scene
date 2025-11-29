@@ -1,5 +1,5 @@
 # An Enigma scene file
-Scene: Untitled Scene
+Scene: Scene Name
 Entities:
   - Entity: 2839810922040287596
     EntityMetaData:  # Extra data needed by the editor
@@ -10,7 +10,7 @@ Entities:
       Position: [-0.1344532, 0.6722693, 0]
       Rotation: [0, 0, -0.90307873, -0.42947495]  # Quaternion
       Scale: [0.92, 0.92, 0.92]
-      Degrees: false
+      Degrees: true
       EulerAngles: [-0, -0, 2.25377]  # Radians
     ColoredQuad:
       Tint: [1, 1, 1]

@@ -352,19 +352,17 @@ namespace Enigma::Editor {
 		BlankMenuGui
 	};
 
-	EntityInspectorContext::EntityInspectorContext(Entity entity)
+	EntityInspectorContext::EntityInspectorContext(Entity entity, ref<Scene> scene)
 	{
 		m_Entity = entity;
-		m_StartRename = false;
-		m_EndRename = true;
+		m_Scene = scene;
 	}
 	void EntityInspectorContext::ShowGui()
 	{
 		if (!m_Entity) return;
 		ImGui::PushID(m_Entity.GetID());
 
-		if (m_EndRename) HeaderGui();
-		else RenameGui();
+		HeaderGui();
 
 		ImGui::Separator();
 
@@ -399,13 +397,13 @@ namespace Enigma::Editor {
 		std::string uuidString = m_Entity.GetUUID();
 		std::string ecsIDString = std::to_string(m_Entity.GetID());
 
-		ImGui::Text("%s", entityName.c_str());
-		// Start rename gui if name is double clicked
-		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-			m_StartRename = true;
-			m_EndRename = false;
-			m_OriginalName = metaData.name;
+		bool renaming = false;
+		std::string original;
+		if (EditorGui::RenamableText(metaData.name, "EntityRenameBox", &renaming, &original)) {
+			RenameEntityAction(m_Scene, m_Entity, metaData.name, original);
 		}
+
+		if (renaming) return;
 
 		// Show IDs
 		ImGui::SameLine();
@@ -414,39 +412,6 @@ namespace Enigma::Editor {
 			ImGui::TextDisabled("UUID: %s", uuidString.c_str());
 			ImGui::EndTooltip();
 		}
-	}
-
-	void EntityInspectorContext::RenameGui()
-	{
-		EntityMetaData& metaData = m_Entity.GetMetaData();
-
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
-		ImGui::PushStyleColor(ImGuiCol_FrameBg, ToImVec(EditorGui::GetStyle().windowBackground));
-
-		// Set Keyboard focus on the text box
-		if (m_StartRename) {
-			ImGui::SetKeyboardFocusHere();
-			m_StartRename = false;
-		}
-
-		// Show text box
-		ImGuiInputTextFlags inputFlags = ImGuiInputTextFlags_EnterReturnsTrue;
-		std::string buffer = metaData.name;
-		if (ImGui::InputText("##EntityRenameBox", &buffer, inputFlags)) {
-			metaData.name = buffer;
-			m_EndRename = true;
-		}
-		if (ImGui::IsItemDeactivated()) {
-			metaData.name = buffer;
-			m_EndRename = true;
-		}
-		if (m_EndRename) {
-			if (metaData.name != m_OriginalName) RenameEntityAction(m_Entity, metaData.name, m_OriginalName);
-			m_OriginalName = "";
-		}
-
-		ImGui::PopStyleColor();
-		ImGui::PopStyleVar();
 	}
 	
 }

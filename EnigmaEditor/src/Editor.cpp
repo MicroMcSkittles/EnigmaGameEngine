@@ -78,7 +78,7 @@ namespace Enigma::Editor {
 		});
 
 		handler.Dispatch<Event::EntitySelected>([&](Event::EntitySelected& e) {
-			m_InspectorPanel->SetContext(EntityInspectorContext::Create(e.GetEntity()));
+			m_InspectorPanel->SetContext(EntityInspectorContext::Create(e.GetEntity(), m_ActiveScene));
 			return false; 
 		});
 

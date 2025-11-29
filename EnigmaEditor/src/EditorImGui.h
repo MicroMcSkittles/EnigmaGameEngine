@@ -83,15 +83,23 @@ namespace Enigma::Editor {
 		static bool CheckBox(const std::string& lable, bool& value, f32 columnWidth = 100.0f);
 
 		static bool InputText(const std::string& lable, std::string& value, f32 columnWidth = 100.0f);
+		static bool RenamableText(std::string& text, const std::string& textID = "", bool* renaming = nullptr, std::string* original = nullptr);
 
 		static bool ListBox(const std::string& lable, i32& selection, std::vector<std::string>& items, f32 columnWidth = 100.0f);
 		static bool ComboBox(const std::string& lable, i32& selection, std::vector<std::string>& items, f32 columnWidth = 100.0f);
 	
 		static bool InputColor(const std::string& lable, glm::vec3& value, f32 resetValue = 0.0f, f32 columnWidth = 100.0f);
 
+
 	private:
+		struct RenamableTextData {
+			bool started;
+			bool ended;
+			std::string original;
+		};
 		struct Data {
 			EditorStyle style;
+			std::unordered_map<u64, void*> itemData;
 		};
 		static unique<Data> s_Data;
 	};

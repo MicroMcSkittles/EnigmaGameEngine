@@ -18,7 +18,9 @@ namespace Enigma::Editor {
 		~Scene();
 
 		Entity CreateEntity(const std::string& name = "");
+		Entity CreateEntity(const std::string& name, Engine::UUID uuid);
 		Entity CreateEntity(Entity parent, const std::string& name = "");
+		Entity CreateEntity(Entity parent, const std::string& name, Engine::UUID uuid);
 		void RemoveEntity(Entity entity);
 		void ChangeParent(Entity entity, Entity parent);
 
