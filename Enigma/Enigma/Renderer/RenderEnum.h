@@ -102,4 +102,13 @@ namespace Enigma::Renderer {
 		ClampToBorder
 	};
 	std::string ToString(TexWrapMode mode);
+
+	enum class ShaderStageType {
+		None = 0,
+		Vertex,
+		Geometry,
+		Fragment,
+		Compute
+	};
+	std::string ToString(ShaderStageType type);
 }

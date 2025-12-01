@@ -269,7 +269,7 @@ namespace Enigma::Editor {
 		SerializeEntity(out, entity);
 		out << YAML::EndSeq;
 
-		return YAML::Load(out.c_str());;
+		return YAML::Load(out.c_str());
 	}
 	Entity SceneSerializer::DeserializeEntityFromNode(const YAML::Node& data) {
 

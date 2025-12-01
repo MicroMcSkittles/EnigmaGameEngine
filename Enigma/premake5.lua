@@ -1,7 +1,7 @@
 -- Start Enigma Project =============
 project "Enigma"
     kind "StaticLib"
-    staticruntime "On"
+    staticruntime "off"
     systemversion "latest"
 
 -- Configure C++

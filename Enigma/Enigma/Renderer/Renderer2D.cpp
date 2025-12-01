@@ -16,13 +16,17 @@ namespace Enigma::Renderer {
 	{
 		// Load shaders
 		ShaderConfig mainShaderConfig;
-		mainShaderConfig.vertexPath = "../Enigma/DefaultShaders/DefaultShader.vert";
-		mainShaderConfig.pixelPath = "../Enigma/DefaultShaders/DefaultShader.frag";
+		mainShaderConfig.stages = {
+			{ ShaderStageType::Vertex, "../Enigma/DefaultShaders/DefaultShader.vert" },
+			{ ShaderStageType::Fragment, "../Enigma/DefaultShaders/DefaultShader.frag" },
+		};
 		m_MainShader = Shader::Create(mainShaderConfig);
 
 		ShaderConfig postProcShaderConfig;
-		postProcShaderConfig.vertexPath = "../Enigma/DefaultShaders/PostProcessShader.vert";
-		postProcShaderConfig.pixelPath = "../Enigma/DefaultShaders/PostProcessShader.frag";
+		postProcShaderConfig.stages = {
+			{ ShaderStageType::Vertex, "../Enigma/DefaultShaders/PostProcessShader.vert" },
+			{ ShaderStageType::Fragment, "../Enigma/DefaultShaders/PostProcessShader.frag" }
+		};
 		m_PostProcShader = Shader::Create(postProcShaderConfig);
 
 		// Create framebuffers
@@ -54,6 +58,7 @@ namespace Enigma::Renderer {
 		if (s_Quad == nullptr) InitQuad();
 
 		m_CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 0, Usage::DynamicDraw);
+		m_ModelUniformBuffer = UniformBuffer::Create(sizeof(ModelData), 1, Usage::DynamicDraw);
 
 		// Config render api
 		Core::Application::UseRenderAPI(m_RenderAPI);
@@ -134,7 +139,6 @@ namespace Enigma::Renderer {
 		ref<Renderer::Texture> frame = m_FrameBuffer->GetColorAttachment(0);
 
 		frame->Bind();
-		//m_PostProcShader->SetUniform("FrameTexture", (void*)&frame);
 
 		Renderer::RenderAPI::DrawIndexed(6, Renderer::DataType::UnsignedInt, NULL);
 
@@ -152,9 +156,11 @@ namespace Enigma::Renderer {
 		glm::vec4 tint = { quad.tint, 1.0f };
 
 		// Draw quad
-		m_MainShader->SetUniform("u_Model", (void*)&model);
-		m_MainShader->SetUniform("u_Tint", (void*)&tint);
-		m_MainShader->SetUniform("u_EntityID", (void*)&entityID);
+		ModelData data;
+		data.model = model;
+		data.tint = tint;
+		data.entityID = entityID;
+		m_ModelUniformBuffer->SetData(&data, sizeof(ModelData), 0);
 		Renderer::RenderAPI::DrawIndexed(6, Renderer::DataType::UnsignedInt, NULL);
 	}
 }

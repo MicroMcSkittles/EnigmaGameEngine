@@ -6,7 +6,11 @@ layout (std140, binding = 0) uniform Camera {
     mat4 viewProjection;
 } u_Camera;
 
-uniform mat4 u_Model;
+layout (std140, binding = 1) uniform Model {
+    mat4 u_Model;
+    vec4 u_Tint;
+    int u_EntityID;
+};
 
 struct VertexOutput {
     vec2 texCoord;
@@ -16,4 +20,4 @@ layout (location = 0) out VertexOutput Output;
 void main() {
     Output.texCoord = a_TexCoord;
     gl_Position = u_Camera.viewProjection * u_Model * vec4(a_Pos, 1.0);
-}
+} 

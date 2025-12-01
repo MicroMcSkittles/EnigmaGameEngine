@@ -111,4 +111,15 @@ namespace Enigma::Renderer {
         }
         return std::string();
     }
+    std::string ToString(ShaderStageType type)
+    {
+        switch (type)
+        {
+        case Enigma::Renderer::ShaderStageType::Vertex:   return "Vertex";
+        case Enigma::Renderer::ShaderStageType::Geometry: return "Geometry";
+        case Enigma::Renderer::ShaderStageType::Fragment: return "Fragment";
+        case Enigma::Renderer::ShaderStageType::Compute:  return "Compute";
+        }
+        return std::string();
+    }
 }

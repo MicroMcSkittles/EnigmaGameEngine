@@ -34,6 +34,7 @@ namespace Enigma::Renderer {
 		ref<Engine::ECS::ECS> m_CurrentECS;
 		ref<Camera> m_CurrentCamera;
 		ref<UniformBuffer> m_CameraUniformBuffer;
+		ref<UniformBuffer> m_ModelUniformBuffer;
 
 		ref<FrameBuffer> m_FrameBuffer;
 		ref<FrameBuffer> m_OutputBuffer;
@@ -42,6 +43,12 @@ namespace Enigma::Renderer {
 		ref<Shader> m_PostProcShader;
 
 	private:
+		struct ModelData {
+			glm::mat4 model;
+			glm::vec4 tint;
+			i32 entityID;
+		};
+
 		struct Vertex {
 			glm::vec3 position;
 			glm::vec2 texCoord;

@@ -7,25 +7,25 @@
 
 namespace Enigma::Renderer {
 
-	enum ShaderFlag {
-		None = 0,
-		VertexShader = BIT(0),
-		PixelShader = BIT(1),
-		GeometryShader = BIT(2),
-		PathAsSource = BIT(3) // Treats paths as shader source
-	};
-
 	struct Uniform {
 		std::string name;
 		DataType type;
 		void* data;
 	};
 
+	enum ShaderFlag {
+		ShaderFlagNone = 0,
+		ShaderFlagPathAsSource = BIT(0), // Treats paths as shader source
+		ShaderFlagForceCompile = BIT(1), // Doesn't check for cache file and recompiles
+	};
+
+	struct ShaderStage {
+		ShaderStageType type;
+		std::string filename;
+	};
 	struct ShaderConfig{
-		u32 flags = VertexShader | PixelShader;
-		std::string vertexPath;
-		std::string pixelPath;
-		std::string geomatryPath;
+		u32 flags = ShaderFlagNone;
+		std::vector<ShaderStage> stages;
 	};
 
 	class Shader {
@@ -37,6 +37,8 @@ namespace Enigma::Renderer {
 		virtual bool IsUniformActive(const std::string& name) = 0;
 
 		virtual void SetUniform(const std::string& name, void* data) = 0;
+
+		virtual void SetPushConstant(void* data, u32 offset, u32 size) = 0;
 
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;

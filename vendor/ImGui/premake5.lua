@@ -1,7 +1,7 @@
 -- Start ImGui Project ==============
 project "ImGui"
     kind "StaticLib"
-	staticruntime "On"
+	staticruntime "off"
 	systemversion "latest"
 
 -- Configure C++ ====================

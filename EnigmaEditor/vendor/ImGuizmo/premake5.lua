@@ -1,7 +1,7 @@
 -- Start ImGuizmo Project ===========
 project "ImGuizmo"
     kind "StaticLib"
-	staticruntime "On"
+	staticruntime "off"
 	systemversion "latest"
 
 -- Configure C++ ====================

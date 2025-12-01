@@ -1,8 +1,8 @@
 -- Start EnigmaEditor Project =======
 project "EnigmaEditor"
     kind "ConsoleApp"
+    staticruntime "off"
     systemversion "latest"
-    staticruntime "On"
 
 -- Configure C++ ====================
     language "C++"

@@ -17,3 +17,6 @@ Makefile
 build.sh
 compile_commands.json
 .cache
+
+# Enigma Cache Files
+EnigmaEditor/cache

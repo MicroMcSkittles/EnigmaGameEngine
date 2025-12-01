@@ -1,7 +1,7 @@
 -- Start GLFW Project ===============
 project "GLFW"
     kind "StaticLib"
-	staticruntime "On"
+	staticruntime "off"
 	systemversion "latest"
 
 -- Configure C ======================

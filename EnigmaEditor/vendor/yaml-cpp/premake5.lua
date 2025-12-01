@@ -1,7 +1,7 @@
 -- Start yaml-cpp Project ===========
 project "yaml-cpp"
     kind "StaticLib"
-	staticruntime "On"
+	staticruntime "off"
 	systemversion "latest"
 
 -- Configure C++ ====================

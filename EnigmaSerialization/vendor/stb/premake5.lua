@@ -1,7 +1,7 @@
 -- Start stb Project ================
 project "stb"
     kind "StaticLib"
-    staticruntime "On"
+    staticruntime "off"
     systemversion "latest"
 
 -- Configue C++ =====================

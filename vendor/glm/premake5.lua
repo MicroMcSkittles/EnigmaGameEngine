@@ -1,7 +1,7 @@
 -- Start glm Project ================
 project "glm"
     kind "StaticLib"
-    staticruntime "On"
+    staticruntime "off"
     systemversion "latest"
 
 -- Configure C++ ====================

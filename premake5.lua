@@ -37,4 +37,4 @@ include "Enigma"
 include "EnigmaSerialization"
 
 include "EnigmaEditor" -- Enigma Editor Project
-include "TestBed" -- A project used for testing new features in the engine
+--include "TestBed" -- A project used for testing new features in the engine

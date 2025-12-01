@@ -15,17 +15,25 @@ namespace Enigma::Renderer {
 		config.pixelPath = fragSource;
 		return Renderer::Shader::Create(config);*/
 
+		//config.vertexPath = "../Enigma/DefaultShaders/SceneViewShader.vert";
+		//config.pixelPath = "../Enigma/DefaultShaders/SceneViewShader.frag";
 		Renderer::ShaderConfig config;
-		config.vertexPath = "../Enigma/DefaultShaders/SceneViewShader.vert";
-		config.pixelPath = "../Enigma/DefaultShaders/SceneViewShader.frag";
+		config.stages = {
+			{ ShaderStageType::Vertex, "../Enigma/DefaultShaders/SceneViewShader.vert" },
+			{ ShaderStageType::Fragment, "../Enigma/DefaultShaders/SceneViewShader.frag" }
+		};
 		return Renderer::Shader::Create(config);
 	}
 
 	ref<Shader> DefaultShaders::LoadCircleShader()
 	{
+		//config.vertexPath = "../Enigma/DefaultShaders/SceneViewShader.vert";
+		//config.pixelPath = "../Enigma/DefaultShaders/CircleShader.frag";
 		Renderer::ShaderConfig config;
-		config.vertexPath = "../Enigma/DefaultShaders/SceneViewShader.vert";
-		config.pixelPath = "../Enigma/DefaultShaders/CircleShader.frag";
+		config.stages = {
+			{ ShaderStageType::Vertex, "../Enigma/DefaultShaders/SceneViewShader.vert" },
+			{ ShaderStageType::Fragment, "../Enigma/DefaultShaders/CircleShader.frag" }
+		};
 		return Renderer::Shader::Create(config);
 	}
 
@@ -39,9 +47,16 @@ namespace Enigma::Renderer {
 		config.pixelPath = fragSource;
 		return Renderer::Shader::Create(config);*/
 
-		Renderer::ShaderConfig config;
+		/*Renderer::ShaderConfig config;
 		config.vertexPath = "../Enigma/DefaultShaders/PostProcessShader.vert";
 		config.pixelPath = "../Enigma/DefaultShaders/PostProcessShader.frag";
+		return Renderer::Shader::Create(config);*/
+
+		Renderer::ShaderConfig config;
+		config.stages = {
+			{ ShaderStageType::Vertex, "../Enigma/DefaultShaders/PostProcessShader.vert" },
+			{ ShaderStageType::Fragment, "../Enigma/DefaultShaders/PostProcessShader.frag" }
+		};
 		return Renderer::Shader::Create(config);
 	}
 
@@ -51,9 +66,9 @@ namespace Enigma::Renderer {
 		const char* fragSource = "#version 460 core\nout vec4 FragColor;\n\nin vec2 TexCoord;\n\nuniform int StencilID;\nconst float Epsilon = 0.01;\n\nvoid main() {\n\n    vec2 point = TexCoord * 2 - 1;\n    float dist = 1 - length(point);\n    float stencil = step(0.0, dist);\n    if(stencil < Epsilon) discard;\n\n    int rslts = int(floor(stencil * 0xFF));\n    int rslt = (rslts & 0xFF) | ((StencilID << 8) & 0xFFFFFF);\n\n    FragColor = vec4(rslt);\n}";
 
 		Renderer::ShaderConfig config;
-		config.flags |= Renderer::ShaderFlag::PathAsSource;
+		/*config.flags |= Renderer::ShaderFlag::PathAsSource;
 		config.vertexPath = vertSource;
-		config.pixelPath = fragSource;
+		config.pixelPath = fragSource;*/
 		return Renderer::Shader::Create(config);
 	}
 
@@ -63,9 +78,9 @@ namespace Enigma::Renderer {
 		const char* fragSource = "#version 460 core\nout vec4 FragColor;\n\nin vec2 TexCoord;\n\nuniform float Thickness;\n\nuniform int StencilID;\nconst float Epsilon = 0.01;\n\nvoid main() {\n\n    vec2 point = TexCoord * 2 - 1;\n    float dist = length(point);\n\n    float stencil = 0;\n    if(dist > 1 - Thickness && dist < 1) stencil = 1;\n\n    if(stencil < Epsilon) discard;\n\n    int rslts = int(floor(stencil * 0xFF));\n    int rslt = (rslts & 0xFF) | ((StencilID << 8) & 0xFFFFFF);\n\n    FragColor = vec4(rslt);\n}";
 
 		Renderer::ShaderConfig config;
-		config.flags |= Renderer::ShaderFlag::PathAsSource;
+		/*config.flags |= Renderer::ShaderFlag::PathAsSource;
 		config.vertexPath = vertSource;
-		config.pixelPath = fragSource;
+		config.pixelPath = fragSource;*/
 		return Renderer::Shader::Create(config);
 	}
 
@@ -75,17 +90,24 @@ namespace Enigma::Renderer {
 		const char* fragSource = "#version 460 core\nout vec4 FragColor;\n\nin vec2 TexCoord;\n\nuniform float Thickness;\nuniform vec2 Bounds;\n\nuniform int StencilID;\nconst float Epsilon = 0.01;\n\nvoid main() {\n\n    vec2 point = TexCoord * 2 - 1;\n    point *= Bounds;\n    float rThickness = Thickness * 0.25;\n\n    float stencil = 0;\n    if(point.x < -Bounds.x + rThickness || point.x > Bounds.x - rThickness) stencil = 1;\n    else if(point.y < -Bounds.y + rThickness || point.y > Bounds.y - rThickness) stencil = 1;\n\n    if(stencil < Epsilon) discard;\n\n    int rslts = int(floor(stencil * 0xFF));\n    int rslt = (rslts & 0xFF) | ((StencilID << 8) & 0xFFFFFF);\n\n    FragColor = vec4(rslt);\n}";
 
 		Renderer::ShaderConfig config;
-		config.flags |= Renderer::ShaderFlag::PathAsSource;
+		/*config.flags |= Renderer::ShaderFlag::PathAsSource;
 		config.vertexPath = vertSource;
-		config.pixelPath = fragSource;
+		config.pixelPath = fragSource;*/
 		return Renderer::Shader::Create(config);
 	}
 
 	ref<Shader> Render2D::LoadTextStencilShader()
 	{
-		Renderer::ShaderConfig config;
+		/*Renderer::ShaderConfig config;
 		config.vertexPath = "../Enigma/DefaultShaders/TextStencilShader.vert";
 		config.pixelPath = "../Enigma/DefaultShaders/TextStencilShader.frag";
+		return Renderer::Shader::Create(config);*/
+
+		Renderer::ShaderConfig config;
+		config.stages = {
+			{ ShaderStageType::Vertex, "../Enigma/DefaultShaders/TextStencilShader.vert" },
+			{ ShaderStageType::Fragment, "../Enigma/DefaultShaders/TextStencilShader.frag" }
+		};
 		return Renderer::Shader::Create(config);
 	}
 }

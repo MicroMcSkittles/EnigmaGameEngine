@@ -2,7 +2,20 @@
 #include "Enigma/Renderer/Shader.h"
 #include <map>
 
+#include <shaderc/shaderc.hpp>
+
 namespace Enigma::Platform::OpenGL {
+
+	struct OpenGLShaderStage {
+		Renderer::ShaderStageType type;
+		std::string filename;
+		u64 checksum;
+
+		u32 handle;
+		std::vector<u32> vulkanSpirv;
+		std::vector<u32> openglSpirv;
+		std::string glslSource;
+	};
 
 	class OpenGLShader : public Renderer::Shader {
 	public:
@@ -15,23 +28,41 @@ namespace Enigma::Platform::OpenGL {
 
 		virtual void SetUniform(const std::string& name, void* data) override;
 
+		virtual void SetPushConstant(void* data, u32 offset, u32 size) override;
+
 		virtual void Bind() override;
 		virtual void Unbind() override;
 
 	private:
-		// Find all uniform locations, types, and names
-		void FindUniforms();
+
+		bool IsStageVKSpirvCached(const OpenGLShaderStage& stage);
+		void LoadStageVKSpirvCache(OpenGLShaderStage& stage);
+		void CompileStageToVKSpirv(OpenGLShaderStage& stage);
+
+		bool IsStageGLSpirvCached(const OpenGLShaderStage& stage);
+		void LoadStageGLSpirvCache(OpenGLShaderStage& stage);
+		void CompileStageToGLSpirv(OpenGLShaderStage& stage);
+
+		void CreateProgram();
+
+		void ReflectStage(const OpenGLShaderStage& stage);
+
+		void VarifyCacheDirectory();
 
 	private:
 		u32 m_Handle;
-		u32 m_VertexHandle;
-		u32 m_PixelHandle;
-		u32 m_GeometryHandle;
 
 		Renderer::ShaderConfig m_Config;
+		std::vector<OpenGLShaderStage> m_Stages;
+		u32 m_PushConstantCount;
 
 		std::vector<Renderer::Uniform> m_Uniforms;
 		std::vector<u32> m_UniformLocations;
 		std::map<std::string, u32> m_UniformLookup;
+
+		const u64 c_CacheChecksumSize = sizeof(u64);
+		const std::string c_VKSpirvCacheExt = ".vk.spirv";
+		const std::string c_GLSpirvCacheExt = ".gl.spirv";
+		const std::string c_CacheDirectory = "./cache/shader/";
 	};
 }

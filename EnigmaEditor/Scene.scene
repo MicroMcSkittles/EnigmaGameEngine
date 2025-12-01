@@ -7,7 +7,7 @@ Entities:
       Children:
         - 3988970037366462985
     Transform:
-      Position: [-0.1344532, 0.6722693, 0]
+      Position: [-2.1960416, 1.4113288, 0]
       Rotation: [0, 0, -0.90307873, -0.42947495]  # Quaternion
       Scale: [0.92, 0.92, 0.92]
       Degrees: true
@@ -20,7 +20,7 @@ Entities:
       Parent: 2839810922040287596
     Transform:
       Parent: 2839810922040287596
-      Position: [-2.4836054, 0.37093097, 0]
+      Position: [-3.4170218, -0.4857734, 0]
       Rotation: [0, 0, 0.49380285, 0.86957407]  # Quaternion
       Scale: [1, 1, 1]
       Degrees: true

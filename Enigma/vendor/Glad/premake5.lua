@@ -1,7 +1,7 @@
 -- Start Glad Project ===============
 project "Glad"
     kind "StaticLib"
-    staticruntime "On"
+    staticruntime "off"
     systemversion "latest"
 
 -- Configure C ======================

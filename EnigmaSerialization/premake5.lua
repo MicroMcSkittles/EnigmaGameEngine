@@ -1,7 +1,7 @@
 -- Start EnigmaSerialization Project ====
 project "EnigmaSerialization"
     kind "StaticLib"
-    staticruntime "On"
+    staticruntime "off"
     systemversion "latest"
 
 -- Configure C++ ========================
