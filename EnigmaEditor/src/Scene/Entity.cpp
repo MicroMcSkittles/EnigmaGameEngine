@@ -201,7 +201,7 @@ namespace Enigma::Editor {
 			flags |= ImGuiTreeNodeFlags_Framed;
 
 			// Open component dropdown
-			u64 componentHash = ECS::ComponentHasher<T>::Hash();
+			u64 componentHash = ComponentHasher<T>::Hash();
 			ImGui::PushID(componentHash);
 			bool open = ImGui::TreeNodeEx(name.c_str(), flags);
 		
@@ -218,7 +218,7 @@ namespace Enigma::Editor {
 			if (ImGui::BeginPopup("ComponentSettings")) {
 
 				// Show remove option for any component that isn't a transform
-				if (componentHash != ECS::ComponentHasher<Transform>::Hash()) {
+				if (componentHash != ComponentHasher<Transform>::Hash()) {
 					if (ImGui::MenuItem("Remove")) {
 						CreateRemovedComponentActionEvent<T>(entity, name);
 						entity.RemoveComponent<T>();

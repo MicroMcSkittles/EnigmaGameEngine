@@ -36,6 +36,7 @@ project "Enigma"
         "Enigma/Engine/**.h",
         "Enigma/Engine/**.cpp",
         "Enigma/Engine/**.hpp",
+        "Enigma/Engine/**.inl",
 
         "Enigma/Renderer/**.c",
         "Enigma/Renderer/**.h",

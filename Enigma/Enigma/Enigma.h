@@ -2,14 +2,19 @@
 
 // Enigma Game Engine ===========
 // By Noah Beauchamp
-// Version 1 0 3
+// Version 1 0 84
 // Note:
-// I'm jumping around a lot of random features I will get back to the editor eventualy
+// I have forgoten to update this for literal months
+// much has changed look through the commits on github for more info
 // 
-// I've spent almost 2 weeks on the text/font stuff, but it works now. Theres still more
-// I want to do with it, like fixing the strange artifacts.
+// Do to school I have slowed down a bit
+// I will still try to work on Enigma when I get time
+// 
+// Side note the minor version number came from the number of commits
 // 
 // ==============================
+
+// TODO: update this file
 
 #include "Core/Core.h"
 #include "Core/Utilities/Logger.h"
