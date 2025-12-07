@@ -20,8 +20,8 @@ namespace Enigma::Renderer {
 		TexFormat format = TexFormat::RGB;
 		TexFormat internalFormat = TexFormat::RGB;
 		void* data = nullptr;
-		i32 width = 0;
-		i32 height = 0;
+		u32 width = 0;
+		u32 height = 0;
 	};
 
 	class Texture {
@@ -31,13 +31,13 @@ namespace Enigma::Renderer {
 
 		virtual void* GetNativeTexture() = 0;
 
-		virtual void Resize(i32 width, i32 height, void* data = (void*)NULL) = 0;
+		virtual void Resize(u32 width, u32 height, void* data = nullptr) = 0;
 
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;
 
-		virtual i32 GetWidth() = 0;
-		virtual i32 GetHeight() = 0;
+		virtual u32 GetWidth() = 0;
+		virtual u32 GetHeight() = 0;
 
 		virtual TextureConfig GetConfig() = 0;
 	};

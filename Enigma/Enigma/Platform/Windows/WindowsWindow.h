@@ -39,11 +39,11 @@ namespace Enigma::Platform {
 
 	public:
 		void CloseEvent();
-		void ResizeEvent(i32 width, i32 height);
+		void ResizeEvent(u32 width, u32 height);
 		void MouseMovedEvent(i32 x, i32 y);
 		void MouseScrollEvent(i32 x, i32 y);
-		void MouseClickEvent(i32 button, i32 mods, i32 action);
-		void KeyboardEvent(i32 keycode, i32 scancode, i32 mods, i32 action);
+		void MouseClickEvent(u64 button, u32 mods, u32 action);
+		void KeyboardEvent(u64 keycode, u32 scancode, u32 mods, u32 action);
 
 	private:
 		Core::WindowConfig m_Config;
@@ -54,8 +54,8 @@ namespace Enigma::Platform {
 		void* m_DeviceContext;
 
 		bool m_ShouldClose;
-		i32 m_Width;
-		i32 m_Height;
+		u32 m_Width;
+		u32 m_Height;
 		std::vector<std::function<void(Core::Event&)>> m_Callbacks;
 	};
 

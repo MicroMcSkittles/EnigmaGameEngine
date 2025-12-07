@@ -47,13 +47,13 @@ namespace Enigma::Core {
         // Returns the names of the codes in InputCodes.h
         
         // Returns the name of a key code
-        static std::string GetKeyName(i32 key);
+        static std::string GetKeyName(u64 key);
         // Returns the name of a mouse button code
-        static std::string GetButtonName(i32 button);
+        static std::string GetButtonName(u64 button);
         // Returns the name of a key action code
-        static std::string GetActionName(i32 action);
+        static std::string GetActionName(u32 action);
         // Returns the name of key/button mods
-        static std::string GetModsName(i32 mods);
+        static std::string GetModsName(u32 mods);
     };
 
 }

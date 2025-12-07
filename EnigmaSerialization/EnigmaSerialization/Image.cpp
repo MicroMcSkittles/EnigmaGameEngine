@@ -22,8 +22,12 @@ namespace Enigma {
 
 			int nrChannels;
 
+			i32 width = 0;
+			i32 height = 0;
 			textureConfig.data = nullptr;
-			textureConfig.data = stbi_load(filename.c_str(), &textureConfig.width, &textureConfig.height, &nrChannels, STBI_rgb_alpha);
+			textureConfig.data = stbi_load(filename.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
+			textureConfig.width = width;
+			textureConfig.height = height;
 
 			if (!textureConfig.data) {
 				LOG_SOFT_ERROR("Failed to load texture ( %s )", filename.c_str());
@@ -45,8 +49,12 @@ namespace Enigma {
 
 			int nrChannels;
 
+			i32 width = 0;
+			i32 height = 0;
 			textureConfig.data = nullptr;
-			textureConfig.data = stbi_load_from_memory(imageData, length, &textureConfig.width, &textureConfig.height, &nrChannels, 0);
+			textureConfig.data = stbi_load_from_memory(imageData, length, &width, &height, &nrChannels, 0);
+			textureConfig.width = width;
+			textureConfig.height = height;
 
 			if (!textureConfig.data) {
 				LOG_SOFT_ERROR("Failed to load texture");
@@ -139,8 +147,12 @@ namespace Enigma {
 
 			int nrChannels;
 
+			i32 width = 0;
+			i32 height = 0;
 			textureConfig.data = nullptr;
-			textureConfig.data = stbi_load(filename.c_str(), &textureConfig.width, &textureConfig.height, &nrChannels, STBI_rgb_alpha);
+			textureConfig.data = stbi_load(filename.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
+			textureConfig.width = width;
+			textureConfig.height = height;
 
 			if (!textureConfig.data) {
 				errorMessage = "Failed to load texture ( " + filename + " )";
@@ -162,8 +174,13 @@ namespace Enigma {
 			stbi_set_flip_vertically_on_load(!config.flipY);
 
 			int nrChannels;
-			textureConfig.data = stbi_load_from_memory(imageData, length, &textureConfig.width, &textureConfig.height, &nrChannels, 0);
 
+			i32 width = 0;
+			i32 height = 0;
+			textureConfig.data = nullptr;
+			textureConfig.data = stbi_load_from_memory(imageData, length, &width, &height, &nrChannels, 0);
+			textureConfig.width = width;
+			textureConfig.height = height;
 			if (!textureConfig.data) {
 				errorMessage = "Failed to load texture: " + std::string(stbi_failure_reason());
 				success = false;

@@ -1,29 +1,64 @@
 # An Enigma scene file
 Scene: Scene Name
+ActiveCamera: 15686696671289303743
 Entities:
-  - Entity: 2839810922040287596
+  - Entity: 15686696671289303743
     EntityMetaData:  # Extra data needed by the editor
-      Name: Parent Entity
-      Children:
-        - 3988970037366462985
+      Name: Camera
     Transform:
-      Position: [-2.1960416, 1.4113288, 0]
-      Rotation: [0, 0, -0.90307873, -0.42947495]  # Quaternion
-      Scale: [0.92, 0.92, 0.92]
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0, 1]  # Quaternion
+      Scale: [1, 1, 1]
       Degrees: true
-      EulerAngles: [-0, -0, 2.25377]  # Radians
-    ColoredQuad:
-      Tint: [1, 1, 1]
+      EulerAngles: [0, 0, 0]  # Radians
+    OrthographicCamera:
+      Left: 0
+      Right: 0
+      Top: 0
+      Bottom: 0
+      Near: 0
+      Far: 0
+      Zoom: 0
+  - Entity: 12088195524106242844
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Camera1
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0, 1]  # Quaternion
+      Scale: [1, 1, 1]
+      Degrees: true
+      EulerAngles: [0, 0, 0]  # Radians
+    OrthographicCamera:
+      Left: 0
+      Right: 0
+      Top: 0
+      Bottom: 0
+      Near: 0
+      Far: 0
+      Zoom: 0
   - Entity: 3988970037366462985
     EntityMetaData:  # Extra data needed by the editor
       Name: Child Entity
       Parent: 2839810922040287596
     Transform:
       Parent: 2839810922040287596
-      Position: [-3.4170218, -0.4857734, 0]
+      Position: [-2.708173, -0.47427583, 0]
       Rotation: [0, 0, 0.49380285, 0.86957407]  # Quaternion
       Scale: [1, 1, 1]
       Degrees: true
       EulerAngles: [0, -0, 1.032915]  # Radians
     ColoredQuad:
       Tint: [0.71814674, 0.10813793, 0.10813793]
+  - Entity: 2839810922040287596
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Parent Entity
+      Children:
+        - 3988970037366462985
+    Transform:
+      Position: [-1.0550363, 1.035316, 0]
+      Rotation: [0, 0, -0.90307873, -0.42947495]  # Quaternion
+      Scale: [0.92, 0.92, 0.92]
+      Degrees: true
+      EulerAngles: [-0, -0, 2.25377]  # Radians
+    ColoredQuad:
+      Tint: [0.10975779, 0.45882356, 0.3150905]

@@ -6,11 +6,11 @@
 #include "Enigma/Core/Core.h"
 #include "Enigma/Engine/InputCodes.h"
 
-#include <glad/glad.h>
-
 #include <cwchar>
 #include <Windows.h>
 #include <windowsx.h>
+
+#include <glad/glad.h>
 
 #include <backends/imgui_impl_win32.h>
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -363,7 +363,7 @@ namespace Enigma::Platform {
 		DestroyWindow((HWND)m_Handle);
 	}
 
-	void WindowsWindow::ResizeEvent(i32 width, i32 height)
+	void WindowsWindow::ResizeEvent(u32 width, u32 height)
 	{
 		m_Width = width;
 		m_Height = height;
@@ -390,7 +390,7 @@ namespace Enigma::Platform {
 		}
 	}
 
-	void WindowsWindow::MouseClickEvent(i32 button, i32 mods, i32 action)
+	void WindowsWindow::MouseClickEvent(u64 button, u32 mods, u32 action)
 	{
 		if (button < 0 || button >= Engine::KeyCode::MouseButtonLast) {
 			LOG_SOFT_ERROR("Invalid mouse button code ( %d )", button);
@@ -403,9 +403,9 @@ namespace Enigma::Platform {
 		}
 	}
 
-	void WindowsWindow::KeyboardEvent(i32 keycode, i32 scancode, i32 mods, i32 action)
+	void WindowsWindow::KeyboardEvent(u64 keycode, u32 scancode, u32 mods, u32 action)
 	{
-		if (keycode < 0 || keycode >= Engine::KeyCode::KeyLast) {
+		if (keycode < 0 || keycode >= static_cast<u64>(Engine::KeyCode::KeyLast)) {
 			LOG_SOFT_ERROR("Invalid key code ( %d )", keycode);
 		}
 		m_InputData.keyboardStates[keycode] = action;

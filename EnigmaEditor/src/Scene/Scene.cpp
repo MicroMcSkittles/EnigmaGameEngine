@@ -1,8 +1,12 @@
 #include "Scene/Scene.h"
 #include "Scene/Entity.h"
 #include "Scene/Components.h"
+#include "EditorImGui.h"
+#include "UndoRedoAction.h"
 #include <Enigma/Engine/ECS/Components.h>
-#include <Enigma/Engine/UUID.h>
+
+#include <imgui.h>
+#include <imgui_internal.h>
 
 using namespace Enigma::Engine::ECS;
 
@@ -17,6 +21,7 @@ namespace Enigma::Editor {
 		m_ECS = Engine::ECS::ECS::Create();
 		Entity root = { m_ECS->CreateEntity(), this };
 		root.CreateComponent<EntityMetaData>("Untitled Scene");
+		root.CreateComponent<SceneMetaData>();
 	}
 
 	Scene::Scene(const std::string& name)
@@ -24,6 +29,7 @@ namespace Enigma::Editor {
 		m_ECS = Engine::ECS::ECS::Create();
 		Entity root = { m_ECS->CreateEntity(), this };
 		root.CreateComponent<EntityMetaData>(name);
+		root.CreateComponent<SceneMetaData>();
 	}
 
 	Scene::~Scene()
@@ -36,6 +42,7 @@ namespace Enigma::Editor {
 		return m_EntityUUIDs[uuid]; 
 	}
 	EntityMetaData&       Scene::GetRoot()     { return Entity(0, this).GetComponent<EntityMetaData>(); }
+	SceneMetaData&        Scene::GetMetaData() { return Entity(0, this).GetComponent<SceneMetaData>(); }
 	ref<Engine::ECS::ECS> Scene::GetECS()      { return m_ECS; }
 	std::string&          Scene::GetName()     { return GetRoot().name; }
 	std::string&          Scene::GetFileName() { return m_FileName; }
@@ -199,5 +206,54 @@ namespace Enigma::Editor {
 	void Scene::Update(Engine::DeltaTime deltaTime)
 	{
 
+	}
+
+	SceneInspectorContext::SceneInspectorContext(ref<Scene> scene) : m_Scene(scene)
+	{
+		
+	}
+	void SceneInspectorContext::ShowGui()
+	{
+		if (!m_Scene) return;
+		ImGui::PushID(m_Scene->GetName().c_str());
+
+		std::string original;
+		if (EditorGui::RenamableText(m_Scene->GetName(), "SceneInspectorContextNameBox", nullptr, &original)) {
+			RenameSceneAction(m_Scene, m_Scene->GetName(), original);
+		}
+
+		ImGui::Separator();
+
+		EditorGui::Text("Entity Count", std::to_string(m_Scene->GetECS()->GetEntityCount()));
+		ImGui::BeginColumns("##Columns_SceneInspectorContextMainCamera", 2, ImGuiOldColumnFlags_NoResize);
+		ImGui::SetColumnWidth(0, 100);
+		ImGui::Text("Main Camera");
+		ImGui::NextColumn();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+
+		std::vector<Entity> cameraEntities;
+		i32 selection = -1;
+		u32 cameraCount = 0;
+
+		Engine::ECS::View<EntityMetaData, Engine::ECS::OrthographicCamera> cameraEntityView(m_Scene->GetECS());
+		cameraEntityView.ForEach([&](EntityID id, EntityMetaData& metaData, Engine::ECS::OrthographicCamera& camera) {
+			cameraEntities.push_back({ id, m_Scene.get() });
+			if (id == m_Scene->GetMetaData().activeCamera.GetID()) selection = cameraCount;
+			cameraCount += 1;
+		});
+
+		if (ImGui::Combo("##ComboBox", &selection, [](void* user_data, int idx) {
+			std::vector<Entity>* entities = static_cast<std::vector<Entity>*>(user_data);
+			Entity entity = entities->at(idx);
+			return entity.GetComponent<EntityMetaData>().name.c_str();
+			}, static_cast<void*>(&cameraEntities), cameraEntities.size())) {
+			m_Scene->GetMetaData().activeCamera = cameraEntities[selection];
+		}
+
+		ImGui::PopStyleVar();
+
+		ImGui::EndColumns();
+		ImGui::PopID();
 	}
 }

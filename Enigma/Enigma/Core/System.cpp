@@ -42,7 +42,7 @@ namespace Enigma::Core {
         return ss.str();
     }
 
-    std::string System::GetButtonName(i32 button)
+    std::string System::GetButtonName(u64 button)
     {
         std::string name = std::to_string(button);
         if (button == Engine::KeyCode::MouseButtonLeft) name = "Left";
@@ -50,7 +50,7 @@ namespace Enigma::Core {
         else if (button == Engine::KeyCode::MouseButtonRight) name = "right";
         return name;
     }
-    std::string System::GetActionName(i32 action)
+    std::string System::GetActionName(u32 action)
     {
         std::string name = std::to_string(action);
         if (action == Engine::KeyCode::KeyPress) name = "Press";
@@ -58,7 +58,7 @@ namespace Enigma::Core {
         else if (action == Engine::KeyCode::KeyRelease) name = "Release";
         return name;
     }
-    std::string System::GetModsName(i32 mods)
+    std::string System::GetModsName(u32 mods)
     {
         std::stringstream ss;
         if (mods & Engine::KeyCode::ShiftMask) ss << "( Shift ) ";

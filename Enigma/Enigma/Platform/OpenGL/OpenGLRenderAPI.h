@@ -46,19 +46,19 @@ namespace Enigma::Platform::OpenGL {
         virtual void ClearImpl() override;
 
         virtual glm::vec2 GetViewportSizeImpl() override { return { (float)m_Data.viewportWidth, (float)m_Data.viewportHeight }; }
-        virtual void SetViewportImpl(i32 width, i32 height) override;
+        virtual void SetViewportImpl(u32 width, u32 height) override;
 
         virtual void SetDrawModeImpl(Renderer::DrawMode mode) override;
-        virtual void DrawIndexedImpl(i32 count, Renderer::DataType type, void* data) override;
-        virtual void DrawArraysImpl(i32 first, i32 count) override;
+        virtual void DrawIndexedImpl(u32 count, Renderer::DataType type, void* data) override;
+        virtual void DrawArraysImpl(u32 first, u32 count) override;
 
     private:
         struct {
             u32 clearMask = 0;
             u32 drawMode  = 0;
 
-            i32 viewportWidth  = 0;
-            i32 viewportHeight = 0;
+            u32 viewportWidth  = 0;
+            u32 viewportHeight = 0;
         } m_Data;
     };
 }

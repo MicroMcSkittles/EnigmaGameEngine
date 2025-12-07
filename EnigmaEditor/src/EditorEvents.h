@@ -7,16 +7,19 @@
 #include "Scene/Entity.h"
 #include "UndoRedoAction.h"
 
+#include "Panels/InspectorPanel.h"
+
 #include <functional>
 
 namespace Enigma::Editor::Event {
 	namespace EventType {
 		//const u64 Save           = Core::Hash("Save");
-		const u64 SceneChange    = Core::Hash("SceneChange");
-		const u64 EntitySelected = Core::Hash("EntitySelected");
-		const u64 NewAction      = Core::Hash("NewAction");
-		const u64 Undo           = Core::Hash("Undo");
-		const u64 Redo           = Core::Hash("Redo");
+		const u64 SceneChange         = Core::Hash("SceneChange");
+		const u64 EntitySelected      = Core::Hash("EntitySelected");
+		const u64 NewInspectorContext = Core::Hash("NewInspectorContext");
+		const u64 NewAction           = Core::Hash("NewAction");
+		const u64 Undo                = Core::Hash("Undo");
+		const u64 Redo                = Core::Hash("Redo");
 	}
 
 	/*class Save : public Core::Event {
@@ -63,6 +66,22 @@ namespace Enigma::Editor::Event {
 
 	private:
 		Entity m_Entity;
+	};
+	class NewInspectorContext : public Core::Event {
+	public:
+		EVENT_TYPE(NewInspectorContext);
+		EVENT_CATEGORY(Core::EventCategory::EventNone);
+
+		NewInspectorContext(ref<InspectorContext> context) : m_Context(context) { }
+
+		virtual std::string ToString() override {
+			return "New Inspector Context";
+		}
+
+		ref<InspectorContext> GetContext() { return m_Context; }
+
+	private:
+		ref<InspectorContext> m_Context;
 	};
 
 	// Undo/Redo events

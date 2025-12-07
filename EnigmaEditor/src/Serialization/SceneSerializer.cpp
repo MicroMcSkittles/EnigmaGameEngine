@@ -195,6 +195,23 @@ namespace Enigma::Editor {
 
 		out << YAML::EndMap;
 	}
+	void SceneSerializer::SerializeOrthographicCamera(YAML::Emitter& out, Entity entity, ECS::OrthographicCamera& camera)
+	{
+		// Start ColoredQuad Node
+		out << YAML::Key << "OrthographicCamera";
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Left" << YAML::Value << camera.view.left;
+		out << YAML::Key << "Right" << YAML::Value << camera.view.right;
+		out << YAML::Key << "Top" << YAML::Value << camera.view.top;
+		out << YAML::Key << "Bottom" << YAML::Value << camera.view.bottom;
+		
+		out << YAML::Key << "Near" << YAML::Value << camera.view.near;
+		out << YAML::Key << "Far" << YAML::Value << camera.view.far;
+		out << YAML::Key << "Zoom" << YAML::Value << camera.zoom;
+
+		out << YAML::EndMap;
+	}
 	void SceneSerializer::SerializeColoredQuad(YAML::Emitter& out, Entity entity, ECS::ColoredQuad& quad) {
 		// Start ColoredQuad Node
 		out << YAML::Key << "ColoredQuad";
@@ -213,6 +230,7 @@ namespace Enigma::Editor {
 		// Push component data
 		SerializeComponent<EntityMetaData>(out, entity,   &SceneSerializer::SerializeEntityMetaData, this);
 		SerializeComponent<ECS::Transform>(out, entity,   &SceneSerializer::SerializeTransform,      this);
+		SerializeComponent<ECS::OrthographicCamera>(out, entity, &SceneSerializer::SerializeOrthographicCamera, this);
 		SerializeComponent<ECS::ColoredQuad>(out, entity, &SceneSerializer::SerializeColoredQuad,    this);
 
 		out << YAML::EndMap;
@@ -229,6 +247,8 @@ namespace Enigma::Editor {
 
 		// Scene name
 		out << YAML::Key << "Scene" << YAML::Value << m_Scene->GetName();
+
+		out << YAML::Key << "ActiveCamera" << YAML::Value << m_Scene->GetMetaData().activeCamera.GetUUID();
 
 		// Push entity data
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
@@ -359,12 +379,22 @@ namespace Enigma::Editor {
 		metaData.degrees     = data["Degrees"].as<bool>();
 		metaData.eulerAngles = data["EulerAngles"].as<glm::vec3>();
 	}
+	void SceneSerializer::DeserializeOrthographicCamera(const YAML::Node& data, Entity entity, ECS::OrthographicCamera& camera) {
+		camera.view.left   = data["Left"].as<f32>();
+		camera.view.right  = data["Right"].as<f32>();
+		camera.view.top    = data["Top"].as<f32>();
+		camera.view.bottom = data["Bottom"].as<f32>();
+		camera.view.near   = data["Near"].as<f32>();
+		camera.view.far    = data["Far"].as<f32>();
+		camera.zoom        = data["Zoom"].as<f32>();
+	}
 	void SceneSerializer::DeserializeColoredQuad(const YAML::Node& data, Entity entity, ECS::ColoredQuad& quad) {
 		quad.tint = data["Tint"].as<glm::vec3>();
 	}
 	void SceneSerializer::DeserializeEntity(const YAML::Node& data, Entity entity) {
 		DeserializeComponent<EntityMetaData>("EntityMetaData", entity, data, &SceneSerializer::DeserializeEntityMetaData, this);
 		DeserializeComponent<ECS::Transform>("Transform",      entity, data, &SceneSerializer::DeserializeTransform,      this);
+		DeserializeComponent<ECS::OrthographicCamera>("OrthographicCamera", entity, data, &SceneSerializer::DeserializeOrthographicCamera, this);
 		DeserializeComponent<ECS::ColoredQuad>("ColoredQuad",  entity, data, &SceneSerializer::DeserializeColoredQuad,    this);
 	}
 
@@ -385,7 +415,7 @@ namespace Enigma::Editor {
 		// Get Scene name
 		m_Scene->GetName() = data["Scene"].as<std::string>();
 		LOG_MESSAGE("Deserializing scene \"%s\" from file \"%s\"", 5, m_Scene->GetName().c_str(), filename.c_str());
-		
+
 		// Get scene entities
 		YAML::Node entities = data["Entities"];
 		if (!entities) return true;
@@ -415,6 +445,7 @@ namespace Enigma::Editor {
 			LOG_MESSAGE("Deserialized entity \"%s\", UUID: %s", 5, entity.GetComponent<EntityMetaData>().name.c_str(), static_cast<std::string>(uuid).c_str());
 		}
 		
+		if (data["ActiveCamera"]) m_Scene->GetMetaData().activeCamera = m_Scene->GetEntity(data["ActiveCamera"].as<UUID>());
 
 		return true;
 	}

@@ -36,7 +36,8 @@ namespace ImGui {
 			size.y = scale.y;
 		}
 
-		void* id = (void*)*(uint32_t*)texture->GetNativeTexture();
+		// Stupid ahh casts
+		void* id = reinterpret_cast<void*>(static_cast<u64>(*static_cast<u32*>(texture->GetNativeTexture())));
 
 		ImGui::Image(id, size, ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y));
 	}

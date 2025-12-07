@@ -10,8 +10,8 @@ namespace Enigma::Platform::OpenGL {
 
 		virtual void InitAttribs() override;
 
-		virtual void SetData(void* vertices, u32 size) override;
-		virtual void SetSubData(void* vertices, u32 size, u32 offset) override;
+		virtual void SetData(void* vertices, u64 size) override;
+		virtual void SetSubData(void* vertices, u64 size, u32 offset) override;
 
 		virtual void Bind() override;
 		virtual void Unbind() override;
@@ -27,11 +27,11 @@ namespace Enigma::Platform::OpenGL {
 		OpenGLIndexBuffer(Renderer::DataType type, Renderer::Usage usage);
 		~OpenGLIndexBuffer();
 
-		virtual i32 GetIndexCount() override;
+		virtual u32 GetIndexCount() override;
 		virtual Renderer::DataType GetIndexType() override;
 
-		virtual void SetData(void* indices, u32 size) override;
-		virtual void SetSubData(void* indices, u32 size, u32 offset) override;
+		virtual void SetData(void* indices, u64 size) override;
+		virtual void SetSubData(void* indices, u64 size, u32 offset) override;
 
 		virtual void Bind() override;
 		virtual void Unbind() override;
@@ -65,17 +65,17 @@ namespace Enigma::Platform::OpenGL {
 		OpenGLFrameBuffer(const Renderer::FrameBufferConfig& config);
 		~OpenGLFrameBuffer();
 
-		virtual void Resize(i32 width, i32 height) override;
+		virtual void Resize(u32 width, u32 height) override;
 
 		virtual void Bind() override;
 		virtual void Unbind() override;
 
 		virtual std::vector<ref<Renderer::Texture>> GetAttachments() override { return m_Attachments; }
-		virtual ref<Renderer::Texture> GetColorAttachment(i32 index) override;
-		virtual ref<Renderer::Texture> SeverColorAttachment(i32 index) override;
+		virtual ref<Renderer::Texture> GetColorAttachment(u32 index) override;
+		virtual ref<Renderer::Texture> SeverColorAttachment(u32 index) override;
 		virtual ref<Renderer::Texture> GetDepthAttachment() override;
 
-		virtual void GetPixel(i32 x, i32 y, i32 attachment, void* data) override;
+		virtual void GetPixel(u32 x, u32 y, u32 attachment, void* data) override;
 
 	private:
 		Renderer::FrameBufferConfig m_Config;
@@ -86,6 +86,7 @@ namespace Enigma::Platform::OpenGL {
 		u32 m_Width;
 		u32 m_Height;
 		
+		i32 m_AttachmentCount;
 		u32 m_ColorAttachmentCount;
 		u32 m_DepthAttachmentID;
 		u32* m_Buffers;

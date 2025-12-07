@@ -3,6 +3,10 @@
 
 namespace Enigma::Editor {
 
+	struct SceneMetaData {
+		Entity activeCamera;
+	};
+
 	// General scene data needed by the editor but not important in the final product
 	struct EntityMetaData {
 		std::string name;

@@ -50,7 +50,7 @@ namespace Enigma::Platform::OpenGL {
 		return (void*)&m_Handle;
 	}
 
-	void OpenGLTexture::Resize(i32 width, i32 height, void* data)
+	void OpenGLTexture::Resize(u32 width, u32 height, void* data)
 	{
 		m_Width = width;
 		m_Height = height;

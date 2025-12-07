@@ -18,10 +18,11 @@ namespace Enigma::Platform {
 		m_Surface = config.surface;
 	}
 
-	i32 WindowsInput::ConvertWindowsKeyCode(i32 keycode)
+	u64 WindowsInput::ConvertWindowsKeyCode(u64 keycode)
 	{
-		i32 result = 0;
-		if (keycode >= Engine::KeyCode::KeySpace && keycode <= Engine::KeyCode::KeyGraveAccent) result = keycode;
+		// TODO: fill in ALL keys
+		u64 result = 0;
+		if (keycode >= static_cast<u64>(Engine::KeyCode::KeySpace) && keycode <= static_cast<u64>(Engine::KeyCode::KeyGraveAccent)) result = keycode;
 		return result;
 	}
 

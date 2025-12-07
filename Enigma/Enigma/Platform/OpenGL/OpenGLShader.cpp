@@ -20,8 +20,9 @@ namespace Enigma::Platform::OpenGL {
 		case Enigma::Renderer::ShaderStageType::Geometry: return shaderc_shader_kind::shaderc_geometry_shader;
 		case Enigma::Renderer::ShaderStageType::Fragment: return shaderc_shader_kind::shaderc_fragment_shader;
 		case Enigma::Renderer::ShaderStageType::Compute:  return shaderc_shader_kind::shaderc_compute_shader;
-		default: LOG_ERROR("Unknown shader stage type \"%u\"", static_cast<u32>(type));
 		}
+		LOG_ERROR("Unknown shader stage type \"%u\"", static_cast<u32>(type));
+		return static_cast<shaderc_shader_kind>(0);
 	}
 	u32 GLStageType(Renderer::ShaderStageType type) {
 		switch (type)
@@ -427,7 +428,7 @@ namespace Enigma::Platform::OpenGL {
 		for (const spirv_cross::Resource& pushConstant : glslCompiler.get_shader_resources().push_constant_buffers) {
 			const spirv_cross::SPIRType& type = glslCompiler.get_type(pushConstant.type_id);
 			glslCompiler.set_decoration(pushConstant.id, spv::DecorationLocation, m_PushConstantCount);
-			m_PushConstantCount += type.member_types.size();
+			m_PushConstantCount += static_cast<u32>(type.member_types.size());
 		}
 		stage.glslSource = glslCompiler.compile();
 
@@ -480,7 +481,7 @@ namespace Enigma::Platform::OpenGL {
 		m_Handle = glCreateProgram();
 		for (OpenGLShaderStage& stage : m_Stages) {
 			stage.handle = glCreateShader(GLStageType(stage.type));
-			glShaderBinary(1, &stage.handle, GL_SHADER_BINARY_FORMAT_SPIR_V, stage.openglSpirv.data(), stage.openglSpirv.size() * sizeof(u32));
+			glShaderBinary(1, &stage.handle, GL_SHADER_BINARY_FORMAT_SPIR_V, stage.openglSpirv.data(), static_cast<u32>(stage.openglSpirv.size() * sizeof(u32)));
 			glSpecializeShader(stage.handle, "main", 0, nullptr, nullptr);
 			glAttachShader(m_Handle, stage.handle);
 			glDeleteShader(stage.handle);

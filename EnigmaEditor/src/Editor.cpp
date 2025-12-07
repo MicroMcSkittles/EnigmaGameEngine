@@ -30,6 +30,7 @@ namespace Enigma::Editor {
 
 		Core::ImGuiConfig imguiConfig;
 		imguiConfig.renderAPI = windowConfig.renderAPI;
+		imguiConfig.docking = true;
 
 		m_WindowID = Core::Application::CreateWindow(windowConfig, imguiConfig);
 		Core::Application::GetWindow(m_WindowID)->AddEventCallback([&](Core::Event& e) { return OnEvent(e); });
@@ -78,7 +79,9 @@ namespace Enigma::Editor {
 		});
 
 		handler.Dispatch<Event::EntitySelected>([&](Event::EntitySelected& e) {
-			m_InspectorPanel->SetContext(EntityInspectorContext::Create(e.GetEntity(), m_ActiveScene));
+			//m_InspectorPanel->SetContext(EntityInspectorContext::Create(e.GetEntity(), m_ActiveScene));
+			Event::NewInspectorContext contextEvent(EntityInspectorContext::Create(e.GetEntity(), m_ActiveScene));
+			Core::Application::EventCallback(contextEvent);
 			return false; 
 		});
 

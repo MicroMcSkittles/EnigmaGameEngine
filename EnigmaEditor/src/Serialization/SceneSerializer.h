@@ -25,11 +25,13 @@ namespace Enigma::Editor {
 	private:
 		void SerializeEntityMetaData(YAML::Emitter& out, Entity entity, EntityMetaData& entityMetaData);
 		void SerializeTransform(YAML::Emitter& out, Entity entity, Engine::ECS::Transform& transform);
+		void SerializeOrthographicCamera(YAML::Emitter& out, Entity entity, Engine::ECS::OrthographicCamera& camera);
 		void SerializeColoredQuad(YAML::Emitter& out, Entity entity, Engine::ECS::ColoredQuad& quad);
 		void SerializeEntity(YAML::Emitter& out, Entity entity);
 
 		void DeserializeEntityMetaData(const YAML::Node& data, Entity entity, EntityMetaData& metaData);
 		void DeserializeTransform(const YAML::Node& data, Entity entity, Engine::ECS::Transform& transform);
+		void DeserializeOrthographicCamera(const YAML::Node& data, Entity entity, Engine::ECS::OrthographicCamera& camera);
 		void DeserializeColoredQuad(const YAML::Node& data, Entity entity, Engine::ECS::ColoredQuad& quad);
 		void DeserializeEntity(const YAML::Node& data, Entity entity);
 

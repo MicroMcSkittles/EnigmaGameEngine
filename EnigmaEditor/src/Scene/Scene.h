@@ -4,11 +4,14 @@
 #include <Enigma/Engine/DeltaTime.h>
 #include <Enigma/Engine/UUID.h>
 
+#include "Panels/InspectorPanel.h"
+
 namespace Enigma::Editor {
 
 	class Entity;
 	class SceneSerializer;
 	struct EntityMetaData;
+	struct SceneMetaData;
 
 	class Scene {
 	public:
@@ -37,6 +40,7 @@ namespace Enigma::Editor {
 		EntityMetaData& GetRoot();
 		ref<Engine::ECS::ECS> GetECS();
 
+		SceneMetaData& GetMetaData();
 		std::string& GetName();
 		std::string& GetFileName();
 
@@ -47,6 +51,17 @@ namespace Enigma::Editor {
 
 		friend class Entity;
 		friend class SceneSerializer;
+	};
+
+	class SceneInspectorContext : public InspectorContext {
+	public:
+		static ref<SceneInspectorContext> Create(ref<Scene> scene) { return CreateRef<SceneInspectorContext>(scene); }
+		SceneInspectorContext(ref<Scene> scene);
+
+		virtual void ShowGui() override;
+
+	private:
+		ref<Scene> m_Scene;
 	};
 
 }

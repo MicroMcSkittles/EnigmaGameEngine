@@ -15,6 +15,10 @@ namespace Enigma::Editor {
 			SetContext(nullptr);
 			return false;
 		});
+		handler.Dispatch<Event::NewInspectorContext>([&](Event::NewInspectorContext& e) {
+			SetContext(e.GetContext());
+			return false;
+		});
 	}
 	void InspectorPanel::ShowGui()
 	{

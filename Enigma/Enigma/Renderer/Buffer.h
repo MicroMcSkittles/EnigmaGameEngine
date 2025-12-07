@@ -12,8 +12,8 @@ namespace Enigma::Renderer {
 
 		virtual void InitAttribs() = 0;
 
-		virtual void SetData(void* vertices, u32 size) = 0;
-		virtual void SetSubData(void* vertices, u32 size, u32 offset) = 0;
+		virtual void SetData(void* vertices, u64 size) = 0;
+		virtual void SetSubData(void* vertices, u64 size, u32 offset) = 0;
 
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;
@@ -23,11 +23,11 @@ namespace Enigma::Renderer {
 	public:
 		static ref<IndexBuffer> Create(DataType type, Usage usage);
 
-		virtual i32 GetIndexCount() = 0;
+		virtual u32 GetIndexCount() = 0;
 		virtual DataType GetIndexType() = 0;
 
-		virtual void SetData(void* indices, u32 size) = 0;
-		virtual void SetSubData(void* indices, u32 size, u32 offset) = 0;
+		virtual void SetData(void* indices, u64 size) = 0;
+		virtual void SetSubData(void* indices, u64 size, u32 offset) = 0;
 
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;
@@ -61,8 +61,8 @@ namespace Enigma::Renderer {
 		DataType dataType = DataType::UnsignedByte;
 	};
 	struct FrameBufferConfig{
-		i32 width;
-		i32 height;
+		u32 width;
+		u32 height;
 
 		// color textures will be attached in the order given here
 		// depth attachment must be at the end of the list if it exists
@@ -72,18 +72,18 @@ namespace Enigma::Renderer {
 	public:
 		static ref<FrameBuffer> Create(const FrameBufferConfig & config);
 
-		virtual void Resize(i32 width, i32 height) = 0;
+		virtual void Resize(u32 width, u32 height) = 0;
 
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;
 
 		virtual std::vector<ref<Texture>> GetAttachments() = 0;
-		virtual ref<Texture> GetColorAttachment(i32 index) = 0;
+		virtual ref<Texture> GetColorAttachment(u32 index) = 0;
 		// Returns the current color attachment at index then creates a new color attachment
-		virtual ref<Texture> SeverColorAttachment(i32 index) = 0;
+		virtual ref<Texture> SeverColorAttachment(u32 index) = 0;
 		virtual ref<Texture> GetDepthAttachment() = 0;
 
-		virtual void GetPixel(i32 x, i32 y, i32 attachment, void* data) = 0;
+		virtual void GetPixel(u32 x, u32 y, u32 attachment, void* data) = 0;
 	};
 
 }

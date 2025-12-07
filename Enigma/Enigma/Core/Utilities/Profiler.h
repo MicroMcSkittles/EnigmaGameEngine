@@ -24,7 +24,7 @@ namespace Enigma::Core {
 		std::string m_File;
 		std::string m_Description;
 		bool m_Additive;
-		std::chrono::time_point<std::chrono::steady_clock> m_StartPoint;
+		//std::chrono::time_point<std::chrono::steady_clock> m_StartPoint;
 	};
 
 	class Profiler {

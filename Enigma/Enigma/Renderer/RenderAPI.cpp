@@ -12,9 +12,10 @@ namespace Enigma::Renderer {
         {
         case API::OpenGL: return CreateRef<Platform::OpenGL::OpenGLRenderAPI>();
         case API::Vulkan: LOG_ERROR("Vulkan hasn't been impl yet!"); break;
-        default:
-            LOG_ERROR("Unknown renderer API");
+        default: LOG_ERROR("Failed to create Render API Context, unknown Render API");
         }
+
+        return nullptr;
     }
 
     void RenderAPI::MakeContextCurrent(const ref<RenderAPI>& context)

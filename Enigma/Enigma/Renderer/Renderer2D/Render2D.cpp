@@ -26,8 +26,8 @@ namespace Enigma::Renderer {
 
 		// Init frame buffers
 		FrameBufferConfig frameBufferConfig;
-		frameBufferConfig.width = config.surface.scale.x;
-		frameBufferConfig.height = config.surface.scale.y;
+		frameBufferConfig.width = static_cast<u32>(config.surface.scale.x);
+		frameBufferConfig.height = static_cast<u32>(config.surface.scale.y);
 		frameBufferConfig.attachments = { { AttachmentType::ColorAttachment } };
 		m_FrameBuffer = FrameBuffer::Create(frameBufferConfig);
 
@@ -38,8 +38,8 @@ namespace Enigma::Renderer {
 
 		// Create Stencil Buffer and Texture
 		TextureConfig stencilTextureConfig;
-		stencilTextureConfig.width = config.surface.scale.x;
-		stencilTextureConfig.height = config.surface.scale.y;
+		stencilTextureConfig.width = static_cast<u32>(config.surface.scale.x);
+		stencilTextureConfig.height = static_cast<u32>(config.surface.scale.y);
 		stencilTextureConfig.minFilter = TexFilterMode::Nearest;
 		stencilTextureConfig.magFilter = TexFilterMode::Nearest;
 		stencilTextureConfig.dataType = DataType::UnsignedInt;
@@ -78,7 +78,7 @@ namespace Enigma::Renderer {
 		RenderAPI::SetClearColor({ 0,0,0,1 });
 		RenderAPI::SetClearMask(ColorBufferBit | DepthBufferBit);
 		RenderAPI::SetDrawMode(DrawMode::Triangles);
-		RenderAPI::SetViewport(config.surface.scale.x, config.surface.scale.y);
+		RenderAPI::SetViewport(static_cast<u32>(config.surface.scale.x), static_cast<u32>(config.surface.scale.y));
 	}
 
 	void Render2D::Resize(i32 width, i32 height)

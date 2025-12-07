@@ -31,8 +31,8 @@ namespace Enigma::Renderer {
 
 		// Create framebuffers
 		FrameBufferConfig frameBufferConfig;
-		frameBufferConfig.width = m_Surface.scale.x;
-		frameBufferConfig.height = m_Surface.scale.y;
+		frameBufferConfig.width = static_cast<u32>(m_Surface.scale.x);
+		frameBufferConfig.height = static_cast<u32>(m_Surface.scale.y);
 
 		// Main attachment
 		Attachment colorAttachment;
@@ -65,7 +65,7 @@ namespace Enigma::Renderer {
 		RenderAPI::SetClearColor({ 0,0,0,1 });
 		RenderAPI::SetClearMask(ColorBufferBit | DepthBufferBit);
 		RenderAPI::SetDrawMode(DrawMode::Triangles);
-		RenderAPI::SetViewport(m_Surface.scale.x, m_Surface.scale.y);
+		RenderAPI::SetViewport(static_cast<u32>(m_Surface.scale.x), static_cast<u32>(m_Surface.scale.y));
 	}
 	Renderer2D::~Renderer2D()
 	{
@@ -159,7 +159,7 @@ namespace Enigma::Renderer {
 		ModelData data;
 		data.model = model;
 		data.tint = tint;
-		data.entityID = entityID;
+		data.entityID = static_cast<i32>(entityID);
 		m_ModelUniformBuffer->SetData(&data, sizeof(ModelData), 0);
 		Renderer::RenderAPI::DrawIndexed(6, Renderer::DataType::UnsignedInt, NULL);
 	}

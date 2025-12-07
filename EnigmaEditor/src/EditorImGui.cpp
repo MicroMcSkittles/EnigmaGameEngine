@@ -61,8 +61,7 @@ namespace Enigma::Editor {
 		gizmoStyle.Colors[ImGuizmo::COLOR::PLANE_Z]     = ToImVec(style.colorZ);
 	}
 
-	EditorStyle& EditorGui::GetStyle()
-	{
+	EditorStyle& EditorGui::GetStyle() {
 		return s_Data->style;
 	}
 
@@ -76,7 +75,7 @@ namespace Enigma::Editor {
 
 		bool edited = false;
 
-		ImGui::Columns(2);
+		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
 		ImGui::SetColumnWidth(0, columnWidth);
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
@@ -124,7 +123,7 @@ namespace Enigma::Editor {
 
 		ImGui::PushID(lable.c_str());
 
-		ImGui::Columns(2);
+		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
 		ImGui::SetColumnWidth(0, columnWidth);
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
@@ -194,7 +193,7 @@ namespace Enigma::Editor {
 
 		ImGui::PushID(lable.c_str());
 
-		ImGui::Columns(2);
+		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
 		ImGui::SetColumnWidth(0, columnWidth);
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
@@ -293,7 +292,7 @@ namespace Enigma::Editor {
 
 		bool edited = false;
 
-		ImGui::Columns(2);
+		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
 		ImGui::SetColumnWidth(0, columnWidth);
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
@@ -346,7 +345,7 @@ namespace Enigma::Editor {
 
 		ImGui::PushID(lable.c_str());
 
-		ImGui::Columns(2);
+		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
 		ImGui::SetColumnWidth(0, columnWidth);
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
@@ -421,7 +420,7 @@ namespace Enigma::Editor {
 
 		ImGui::PushID(lable.c_str());
 
-		ImGui::Columns(2);
+		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
 		ImGui::SetColumnWidth(0, columnWidth);
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
@@ -518,7 +517,7 @@ namespace Enigma::Editor {
 
 		ImGui::PushID(lable.c_str());
 
-		ImGui::Columns(2);
+		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
 		ImGui::SetColumnWidth(0, columnWidth);
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
@@ -631,7 +630,7 @@ namespace Enigma::Editor {
 
 		ImGui::PushID(lable.c_str());
 
-		ImGui::Columns(2);
+		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
 		ImGui::SetColumnWidth(0, columnWidth);
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
@@ -654,7 +653,7 @@ namespace Enigma::Editor {
 
 		ImGui::PushID(lable.c_str());
 
-		ImGui::Columns(2);
+		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
 		ImGui::SetColumnWidth(0, columnWidth);
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
@@ -670,6 +669,22 @@ namespace Enigma::Editor {
 		ImGui::EndColumns();
 
 		return edited;
+	}
+	void EditorGui::Text(const std::string& lable, const std::string& value, f32 columnWidth)
+	{
+		ImGui::PushID(lable.c_str());
+
+		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
+		ImGui::SetColumnWidth(0, columnWidth);
+		ImGui::Text("%s", lable.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		ImGui::Text("%s", value.c_str());
+		ImGui::PopStyleVar();
+
+		ImGui::EndColumns();
+		ImGui::PopID();
 	}
 	bool EditorGui::RenamableText(std::string& text, const std::string& textID, bool* renaming, std::string* original)
 	{
@@ -745,7 +760,7 @@ namespace Enigma::Editor {
 
 		ImGui::PushID(lable.c_str());
 
-		ImGui::Columns(2);
+		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
 		ImGui::SetColumnWidth(0, columnWidth);
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
@@ -772,7 +787,7 @@ namespace Enigma::Editor {
 
 		ImGui::PushID(lable.c_str());
 
-		ImGui::Columns(2);
+		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
 		ImGui::SetColumnWidth(0, columnWidth);
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
@@ -806,7 +821,7 @@ namespace Enigma::Editor {
 
 		ImGui::PushID(lable.c_str());
 
-		ImGui::Columns(2);
+		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
 		ImGui::SetColumnWidth(0, columnWidth);
 		ImGui::Text("%s", lable.c_str());
 		ImGui::NextColumn();
@@ -896,5 +911,27 @@ namespace Enigma::Editor {
 		}
 
 		return edited;
+	}
+
+	bool EditorGui::InputEntity(const std::string& lable, const ref<Scene>& scene, Entity& entity, f32 columnWidth)
+	{
+
+		ImGui::PushID(lable.c_str());
+
+		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
+		ImGui::SetColumnWidth(0, columnWidth);
+		ImGui::Text("%s", lable.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		
+		
+
+		ImGui::PopStyleVar();
+
+		ImGui::EndColumns();
+		ImGui::PopID();
+
+		return false;
 	}
 }

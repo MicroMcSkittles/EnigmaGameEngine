@@ -25,8 +25,8 @@ namespace Enigma::Core {
         time_t timestamp;
         time(&timestamp);
         tm timestruct;
-        timestruct = *localtime(&timestamp);
-    
+        localtime_s(&timestruct, &timestamp);
+
         Core::Time rslt;
         rslt.miliseconds = GetTimeMS();
         rslt.seconds = timestruct.tm_sec;
@@ -54,12 +54,12 @@ namespace Enigma::Core {
         //return glfwGetTime();
         std::chrono::time_point<std::chrono::steady_clock> endPoint = std::chrono::high_resolution_clock::now();
     
-        long long start = std::chrono::time_point_cast<std::chrono::microseconds>(s_TimeAtStartUp).time_since_epoch().count();
+        i64 start = std::chrono::time_point_cast<std::chrono::microseconds>(s_TimeAtStartUp).time_since_epoch().count();
         if (start == 0) return 0.0;
     
-        long long end = std::chrono::time_point_cast<std::chrono::microseconds>(endPoint).time_since_epoch().count();
+        i64 end = std::chrono::time_point_cast<std::chrono::microseconds>(endPoint).time_since_epoch().count();
         
-        float ms = (end - start) * 1e-6;
+        float ms = (end - start) * 1e-6f;
         return ms;
     }
     
@@ -109,7 +109,7 @@ namespace Enigma::Core {
         return std::string();
     }
     
-    std::string System::GetKeyName(i32 key)
+    std::string System::GetKeyName(u64 key)
     {
         switch (key)
         {

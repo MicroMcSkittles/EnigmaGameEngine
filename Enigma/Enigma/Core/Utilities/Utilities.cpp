@@ -8,6 +8,11 @@ namespace Enigma::Core{
 		std::hash<std::string> hasher;
 		return hasher(str);
 	}
+	const u64 Hash(const std::string& str1, const std::string& str2)
+	{
+		std::hash<std::string> hasher;
+		return hasher(str1 + str2);
+	}
 	const uint64_t Hash(const char* str)
 	{
 		std::hash<std::string> hasher;
@@ -15,27 +20,7 @@ namespace Enigma::Core{
 	}
 	const uint64_t Hash(const char* str1, const char* str2)
 	{
-		// Plus 1 for null terminator
-		size_t length = strlen(str1) + strlen(str2) + 1;
-		char* concatStr = static_cast<char*>(malloc(length));
-
-		// Make sure the memory allocation was successful
-		if (!concatStr) {
-			LOG_ERROR("Failed to allocat memory for string hash ( %s, %s )", str1, str2);
-			return (uint64_t)-1;
-		}
-
-		// Combine both strings
-		strcpy(concatStr, str1);
-		strcat(concatStr, str2);
-
-		// Find hash
-		uint64_t strHash = Hash(concatStr);
-
-		// Free allocated memory
-		free(concatStr);
-
-		return strHash;
+		return Hash(std::string(str1), std::string(str2));
 	}
 
 	std::string Format::PostProcessFormated(const std::string& formated)

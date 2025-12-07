@@ -204,7 +204,6 @@ namespace Enigma::Editor {
 		if (m_Surface.scale != region) {
 			m_Surface.Resize(region.x, region.y);
 			m_RendererContext->Resize(region.x, region.y);
-			//m_EntityPickerBuffer->Resize(region.x, region.y);
 			m_Camera->Resize(region.x, region.y);
 		}
 
@@ -232,17 +231,16 @@ namespace Enigma::Editor {
 
 		// Process mouse input
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && m_Hovered && !m_GizmoHovered) {
-			if (m_Selected = GetHoveredEntity()) {
-				Event::EntitySelected selectionEvent(m_Selected);
-				Core::Application::EventCallback(selectionEvent);
-			}
+			m_Selected = GetHoveredEntity();
 		}
 		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && m_Hovered && !m_GizmoHovered) {
 			if (m_Selected = GetHoveredEntity()) {
 				Event::EntitySelected selectionEvent(m_Selected);
 				Core::Application::EventCallback(selectionEvent);
-				ImGui::OpenPopup("EntityMenu"); 
 			}
+		}
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && m_Hovered && !m_GizmoHovered) {
+			if (m_Selected = GetHoveredEntity()) ImGui::OpenPopup("EntityMenu");
 		}
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && m_GizmoHovered) {
 			ImGui::OpenPopup("GizmoMenu");
@@ -451,7 +449,6 @@ namespace Enigma::Editor {
 
 		// Get entity at mouse position
 		Engine::ECS::EntityID entityID = 0;
-		//m_EntityPickerBuffer->GetPixel(mouseX, mouseY, 0, &entityID);
 		m_RendererContext->GetFrameBuffer()->GetPixel(mouseX, mouseY, 1, &entityID);
 		if (entityID == 0) {
 			return {};
@@ -459,42 +456,10 @@ namespace Enigma::Editor {
 		
 		return { entityID - 1, m_Context.get() };
 	}
-	/*void SceneViewPanel::EntityPicker()
-	{
-		using namespace Engine::ECS;
-
-		Core::Application::UseRenderAPI(m_RendererContext->GetConfig().renderAPI);
-		Renderer::RenderAPI::Clear();
-
-		m_EntityPickerBuffer->Bind();
-		Renderer::RenderAPI::Clear();
-
-		m_EntityPickerShader->Bind();
-
-		View<Transform, ColoredQuad> coloredQuadView(m_Context->GetECS());
-
-		RenderSystem2D::GetQuad()->Bind();
-		coloredQuadView.ForEach([&](EntityID entity, Transform& transform, ColoredQuad& quad) {
-			int id = entity;
-			m_EntityPickerShader->SetUniform("EntityID", &id);
-
-			glm::mat4 model = transform.GetWorldMatrix(m_Context->GetECS());
-			m_EntityPickerShader->SetUniform("Model", (void*)&model);
-
-			Renderer::RenderAPI::DrawIndexed(6, Renderer::DataType::UnsignedInt, NULL);
-		});
-		RenderSystem2D::GetQuad()->Unbind();
-
-		m_EntityPickerShader->Unbind();
-
-		m_EntityPickerBuffer->Unbind();
-	}*/
 
 	void SceneViewPanel::Render()
 	{
 		if (m_Context == nullptr) return;
-
-		//EntityPicker();
 
 		m_RendererContext->StartScene(m_Context->GetECS(), m_Camera);
 

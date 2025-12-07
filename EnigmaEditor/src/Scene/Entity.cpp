@@ -99,6 +99,23 @@ namespace Enigma::Editor {
 
 		return edited;
 	}
+	bool OrthographicCameraGui(Entity entity) {
+		OrthographicCamera& camera = entity.GetComponent<OrthographicCamera>();
+
+		bool edited = false;
+
+		bool main = false;
+		if (EditorGui::CheckBox("Fit To Screen", main)) edited = true;
+		if (EditorGui::InputFloat("Left",   camera.view.left))   edited = true;
+		if (EditorGui::InputFloat("Right",  camera.view.right))  edited = true;
+		if (EditorGui::InputFloat("Top",    camera.view.top))    edited = true;
+		if (EditorGui::InputFloat("Bottom", camera.view.bottom)) edited = true;
+		if (EditorGui::InputFloat("Near",   camera.view.near))   edited = true;
+		if (EditorGui::InputFloat("Far",    camera.view.far))    edited = true;
+		if (EditorGui::InputFloat("Zoom",   camera.zoom))        edited = true;
+
+		return edited;
+	}
 
 	// TODO: fix the undo redo stuff
 
@@ -189,8 +206,8 @@ namespace Enigma::Editor {
 			bool open = ImGui::TreeNodeEx(name.c_str(), flags);
 		
 			// Show component settings button
+			ImGui::SameLine(ImGui::GetContentRegionMax().x - 16.0f);
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
-			ImGui::SameLine(ImGui::GetWindowWidth() - 24.0f);
 			if (ImGui::Button("...", ImVec2(20, 24))) {
 				ImGui::OpenPopup("ComponentSettings");
 			}
@@ -331,23 +348,27 @@ namespace Enigma::Editor {
 
 	using ComponentGui = ComponentGuiImpl<
 		Transform,
+		OrthographicCamera,
 		ColoredQuad,
 		Engine::Physics::RidgidBody2D
 	>;
 
 	std::vector<std::string> ComponentGui::s_Names = {
 		"Transform",
+		"Orthographic Camera",
 		"Colored Quad",
 		"Ridgid Body 2D"
 	};
 
 	std::vector<std::function<bool(Entity)>> ComponentGui::s_UIFunctions = {
 		TransformGui,
+		OrthographicCameraGui,
 		ColoredQuadGui,
 		RidgidBody2DGui
 	};
 	std::vector<std::function<void(Entity)>> ComponentGui::s_UIMenuFunctions = {
 		TransformMenuGui,
+		BlankMenuGui,
 		BlankMenuGui,
 		BlankMenuGui
 	};

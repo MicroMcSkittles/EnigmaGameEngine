@@ -9,6 +9,7 @@ namespace Enigma::Platform {
 	class WindowsImGuiContext : public Core::ImGuiHandler {
 	public:
 		WindowsImGuiContext(const Core::ImGuiConfig& config);
+		~WindowsImGuiContext() { }
 
 		virtual void MadeCurrent() override;
 

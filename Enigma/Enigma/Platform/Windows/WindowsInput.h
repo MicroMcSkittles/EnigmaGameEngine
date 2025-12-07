@@ -9,7 +9,7 @@ namespace Enigma::Platform {
 	public:
 		WindowsInput(const Engine::InputConfig& config);
 
-		static i32 ConvertWindowsKeyCode(i32 keycode);
+		static u64 ConvertWindowsKeyCode(u64 keycode);
 
 	protected:
 		virtual bool IsKeyPressedImpl(i32 key) override;

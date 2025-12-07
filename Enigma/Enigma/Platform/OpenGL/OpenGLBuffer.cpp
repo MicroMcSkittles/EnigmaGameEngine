@@ -22,25 +22,25 @@ namespace Enigma::Platform::OpenGL {
 	}
 	void OpenGLVertexBuffer::InitAttribs()
 	{
-		int stride = 0;
-		for (auto type : m_Layout) {
+		i32 stride = 0;
+		for (Renderer::DataType type : m_Layout) {
 			stride += Conversions::DataTypeSize(type);
 		}
 
-		int offset = 0;
-		for (int i = 0; i < m_Layout.size(); ++i) {
-			auto type = m_Layout[i];
-			glVertexAttribPointer(i, Conversions::DataTypeCount(type), Conversions::DataType(type), GL_FALSE, stride, (void*)offset);
+		u64 offset = 0;
+		for (u32 i = 0; i < m_Layout.size(); ++i) {
+			Renderer::DataType type = m_Layout[i];
+			glVertexAttribPointer(i, Conversions::DataTypeCount(type), Conversions::DataType(type), GL_FALSE, stride, reinterpret_cast<void*>(offset));
 			glEnableVertexAttribArray(i);
 			offset += Conversions::DataTypeSize(type);
 		}
 	}
-	void OpenGLVertexBuffer::SetData(void* vertices, u32 size)
+	void OpenGLVertexBuffer::SetData(void* vertices, u64 size)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_Handle);
 		glBufferData(GL_ARRAY_BUFFER, size, vertices, m_Usage);
 	}
-	void OpenGLVertexBuffer::SetSubData(void* vertices, u32 size, u32 offset)
+	void OpenGLVertexBuffer::SetSubData(void* vertices, u64 size, u32 offset)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_Handle);
 		glBufferSubData(GL_ARRAY_BUFFER, offset, size, vertices);
@@ -64,19 +64,19 @@ namespace Enigma::Platform::OpenGL {
 	OpenGLIndexBuffer::~OpenGLIndexBuffer() {
 		glDeleteBuffers(1, &m_Handle);
 	}
-	i32 OpenGLIndexBuffer::GetIndexCount() {
+	u32 OpenGLIndexBuffer::GetIndexCount() {
 		return m_IndicesCount;
 	}
 	Renderer::DataType OpenGLIndexBuffer::GetIndexType() {
 		return m_Type;
 	}
-	void OpenGLIndexBuffer::SetData(void* indices, u32 size) {
-		m_IndicesCount = size / Conversions::DataTypeSize(m_Type);
+	void OpenGLIndexBuffer::SetData(void* indices, u64 size) {
+		m_IndicesCount = static_cast<u32>(size / Conversions::DataTypeSize(m_Type));
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Handle);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, m_Usage);
 	}
-	void OpenGLIndexBuffer::SetSubData(void* indices, u32 size, u32 offset) {
+	void OpenGLIndexBuffer::SetSubData(void* indices, u64 size, u32 offset) {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Handle);
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, indices);
 	}
@@ -123,6 +123,7 @@ namespace Enigma::Platform::OpenGL {
 		m_Width = m_Config.width;
 		m_Height = m_Config.height;
 
+		m_AttachmentCount = static_cast<i32>(m_Config.attachments.size());
 		m_ColorAttachmentCount = 0;
 		m_DepthAttachmentID = 0;
 
@@ -132,7 +133,10 @@ namespace Enigma::Platform::OpenGL {
 		glGenFramebuffers(1, &m_Handle);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_Handle);
 
-		for (u64 i = 0; i < m_Config.attachments.size(); ++i) {
+		if (m_Config.attachments.size() >= static_cast<u64>(std::numeric_limits<u32>::max())) {
+			LOG_ERROR("Failed to create Frame Buffer, too many attachments");
+		}
+		for (u32 i = 0; i < m_Config.attachments.size(); ++i) {
 			auto& attachment = m_Config.attachments[i];
 
 			Renderer::TextureConfig textureConfig;
@@ -188,7 +192,7 @@ namespace Enigma::Platform::OpenGL {
 	{
 		glDeleteFramebuffers(1, &m_Handle);
 	}
-	void OpenGLFrameBuffer::Resize(i32 width, i32 height)
+	void OpenGLFrameBuffer::Resize(u32 width, u32 height)
 	{
 		m_Width = width;
 		m_Height = height;
@@ -217,7 +221,7 @@ namespace Enigma::Platform::OpenGL {
 	void OpenGLFrameBuffer::Bind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, m_Handle);
-		glDrawBuffers(m_Attachments.size(), m_Buffers);
+		glDrawBuffers(m_AttachmentCount, m_Buffers);
 	}
 	void OpenGLFrameBuffer::Unbind()
 	{
@@ -225,7 +229,7 @@ namespace Enigma::Platform::OpenGL {
 		GLenum bufs[] = { GL_COLOR_ATTACHMENT0 };
 		glDrawBuffers(1, bufs);
 	}
-	ref<Renderer::Texture> OpenGLFrameBuffer::GetColorAttachment(i32 index)
+	ref<Renderer::Texture> OpenGLFrameBuffer::GetColorAttachment(u32 index)
 	{
 		if (index >= m_ColorAttachmentCount) {
 			LOG_WARNING("Color attachment out of bounds");
@@ -233,7 +237,7 @@ namespace Enigma::Platform::OpenGL {
 		}
 		return m_Attachments[index];
 	}
-	ref<Renderer::Texture> OpenGLFrameBuffer::SeverColorAttachment(i32 index)
+	ref<Renderer::Texture> OpenGLFrameBuffer::SeverColorAttachment(u32 index)
 	{
 		if (index >= m_ColorAttachmentCount) {
 			LOG_WARNING("Color attachment out of bounds");
@@ -265,7 +269,7 @@ namespace Enigma::Platform::OpenGL {
 		return m_Attachments[m_DepthAttachmentID];
 	}
 
-	void OpenGLFrameBuffer::GetPixel(i32 x, i32 y, i32 attachment, void* data)
+	void OpenGLFrameBuffer::GetPixel(u32 x, u32 y, u32 attachment, void* data)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, m_Handle);
 

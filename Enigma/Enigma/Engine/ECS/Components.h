@@ -1,6 +1,7 @@
 #pragma once
 #include "Enigma/Engine/ECS/EntityComponentSystem.h"
 #include "Enigma/Renderer/Texture.h"
+#include "Enigma/Renderer/Camera.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -29,6 +30,11 @@ namespace Enigma::Engine::ECS {
 	};
 
 	// Render components
+	struct OrthographicCamera {
+		Renderer::ViewBox view;
+		f32 zoom;
+	};
+
 	struct ColoredQuad {
 		glm::vec3 tint = glm::vec3(1.0f);
 	};

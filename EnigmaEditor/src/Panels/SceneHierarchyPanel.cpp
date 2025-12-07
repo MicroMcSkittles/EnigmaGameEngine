@@ -1,4 +1,5 @@
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/InspectorPanel.h"
 #include "EditorImGui.h"
 #include "EditorEvents.h"
 #include "UndoRedoAction.h"
@@ -9,19 +10,6 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 namespace Enigma::Editor {
-
-	static void UndoRedoSceneRename(ref<Scene> scene, std::string name) {
-		scene->GetName() = name;
-	}
-	static void RenameSceneAction(const ref<Scene>& scene, const std::string& newName, const std::string& oldName) {
-		Action action;
-		action.undoFunc = std::bind(UndoRedoSceneRename, scene, oldName);
-		action.redoFunc = std::bind(UndoRedoSceneRename, scene, newName);
-		action.name = "Renamed scene \"" + oldName + "\" to \"" + newName + "\"";
-
-		Event::NewAction e(action);
-		Core::Application::EventCallback(e);
-	}
 
 	SceneHierachyPanel::SceneHierachyPanel()
 	{
@@ -57,9 +45,19 @@ namespace Enigma::Editor {
 		ImGui::BeginChild("SceneHierachyView", ImVec2(0, 0));
 
 		// Scene name
+		bool renaming = false;
 		std::string original;
-		if (EditorGui::RenamableText(m_SceneContext->GetName(), "SceneNameBox", nullptr, &original)) {
+		if (EditorGui::RenamableText(m_SceneContext->GetName(), "SceneNameBox", &renaming, &original)) {
 			RenameSceneAction(m_SceneContext, m_SceneContext->GetName(), original);
+		}
+		if (!renaming) {
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+			ImGui::SameLine(ImGui::GetContentRegionMax().x - 24.0f);
+			if (ImGui::Button("...", ImVec2(20, 24))) {
+				Event::NewInspectorContext e(SceneInspectorContext::Create(m_SceneContext));
+				Core::Application::EventCallback(e);
+			}
+			ImGui::PopStyleVar();
 		}
 
 		ImGui::Separator();
@@ -123,9 +121,8 @@ namespace Enigma::Editor {
 		EntityDragDropTarget(entity);
 
 		// Handle clicks
-		if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-			m_Selected = entity;
-			//m_SelectionCallback(m_Selected);
+		if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) m_Selected = entity;
+		if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 			Event::EntitySelected e(m_Selected);
 			Core::Application::EventCallback(e);
 		}

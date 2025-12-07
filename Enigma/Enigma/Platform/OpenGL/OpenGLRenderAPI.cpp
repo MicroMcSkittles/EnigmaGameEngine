@@ -8,182 +8,162 @@
 namespace Enigma::Platform::OpenGL {
 	namespace Conversions {
 		u32 ClearMask(u32 mask) {
-					uint32_t gl_mask = 0;
-					gl_mask |= (mask & Renderer::ClearMask::ColorBufferBit) ? GL_COLOR_BUFFER_BIT : 0;
-					gl_mask |= (mask & Renderer::ClearMask::DepthBufferBit) ? GL_DEPTH_BUFFER_BIT : 0;
-					gl_mask |= (mask & Renderer::ClearMask::StencilBufferBit) ? GL_STENCIL_BUFFER_BIT : 0;
-					return gl_mask;
-				}
+			u32 gl_mask = 0;
+			gl_mask |= (mask & Renderer::ClearMask::ColorBufferBit)   ? GL_COLOR_BUFFER_BIT   : 0;
+			gl_mask |= (mask & Renderer::ClearMask::DepthBufferBit)   ? GL_DEPTH_BUFFER_BIT   : 0;
+			gl_mask |= (mask & Renderer::ClearMask::StencilBufferBit) ? GL_STENCIL_BUFFER_BIT : 0;
+			return gl_mask;
+		}
 
 		u32 DrawMode(Renderer::DrawMode mode) {
-					switch (mode)
-					{
-					case Renderer::DrawMode::Points: return GL_POINTS;
-					case Renderer::DrawMode::Patches: return GL_PATCHES;
-					case Renderer::DrawMode::Lines: return GL_LINES;
-					case Renderer::DrawMode::LineLoop: return GL_LINE_LOOP;
-					case Renderer::DrawMode::LineStrip: return GL_LINE_STRIP;
-					case Renderer::DrawMode::LinesAdjacency: return GL_LINES_ADJACENCY;
-					case Renderer::DrawMode::LineStripAdjacency: return GL_LINE_STRIP_ADJACENCY;
-					case Renderer::DrawMode::Triangles: return GL_TRIANGLES;
-					case Renderer::DrawMode::TriangleFan: return GL_TRIANGLE_FAN;
-					case Renderer::DrawMode::TriangleStrip: return GL_TRIANGLE_STRIP;
-					case Renderer::DrawMode::TrianglesAdjacency: return GL_TRIANGLES_ADJACENCY;
-					case Renderer::DrawMode::TriangleStripAdjacency: return GL_TRIANGLE_STRIP_ADJACENCY;
-					default:
-						LOG_WARNING("Draw mode not supported");
-						return 0;
-					}
-				}
+			switch (mode)
+			{
+			case Renderer::DrawMode::Points:                 return GL_POINTS;
+			case Renderer::DrawMode::Patches:                return GL_PATCHES;
+			case Renderer::DrawMode::Lines:                  return GL_LINES;
+			case Renderer::DrawMode::LineLoop:               return GL_LINE_LOOP;
+			case Renderer::DrawMode::LineStrip:              return GL_LINE_STRIP;
+			case Renderer::DrawMode::LinesAdjacency:         return GL_LINES_ADJACENCY;
+			case Renderer::DrawMode::LineStripAdjacency:     return GL_LINE_STRIP_ADJACENCY;
+			case Renderer::DrawMode::Triangles:              return GL_TRIANGLES;
+			case Renderer::DrawMode::TriangleFan:            return GL_TRIANGLE_FAN;
+			case Renderer::DrawMode::TriangleStrip:          return GL_TRIANGLE_STRIP;
+			case Renderer::DrawMode::TrianglesAdjacency:     return GL_TRIANGLES_ADJACENCY;
+			case Renderer::DrawMode::TriangleStripAdjacency: return GL_TRIANGLE_STRIP_ADJACENCY;			
+			}
+			LOG_WARNING("Draw mode not supported");
+			return 0;
+		}
 
 		u32 DataType(Renderer::DataType type) {
-					switch (type)
-					{
-					case Renderer::DataType::UnsignedByte:  return GL_UNSIGNED_BYTE;
-					case Renderer::DataType::UnsignedShort: return GL_UNSIGNED_SHORT;
-					case Renderer::DataType::UnsignedInt:   return GL_UNSIGNED_INT;
-					case Renderer::DataType::UnsignedInt_24_8:     return GL_UNSIGNED_INT_24_8;
-					case Renderer::DataType::Int:			  return GL_INT;
-					case Renderer::DataType::Int2:		  return GL_INT_VEC2;
-					case Renderer::DataType::Int3:		  return GL_INT_VEC3;
-					case Renderer::DataType::Int4:		  return GL_INT_VEC4;
-					case Renderer::DataType::Float:         return GL_FLOAT;
-					case Renderer::DataType::Float2:        return GL_FLOAT;
-					case Renderer::DataType::Float3:        return GL_FLOAT;
-					case Renderer::DataType::Float4:        return GL_FLOAT;
-					case Renderer::DataType::Matrix2:       return GL_FLOAT_MAT2;
-					case Renderer::DataType::Matrix3:       return GL_FLOAT_MAT3;
-					case Renderer::DataType::Matrix4:       return GL_FLOAT_MAT4;
-					case Renderer::DataType::Texture2D:     return GL_SAMPLER_2D;
-					default:
-						LOG_WARNING("Unsupported data type");
-						return 0;
-					}
-				}
+			switch (type)
+			{
+			case Renderer::DataType::UnsignedByte:  return GL_UNSIGNED_BYTE;
+			case Renderer::DataType::UnsignedShort: return GL_UNSIGNED_SHORT;
+			case Renderer::DataType::UnsignedInt:   return GL_UNSIGNED_INT;
+			case Renderer::DataType::UnsignedInt_24_8:     return GL_UNSIGNED_INT_24_8;
+			case Renderer::DataType::Int:			  return GL_INT;
+			case Renderer::DataType::Int2:		  return GL_INT_VEC2;
+			case Renderer::DataType::Int3:		  return GL_INT_VEC3;
+			case Renderer::DataType::Int4:		  return GL_INT_VEC4;
+			case Renderer::DataType::Float:         return GL_FLOAT;
+			case Renderer::DataType::Float2:        return GL_FLOAT;
+			case Renderer::DataType::Float3:        return GL_FLOAT;
+			case Renderer::DataType::Float4:        return GL_FLOAT;
+			case Renderer::DataType::Matrix2:       return GL_FLOAT_MAT2;
+			case Renderer::DataType::Matrix3:       return GL_FLOAT_MAT3;
+			case Renderer::DataType::Matrix4:       return GL_FLOAT_MAT4;
+			case Renderer::DataType::Texture2D:     return GL_SAMPLER_2D;
+			}
+			LOG_WARNING("Unsupported data type");
+			return 0;
+		}
 		Renderer::DataType DataType(u32 type) {
-					switch (type)
-					{
-					case GL_UNSIGNED_BYTE:  return Renderer::DataType::UnsignedByte;
-					case GL_UNSIGNED_SHORT: return Renderer::DataType::UnsignedShort;
-					case GL_UNSIGNED_INT:   return Renderer::DataType::UnsignedInt;
-					case GL_INT:			return Renderer::DataType::Int;
-					case GL_INT_VEC2:		return Renderer::DataType::Int2;
-					case GL_INT_VEC3:		return Renderer::DataType::Int3;
-					case GL_INT_VEC4:		return Renderer::DataType::Int4;
-					case GL_FLOAT:          return Renderer::DataType::Float;
-					case GL_FLOAT_VEC2:     return Renderer::DataType::Float2;
-					case GL_FLOAT_VEC3:     return Renderer::DataType::Float3;
-					case GL_FLOAT_VEC4:     return Renderer::DataType::Float4;
-					case GL_FLOAT_MAT2:     return Renderer::DataType::Matrix2;
-					case GL_FLOAT_MAT3:     return Renderer::DataType::Matrix3;
-					case GL_FLOAT_MAT4:     return Renderer::DataType::Matrix4;
-					case GL_SAMPLER_2D:     return Renderer::DataType::Texture2D;
-					default:
-						LOG_WARNING("OpenGL data type not supported ( %u )", type);
-						return Renderer::DataType::None;
-					}
-				}
+			switch (type)
+			{
+			case GL_UNSIGNED_BYTE:  return Renderer::DataType::UnsignedByte;
+			case GL_UNSIGNED_SHORT: return Renderer::DataType::UnsignedShort;
+			case GL_UNSIGNED_INT:   return Renderer::DataType::UnsignedInt;
+			case GL_INT:			return Renderer::DataType::Int;
+			case GL_INT_VEC2:		return Renderer::DataType::Int2;
+			case GL_INT_VEC3:		return Renderer::DataType::Int3;
+			case GL_INT_VEC4:		return Renderer::DataType::Int4;
+			case GL_FLOAT:          return Renderer::DataType::Float;
+			case GL_FLOAT_VEC2:     return Renderer::DataType::Float2;
+			case GL_FLOAT_VEC3:     return Renderer::DataType::Float3;
+			case GL_FLOAT_VEC4:     return Renderer::DataType::Float4;
+			case GL_FLOAT_MAT2:     return Renderer::DataType::Matrix2;
+			case GL_FLOAT_MAT3:     return Renderer::DataType::Matrix3;
+			case GL_FLOAT_MAT4:     return Renderer::DataType::Matrix4;
+			case GL_SAMPLER_2D:     return Renderer::DataType::Texture2D;
+			}
+			LOG_WARNING("OpenGL data type not supported ( %u )", type);
+			return Renderer::DataType::None;
+		}
 		u32 DataTypeCount(Renderer::DataType type) {
-					switch (type)
-					{
-					case Renderer::DataType::UnsignedByte:  return 1;
-					case Renderer::DataType::UnsignedShort: return 1;
-					case Renderer::DataType::UnsignedInt:   return 1;
-					case Renderer::DataType::Float:         return 1;
-					case Renderer::DataType::Float2:        return 2;
-					case Renderer::DataType::Float3:        return 3;
-					case Renderer::DataType::Float4:        return 4;
-					default:
-						LOG_WARNING("Unsupported data type");
-						return 0;
-					}
-				}
+			switch (type)
+			{
+			case Renderer::DataType::UnsignedByte:  return 1;
+			case Renderer::DataType::UnsignedShort: return 1;
+			case Renderer::DataType::UnsignedInt:   return 1;
+			case Renderer::DataType::Float:         return 1;
+			case Renderer::DataType::Float2:        return 2;
+			case Renderer::DataType::Float3:        return 3;
+			case Renderer::DataType::Float4:        return 4;
+			}
+			LOG_WARNING("Unsupported data type");
+			return 0;
+		}
 		u32 DataTypeSize(Renderer::DataType type) {
-					switch (type)
-					{
-					case Renderer::DataType::UnsignedByte:  return sizeof(unsigned char) * 1;
-					case Renderer::DataType::UnsignedShort: return sizeof(unsigned short) * 1;
-					case Renderer::DataType::UnsignedInt:   return sizeof(unsigned int) * 1;
-					case Renderer::DataType::Float:         return sizeof(float) * 1;
-					case Renderer::DataType::Float2:        return sizeof(float) * 2;
-					case Renderer::DataType::Float3:        return sizeof(float) * 3;
-					case Renderer::DataType::Float4:        return sizeof(float) * 4;
-					default:
-						LOG_WARNING("Unsupported data type");
-						return 0;
-					}
-				}
+			switch (type)
+			{
+			case Renderer::DataType::UnsignedByte:  return sizeof(u8)  * 1;
+			case Renderer::DataType::UnsignedShort: return sizeof(u16) * 1;
+			case Renderer::DataType::UnsignedInt:   return sizeof(u32) * 1;
+			case Renderer::DataType::Float:         return sizeof(f32) * 1;
+			case Renderer::DataType::Float2:        return sizeof(f32) * 2;
+			case Renderer::DataType::Float3:        return sizeof(f32) * 3;
+			case Renderer::DataType::Float4:        return sizeof(f32) * 4;
+			}
+			LOG_WARNING("Unsupported data type");
+			return 0;
+		}
 
 		u32 Usage(Renderer::Usage usage) {
-					switch (usage)
-					{
-					case Renderer::Usage::StaticDraw: return GL_STATIC_DRAW;
-					case Renderer::Usage::StaticRead: return GL_STATIC_READ;
-					case Renderer::Usage::StaticCopy: return GL_STATIC_COPY;
-					case Renderer::Usage::DynamicDraw: return GL_DYNAMIC_DRAW;
-					case Renderer::Usage::DynamicRead: return GL_DYNAMIC_READ;
-					case Renderer::Usage::DynamicCopy: return GL_DYNAMIC_COPY;
-					case Renderer::Usage::StreamDraw: return GL_STREAM_DRAW;
-					case Renderer::Usage::StreamRead: return GL_STREAM_READ;
-					case Renderer::Usage::StreamCopy: return GL_STREAM_COPY;
-					default:
-						LOG_WARNING("Usage not supported");
-						return 0;
-					}
-				}
+			switch (usage)
+			{
+			case Renderer::Usage::StaticDraw:  return GL_STATIC_DRAW;
+			case Renderer::Usage::StaticRead:  return GL_STATIC_READ;
+			case Renderer::Usage::StaticCopy:  return GL_STATIC_COPY;
+			case Renderer::Usage::DynamicDraw: return GL_DYNAMIC_DRAW;
+			case Renderer::Usage::DynamicRead: return GL_DYNAMIC_READ;
+			case Renderer::Usage::DynamicCopy: return GL_DYNAMIC_COPY;
+			case Renderer::Usage::StreamDraw:  return GL_STREAM_DRAW;
+			case Renderer::Usage::StreamRead:  return GL_STREAM_READ;
+			case Renderer::Usage::StreamCopy:  return GL_STREAM_COPY;
+			}
+			LOG_WARNING("Usage not supported");
+			return 0;
+		}
 
 		u32 TexFormat(Renderer::TexFormat format) {
-					switch (format)
-					{
-					case Renderer::TexFormat::RED:              return GL_RED;
-					case Renderer::TexFormat::RG:               return GL_RG;
-					case Renderer::TexFormat::RGB:              return GL_RGB;
-					case Renderer::TexFormat::RGBA:             return GL_RGBA;
-					case Renderer::TexFormat::RED32F:           return GL_R32F;
-					case Renderer::TexFormat::RED_INT:           return GL_RED_INTEGER;
-					case Renderer::TexFormat::RED32I:           return GL_R32I;
-					case Renderer::TexFormat::RED32UI:           return GL_R32UI;
-					case Renderer::TexFormat::DEPTH24_STENCIL8: return GL_DEPTH24_STENCIL8;
-					case Renderer::TexFormat::DEPTH_STENCIL:    return GL_DEPTH_STENCIL;
-					default:
-						LOG_WARNING("Format not supported");
-						return 0;
-					}
-				}
+			switch (format)
+			{
+			case Renderer::TexFormat::RED:              return GL_RED;
+			case Renderer::TexFormat::RG:               return GL_RG;
+			case Renderer::TexFormat::RGB:              return GL_RGB;
+			case Renderer::TexFormat::RGBA:             return GL_RGBA;
+			case Renderer::TexFormat::RED32F:           return GL_R32F;
+			case Renderer::TexFormat::RED_INT:          return GL_RED_INTEGER;
+			case Renderer::TexFormat::RED32I:           return GL_R32I;
+			case Renderer::TexFormat::RED32UI:          return GL_R32UI;
+			case Renderer::TexFormat::DEPTH24_STENCIL8: return GL_DEPTH24_STENCIL8;
+			case Renderer::TexFormat::DEPTH_STENCIL:    return GL_DEPTH_STENCIL;
+			}
+			LOG_WARNING("Format not supported");
+			return 0;
+		}
 
 		u32 TexFilterMode(Renderer::TexFilterMode mode) {
-					switch (mode)
-					{
-					case Renderer::TexFilterMode::Nearest: return GL_NEAREST;
-					case Renderer::TexFilterMode::Linear:  return GL_LINEAR;
-					default:
-						LOG_WARNING("Filter mode not supported");
-						return 0;
-					}
-				}
+			switch (mode)
+			{
+			case Renderer::TexFilterMode::Nearest: return GL_NEAREST;
+			case Renderer::TexFilterMode::Linear:  return GL_LINEAR;	
+			}
+			LOG_WARNING("Filter mode not supported");
+			return 0;
+		}
 
 		u32 TexWrapMode(Renderer::TexWrapMode mode) {
-					switch (mode)
-					{
-					case Renderer::TexWrapMode::Repeat: return GL_REPEAT;
-					case Renderer::TexWrapMode::MirroredRepeat: return GL_MIRRORED_REPEAT;
-					case Renderer::TexWrapMode::ClampToEdge: return GL_CLAMP_TO_EDGE;
-					case Renderer::TexWrapMode::ClampToBorder: return GL_CLAMP_TO_BORDER;
-					default:
-						LOG_WARNING("Wrap mode not supported");
-						return 0;
-					}
-				}
-	}
-
-	void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
-	{
-		
-		if (severity == GL_DEBUG_SEVERITY_LOW) return;
-		if (severity == GL_DEBUG_SEVERITY_MEDIUM) return;
-		if (type == GL_DEBUG_TYPE_ERROR) {
-			LOG_WARNING("OpenGL error, Type: 0x%x ( %s )", type, message);
-			return;
+			switch (mode)
+			{
+			case Renderer::TexWrapMode::Repeat:         return GL_REPEAT;
+			case Renderer::TexWrapMode::MirroredRepeat: return GL_MIRRORED_REPEAT;
+			case Renderer::TexWrapMode::ClampToEdge:    return GL_CLAMP_TO_EDGE;
+			case Renderer::TexWrapMode::ClampToBorder:  return GL_CLAMP_TO_BORDER;
+			}
+			LOG_WARNING("Wrap mode not supported");
+			return 0;
 		}
 	}
 
@@ -193,9 +173,6 @@ namespace Enigma::Platform::OpenGL {
             return;
         }
 		
-		//glEnable(GL_DEBUG_OUTPUT);
-		//glDebugMessageCallback(MessageCallback, nullptr);
-
 		glEnable(GL_DEPTH_TEST); // TODO: add an enable function to RenderAPI
 		glLineWidth(1.f);
 
@@ -215,8 +192,8 @@ namespace Enigma::Platform::OpenGL {
         glClear(m_Data.clearMask);
     }
 
-    void OpenGLRenderAPI::SetViewportImpl(i32 width, i32 height) {
-        glViewport(0, 0, width, height);
+    void OpenGLRenderAPI::SetViewportImpl(u32 width, u32 height) {
+        glViewport(0, 0, static_cast<i32>(width), static_cast<i32>(height));
 		m_Data.viewportWidth = width;
 		m_Data.viewportHeight = height;
         LOG_MESSAGE("OpenGL viewport set to ( %i, %i )", 6, width, height);
@@ -226,10 +203,10 @@ namespace Enigma::Platform::OpenGL {
 		m_Data.drawMode = Conversions::DrawMode(mode);
 		LOG_MESSAGE("OpenGL draw mode set to ( %s )", 6, Renderer::ToString(mode).c_str());
     }
-    void OpenGLRenderAPI::DrawIndexedImpl(i32 count, Renderer::DataType type, void* data) {
-		glDrawElements(m_Data.drawMode, count, Conversions::DataType(type), data);
+    void OpenGLRenderAPI::DrawIndexedImpl(u32 count, Renderer::DataType type, void* data) {
+		glDrawElements(m_Data.drawMode, static_cast<i32>(count), Conversions::DataType(type), data);
     }
-    void OpenGLRenderAPI::DrawArraysImpl(i32 first, i32 count) {
-		glDrawArrays(m_Data.drawMode, first, count);
+    void OpenGLRenderAPI::DrawArraysImpl(u32 first, u32 count) {
+		glDrawArrays(m_Data.drawMode, static_cast<i32>(first), static_cast<i32>(count));
     }
 }

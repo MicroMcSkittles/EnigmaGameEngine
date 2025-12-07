@@ -26,6 +26,7 @@ namespace Enigma {
 
 namespace Enigma::Core {
 	const u64 Hash(const std::string& str);
+	const u64 Hash(const std::string& str1, const std::string& str2);
 	const u64 Hash(const char* str);
 	const u64 Hash(const char* str1, const char* str2);
 
