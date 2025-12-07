@@ -51,7 +51,7 @@ namespace Enigma::Engine::ECS {
 		Core::SparseSet<T, ComponentPoolPageSize> m_Components;
 	};
 
-	// Used to generate a unique number for component types
+	// Component hashing helper classes
 	template<typename T>
 	class ComponentHasher {
 	public:
@@ -59,14 +59,23 @@ namespace Enigma::Engine::ECS {
 	private:
 		inline static char s_ID;
 	};
+	template<typename... Types>
+	class ComponentHashGetter {
+	private:
+		template <typename Tuple, u64... Indices> static auto MakeGettersImpl(Tuple& t, std::index_sequence<Indices...>);
 
-	template<typename...>
-	class View;
+	public:
+		// Returns a list of lamdas that return the hashes of the component pools
+		template <typename Tuple> static auto MakeGetters(Tuple t);
+	};
+
+	template<typename...> class View;
 
 	class ECS {
 	public:
 		static ref<ECS> Create();
 		ECS();
+		ECS(const ECS& other);
 		~ECS();
 
 		template<typename T> ref<ComponentPool<T>> GetComponentPool();
@@ -75,6 +84,7 @@ namespace Enigma::Engine::ECS {
 		template<typename T, typename... Args> T& CreateComponent(EntityID entityID, Args... constructorArgs);
 		template<typename T> void RemoveComponent(EntityID entityID);
 		template<typename T> bool HasComponent(EntityID entityID);
+		template<typename... Comps> bool HasComponents(EntityID entityID);
 
 		EntityID CreateEntity();
 		void RemoveEntity(EntityID entityID);
@@ -103,9 +113,6 @@ namespace Enigma::Engine::ECS {
 		template<class T>
 		struct DependentFalse : std::false_type { };
 
-		// Returns a list of lamdas that return the hashes of the component pools
-		template <typename Tuple, u64... Indices> auto MakeComponentHashGettersImpl(Tuple& t, std::index_sequence<Indices...>);
-		template <typename Tuple> auto MakeComponentHashGetters(Tuple t);
 
 		template<u64 Index> auto GetPoolAt();
 		template<u64... Indices> auto MakeComponentTuple(EntityID id, std::index_sequence<Indices...>);
@@ -118,6 +125,7 @@ namespace Enigma::Engine::ECS {
 		~View() { }
 
 		void ForEach(std::function<void(Types&...)> func) { ForEachImpl(func); }
+		void ForEach(std::function<void(EntityID)> func) { ForEachImpl(func); }
 		void ForEach(std::function<void(EntityID, Types&...)> func) { ForEachImpl(func); }
 
 		u64 Count() { return m_Smallest->Size(); }

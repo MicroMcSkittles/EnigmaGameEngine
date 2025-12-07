@@ -5,6 +5,7 @@
 
 #include <Enigma/Core/Process/Application.h>
 #include <Enigma/Engine/Physics/PhysicsComponents.h>
+#include <Enigma/ImGui/EnigmaWidgets.h>
 
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
@@ -206,11 +207,14 @@ namespace Enigma::Editor {
 			bool open = ImGui::TreeNodeEx(name.c_str(), flags);
 		
 			// Show component settings button
-			ImGui::SameLine(ImGui::GetContentRegionMax().x - 16.0f);
+			ImGui::SameLine(ImGui::GetContentRegionMax().x - 20.0f);
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
-			if (ImGui::Button("...", ImVec2(20, 24))) {
-				ImGui::OpenPopup("ComponentSettings");
-			}
+			bool optionsButton = ImGui::ImageButton(
+				"ComponentSettingsOptionsButton", 
+				ImGui::ToImGuiTexture(EditorGui::GetIcon(EditorIcon_Menu)),
+				ImVec2(24, 24)
+			);
+			if (optionsButton)ImGui::OpenPopup("ComponentSettings");
 			ImGui::PopStyleVar();
 
 			// Show component settings popup

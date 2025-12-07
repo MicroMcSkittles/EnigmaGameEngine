@@ -37,9 +37,13 @@ namespace ImGui {
 		}
 
 		// Stupid ahh casts
-		void* id = reinterpret_cast<void*>(static_cast<u64>(*static_cast<u32*>(texture->GetNativeTexture())));
-
+		u64 id = static_cast<u64>(*static_cast<u32*>(texture->GetNativeTexture()));
 		ImGui::Image(id, size, ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y));
+	}
+
+	u64 ToImGuiTexture(const Enigma::ref<Enigma::Renderer::Texture>& texture)
+	{
+		return static_cast<u64>(*static_cast<u32*>(texture->GetNativeTexture()));
 	}
 
 }

@@ -48,7 +48,7 @@ namespace Enigma::Editor {
 		// Load Scene
 		m_ActiveScene = Scene::Create();
 		SceneSerializer serializer(m_ActiveScene);
-		serializer.Deserialize("Scene.scene");
+		serializer.Deserialize("assets/Scene.scene");
 
 		// Create action handler
 		m_ActionHandler = CreateUnique<ActionHandler>();

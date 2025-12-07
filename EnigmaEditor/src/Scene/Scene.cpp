@@ -1,8 +1,11 @@
 #include "Scene/Scene.h"
 #include "Scene/Entity.h"
 #include "Scene/Components.h"
+#include "EditorEvents.h"
 #include "EditorImGui.h"
 #include "UndoRedoAction.h"
+
+#include <Enigma/Core/Process/Application.h>
 #include <Enigma/Engine/ECS/Components.h>
 
 #include <imgui.h>
@@ -12,43 +15,38 @@ using namespace Enigma::Engine::ECS;
 
 namespace Enigma::Editor {
 
-	ref<Scene> Scene::Create()
-	{
+	ref<Scene> Scene::Create() {
 		return CreateRef<Scene>();
 	}
-	Scene::Scene()
-	{
+	Scene::Scene() {
 		m_ECS = Engine::ECS::ECS::Create();
 		Entity root = { m_ECS->CreateEntity(), this };
 		root.CreateComponent<EntityMetaData>("Untitled Scene");
 		root.CreateComponent<SceneMetaData>();
 	}
-
-	Scene::Scene(const std::string& name)
-	{
+	Scene::Scene(const std::string& name) {
 		m_ECS = Engine::ECS::ECS::Create();
 		Entity root = { m_ECS->CreateEntity(), this };
 		root.CreateComponent<EntityMetaData>(name);
 		root.CreateComponent<SceneMetaData>();
 	}
-
-	Scene::~Scene()
-	{
-		//LOG_WARNING("Destroying scene %s", GetName().c_str());
-	}
+	Scene::~Scene() { }
 
 	Entity Scene::GetEntity(Engine::UUID uuid) { 
 		if (!m_EntityUUIDs.count(uuid)) return {};
 		return m_EntityUUIDs[uuid]; 
 	}
-	EntityMetaData&       Scene::GetRoot()     { return Entity(0, this).GetComponent<EntityMetaData>(); }
-	SceneMetaData&        Scene::GetMetaData() { return Entity(0, this).GetComponent<SceneMetaData>(); }
-	ref<Engine::ECS::ECS> Scene::GetECS()      { return m_ECS; }
-	std::string&          Scene::GetName()     { return GetRoot().name; }
-	std::string&          Scene::GetFileName() { return m_FileName; }
+	EntityMetaData& Scene::GetRoot() { 
+		return Entity(0, this).GetComponent<EntityMetaData>(); 
+	}
+	SceneMetaData& Scene::GetMetaData() { 
+		return Entity(0, this).GetComponent<SceneMetaData>(); 
+	}
+	std::string& Scene::GetName() {
+		return GetRoot().name;
+	}
 
-	Entity Scene::CreateEntity(const std::string& name)
-	{
+	Entity Scene::CreateEntity(const std::string& name) {
 		Entity entity = { m_ECS->CreateEntity(), this };
 		entity.CreateComponent<EntityMetaData>(name);
 		entity.CreateComponent<Transform>();
@@ -62,8 +60,7 @@ namespace Enigma::Editor {
 
 		return entity;
 	}
-	Entity Scene::CreateEntity(const std::string& name, Engine::UUID uuid)
-	{
+	Entity Scene::CreateEntity(const std::string& name, Engine::UUID uuid) {
 		Entity entity = { m_ECS->CreateEntity(), this };
 		entity.CreateComponent<EntityMetaData>(name);
 		entity.CreateComponent<Transform>();
@@ -77,8 +74,7 @@ namespace Enigma::Editor {
 
 		return entity;
 	}
-	Entity Scene::CreateEntity(Entity parent, const std::string& name)
-	{
+	Entity Scene::CreateEntity(Entity parent, const std::string& name) {
 		// Create child entity
 		Entity entity = { m_ECS->CreateEntity(), this };
 		entity.CreateComponent<EntityMetaData>(name, parent);
@@ -97,9 +93,7 @@ namespace Enigma::Editor {
 
 		return entity;
 	}
-
-	Entity Scene::CreateEntity(Entity parent, const std::string& name, Engine::UUID uuid)
-	{
+	Entity Scene::CreateEntity(Entity parent, const std::string& name, Engine::UUID uuid) {
 		// Create child entity
 		Entity entity = { m_ECS->CreateEntity(), this };
 		entity.CreateComponent<EntityMetaData>(name, parent);
@@ -118,9 +112,32 @@ namespace Enigma::Editor {
 
 		return entity;
 	}
+	void Scene::RemoveEntity(Entity entity) {
+		if (!entity) return;
 
-	void Scene::ChangeParent(Entity entity, Entity parent)
-	{
+		// update entity and parent entity metadata
+		EntityMetaData& entityMetaData = entity.GetMetaData();
+		if (entityMetaData.parent) {
+			EntityMetaData& parentMetaData = entityMetaData.parent.GetMetaData();
+			parentMetaData.children.Remove(entity.GetID());
+		}
+		else {
+			EntityMetaData& root = Entity(0, this).GetMetaData();
+			root.children.Remove(entity.GetID());
+		}
+
+		// Remove child entities
+		for (Entity& child : entityMetaData.children.GetData()) {
+			RemoveEntity(child);
+		}
+
+		// Remove uuid from map
+		m_EntityUUIDs.erase(entity.GetUUID());
+
+		m_ECS->RemoveEntity(entity.GetID());
+	}
+
+	void Scene::ChangeParent(Entity entity, Entity parent) {
 		EntityMetaData& entityMetaData = entity.GetMetaData();
 
 		// Make sure the new parent isn't the same as the old one
@@ -151,9 +168,7 @@ namespace Enigma::Editor {
 		Transform& transform = entity.GetComponent<Transform>();
 		transform.parent = parent.GetID();
 	}
-
-	bool Scene::IsChild(Entity entity, Entity parent)
-	{
+	bool Scene::IsChild(Entity entity, Entity parent) {
 		if (!entity || !parent) return false;
 
 		EntityMetaData& metaData = entity.GetComponent<EntityMetaData>();
@@ -162,98 +177,60 @@ namespace Enigma::Editor {
 		return IsChild(metaData.parent, parent);
 	}
 
-	void Scene::RemoveEntity(Entity entity)
-	{
-		if (!entity) return;
+	void Scene::StartRuntime() {
 
-		// update entity and parent entity metadata
-		EntityMetaData& entityMetaData = entity.GetMetaData();
-		if (entityMetaData.parent) {
-			EntityMetaData& parentMetaData = entityMetaData.parent.GetMetaData();
-			parentMetaData.children.Remove(entity.GetID());
-		}
-		else {
-			EntityMetaData& root = Entity(0, this).GetMetaData();
-			root.children.Remove(entity.GetID());
-		}
+	}
+	void Scene::EndRuntime() {
 
-		// Remove child entities
-		for (Entity& child : entityMetaData.children.GetData()) {
-			RemoveEntity(child);
-		}
+	}
+	void Scene::Update(Engine::DeltaTime deltaTime) {
 
-		// Remove uuid from map
-		m_EntityUUIDs.erase(entity.GetUUID());
-
-		m_ECS->RemoveEntity(entity.GetID());
 	}
 
-	void Scene::ForEach(std::function<void(Entity)> func)
-	{
+	void Scene::ForEach(std::function<void(Entity)> func) {
 		View<Transform> entities(m_ECS);
 		entities.ForEach([&](EntityID id, Transform& transform) {
 			func({ id, this });
 		});
 	}
-	void Scene::ForEach(std::function<void(Entity, EntityMetaData&)> func)
-	{
+	void Scene::ForEach(std::function<void(Entity, EntityMetaData&)> func) {
 		View<EntityMetaData> entities(m_ECS);
 		entities.ForEach([&](EntityID id, EntityMetaData& metaData) {
 			func({ id, this }, metaData);
 		});
 	}
 
-	void Scene::Update(Engine::DeltaTime deltaTime)
-	{
-
+	SceneInspectorContext::SceneInspectorContext(ref<Scene> scene) : m_Scene(scene) { }
+	static void UndoRedoSceneMetaData(ref<Scene> scene, SceneMetaData metaData) {
+		scene->GetMetaData() = metaData;
 	}
+	static void SceneMetaDataAction(ref<Scene> scene, SceneMetaData oldMetaData) {
+		Action action;
+		action.undoFunc = std::bind(UndoRedoSceneMetaData, scene, oldMetaData);
+		action.redoFunc = std::bind(UndoRedoSceneMetaData, scene, scene->GetMetaData());
+		action.name = "Edited scene \"" + scene->GetName() + "\"";
 
-	SceneInspectorContext::SceneInspectorContext(ref<Scene> scene) : m_Scene(scene)
-	{
-		
+		Event::NewAction e(action);
+		Core::Application::EventCallback(e);
 	}
 	void SceneInspectorContext::ShowGui()
 	{
 		if (!m_Scene) return;
 		ImGui::PushID(m_Scene->GetName().c_str());
 
+		// Show scene name
 		std::string original;
 		if (EditorGui::RenamableText(m_Scene->GetName(), "SceneInspectorContextNameBox", nullptr, &original)) {
 			RenameSceneAction(m_Scene, m_Scene->GetName(), original);
 		}
-
 		ImGui::Separator();
 
 		EditorGui::Text("Entity Count", std::to_string(m_Scene->GetECS()->GetEntityCount()));
-		ImGui::BeginColumns("##Columns_SceneInspectorContextMainCamera", 2, ImGuiOldColumnFlags_NoResize);
-		ImGui::SetColumnWidth(0, 100);
-		ImGui::Text("Main Camera");
-		ImGui::NextColumn();
 
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		bool edited = false;
+		SceneMetaData oldMetaData = m_Scene->GetMetaData();
+		if (EditorGui::InputEntity<Engine::ECS::OrthographicCamera>("Main Camera", m_Scene->GetMetaData().activeCamera, m_Scene)) edited = true;
 
-		std::vector<Entity> cameraEntities;
-		i32 selection = -1;
-		u32 cameraCount = 0;
-
-		Engine::ECS::View<EntityMetaData, Engine::ECS::OrthographicCamera> cameraEntityView(m_Scene->GetECS());
-		cameraEntityView.ForEach([&](EntityID id, EntityMetaData& metaData, Engine::ECS::OrthographicCamera& camera) {
-			cameraEntities.push_back({ id, m_Scene.get() });
-			if (id == m_Scene->GetMetaData().activeCamera.GetID()) selection = cameraCount;
-			cameraCount += 1;
-		});
-
-		if (ImGui::Combo("##ComboBox", &selection, [](void* user_data, int idx) {
-			std::vector<Entity>* entities = static_cast<std::vector<Entity>*>(user_data);
-			Entity entity = entities->at(idx);
-			return entity.GetComponent<EntityMetaData>().name.c_str();
-			}, static_cast<void*>(&cameraEntities), cameraEntities.size())) {
-			m_Scene->GetMetaData().activeCamera = cameraEntities[selection];
-		}
-
-		ImGui::PopStyleVar();
-
-		ImGui::EndColumns();
-		ImGui::PopID();
+		if (edited) SceneMetaDataAction(m_Scene, oldMetaData);
 	}
 }

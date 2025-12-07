@@ -24,8 +24,6 @@ namespace Enigma::Editor {
 		void OnScroll(Core::MouseScroll& e);
 		void OnKeyboard(Core::Keyboard& e);
 
-		//void EntityPicker();
-
 		void ShowEntityMenu();
 		
 		void ShowGizmoMenu();
@@ -44,8 +42,6 @@ namespace Enigma::Editor {
 		Entity m_Selected;
 
 		// Render Variables
-		//Engine::ECS::RenderSystem2DConfig m_RenderSystemConfig;
-		//ref<Engine::ECS::RenderSystem2D> m_RenderSystem;
 		ref<Renderer::Renderer2D> m_RendererContext;
 		ref<Renderer::Texture> m_Frame;
 		ref<Renderer::Camera> m_Camera;
@@ -70,10 +66,6 @@ namespace Enigma::Editor {
 		f32 m_ZoomSpeed;
 		f32 m_MaxZoom; // The most the user can be zoomed in
 		f32 m_MinZoom; // The most the user can be zoomed out
-
-		// Entity Picker Variables
-		//ref<Renderer::Shader> m_EntityPickerShader;
-		//ref<Renderer::FrameBuffer> m_EntityPickerBuffer;
 
 		// Other
 		glm::vec2 m_RuntimeWindowPosition;

@@ -2,9 +2,18 @@
 #include "Enigma/Engine/ECS/EntityComponentSystem.h"
 
 namespace Enigma::Engine::ECS {
-	// Constructor/Deconstructor
+	// Constructors/Deconstructor
 	ref<ECS> ECS::Create() { return CreateRef<ECS>(); }
-	ECS::ECS(): m_EntityCount(0) { }
+	ECS::ECS() { 
+		m_EntityCount = 0;
+	}
+	ECS::ECS(const ECS& other) : 
+		m_ComponentPools(other.m_ComponentPools), 
+		m_ComponentPoolMaskBits(other.m_ComponentPoolMaskBits),
+		m_EntityComponentMasks(other.m_EntityComponentMasks),
+		m_EntityGroups(other.m_EntityGroups),
+		m_AvailableEntityIDs(other.m_AvailableEntityIDs),
+		m_EntityCount(other.m_EntityCount) { }
 	ECS::~ECS() { }
 
 	EntityID ECS::CreateEntity() {

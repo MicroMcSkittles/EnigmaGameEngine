@@ -5,20 +5,19 @@
 #include "UndoRedoAction.h"
 
 #include <Enigma/Core/Process/Application.h>
+#include <Enigma/ImGui/EnigmaWidgets.h>
 
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
 namespace Enigma::Editor {
 
-	SceneHierachyPanel::SceneHierachyPanel()
-	{
+	SceneHierachyPanel::SceneHierachyPanel() {
 		m_OpenEntitySettings = false;
 		m_RenameEntity = false;
 	}
 
-	void SceneHierachyPanel::OnEvent(Core::Event& e)
-	{
+	void SceneHierachyPanel::OnEvent(Core::Event& e) {
 		Core::EventHandler handler(e);
 
 		handler.Dispatch<Event::EntitySelected>([&](Event::EntitySelected& e) {
@@ -32,8 +31,7 @@ namespace Enigma::Editor {
 		});
 	}
 
-	void SceneHierachyPanel::ShowGui()
-	{
+	void SceneHierachyPanel::ShowGui() {
 		ImGui::Begin("Scene Hierachy");
 
 		if (m_SceneContext == nullptr) {
@@ -52,11 +50,20 @@ namespace Enigma::Editor {
 		}
 		if (!renaming) {
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+			ImGui::PushStyleColor(ImGuiCol_Button, ToImVec(EditorGui::GetStyle().windowBackground));
 			ImGui::SameLine(ImGui::GetContentRegionMax().x - 24.0f);
-			if (ImGui::Button("...", ImVec2(20, 24))) {
+			
+			bool optionsButton = ImGui::ImageButton(
+				"SceneOptionsButton",
+				ImGui::ToImGuiTexture(EditorGui::GetIcon(EditorIcon_Menu)),
+				ImVec2(24, 24)
+			);
+			if (optionsButton) {
 				Event::NewInspectorContext e(SceneInspectorContext::Create(m_SceneContext));
 				Core::Application::EventCallback(e);
 			}
+
+			ImGui::PopStyleColor();
 			ImGui::PopStyleVar();
 		}
 
@@ -113,7 +120,7 @@ namespace Enigma::Editor {
 
 		// Handle DragDrop
 		if (ImGui::BeginDragDropSource()) {
-			ImGui::SetDragDropPayload("Entity", &entity, sizeof(Entity));
+			ImGui::SetDragDropPayload(EntityDragSourceName.c_str(), &entity, sizeof(Entity));
 		
 			ImGui::Text("%s", metaData.name.c_str());
 			ImGui::EndDragDropSource();
@@ -270,14 +277,15 @@ namespace Enigma::Editor {
 
 		// Check payload
 		if (payload == nullptr) goto CloseGui;
-		if (std::string(payload->DataType) != "Entity") goto CloseGui;
+		if (std::string(payload->DataType) != EntityDragSourceName) goto CloseGui;
 
 		// Makes sure the user can't nest an entity in itself
 		Entity child = *static_cast<Entity*>(payload->Data);
 		if (m_SceneContext->IsChild(entity, child)) goto CloseGui;
+		if (child.GetMetaData().parent == entity) goto CloseGui;
 
 		// Accept the payload
-		ImGui::AcceptDragDropPayload("Entity");
+		ImGui::AcceptDragDropPayload(EntityDragSourceName.c_str());
 		if (!payload->IsDelivery()) goto CloseGui;
 
 		// Update other entity parent

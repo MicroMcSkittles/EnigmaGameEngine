@@ -10,4 +10,5 @@ namespace ImGui {
 	// If both x and y are not 0 then the texture gets scaled to that exact size
 	void Image(Enigma::ref<Enigma::Renderer::Texture> texture, const glm::vec2& scale = { 0,0 }, const glm::vec2& uv0 = { 0,1 }, const glm::vec2& uv1 = { 1,0 });
 
+	u64 ToImGuiTexture(const Enigma::ref<Enigma::Renderer::Texture>& texture);
 }

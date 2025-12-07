@@ -1,6 +1,18 @@
 
 namespace Enigma::Engine::ECS {
 
+	// Component Hash Getter Class ===========================
+	template<typename... Types> template<typename Tuple, u64... Indices> 
+	inline auto ComponentHashGetter<Types...>::MakeGettersImpl(Tuple& t, std::index_sequence<Indices...>) {
+		return std::vector<std::function<u64()>> {
+			[&t]() { return ComponentHasher<std::tuple_element_t<Indices, std::tuple<Types...>>>::Hash(); }...
+		};
+	}
+	template<typename... Types> template<typename Tuple> 
+	auto ComponentHashGetter<Types...>::MakeGetters(Tuple t) {
+		return MakeGettersImpl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>{});
+	}
+	
 	// Entity Component System Class ======================
 	template<typename T> inline ref<ComponentPool<T>> ECS::GetComponentPool() {
 		// Make sure component pool exists
@@ -74,18 +86,20 @@ namespace Enigma::Engine::ECS {
 		if (!m_EntityComponentMasks.Get(entityID)[m_ComponentPoolMaskBits[componentHash]]) return false;
 		return true;
 	}
+	template<typename... Comps> inline bool ECS::HasComponents(EntityID entityID) {
+		auto hashLamdas = ComponentHashGetter<Comps...>::MakeGetters(std::tuple<Comps...>());
+
+		ComponentMask mask = m_EntityComponentMasks.Get(entityID);
+		for (u64 i = 0; i < sizeof...(Comps); ++i) {
+			u64 hash = hashLamdas[i]();
+			if (!m_ComponentPools.count(hash)) return false;
+			if (!mask.test(m_ComponentPoolMaskBits[hash])) return false;
+		}
+
+		return true;
+	}
 
 	// Component View Class ===============================
-	template<typename... Types> template <typename Tuple, u64... Indices>
-	inline auto View<Types...>::MakeComponentHashGettersImpl(Tuple& t, std::index_sequence<Indices...>) {
-		return std::vector<std::function<u64()>> {
-			[&t]() { return ComponentHasher<std::tuple_element_t<Indices, std::tuple<Types...>>>::Hash(); }...
-		};
-	}
-	template<typename... Types> template <typename Tuple> auto View<Types...>::MakeComponentHashGetters(Tuple t) {
-		return MakeComponentHashGettersImpl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>{});
-	}
-
 	template<typename... Types> template<u64 Index> auto View<Types...>::GetPoolAt() {
 		return std::static_pointer_cast<ComponentPool<std::tuple_element_t<Index, std::tuple<Types...>>>>(m_ComponentPools[Index]);
 	}
@@ -105,16 +119,20 @@ namespace Enigma::Engine::ECS {
 		else if constexpr (std::is_invocable_v<Func, Types&...>)
 			for (EntityID& entityID : m_Smallest->GetIDs()) { std::apply(func, MakeComponentTuple(entityID, inds)); }
 
+		// Check if the function has the parameters (EntityID), call it if it does
+		else if constexpr (std::is_invocable_v<Func, EntityID>)
+			for (EntityID& entityID : m_Smallest->GetIDs()) { std::apply(func, std::make_tuple(entityID)); }
+
 		else static_assert(DependentFalse<Func>::value, "Invalid for each function");
 	}
 
 	template<typename... Types> View<Types...>::View(ref<ECS> ecs) : m_ECS(ecs), m_Empty(false)
 	{
 		// Get hash lamdas
-		auto hashLamdas = MakeComponentHashGetters(std::tuple<Types...>());
+		auto hashLamdas = ComponentHashGetter<Types...>::MakeGetters(std::tuple<Types...>());
 
 		// Get the mask and pools
-		for (u64 i = 0; i < hashLamdas.size(); ++i) {
+		for (u64 i = 0; i < sizeof...(Types); ++i) {
 			u64 hash = hashLamdas[i]();
 			if (!m_ECS->m_ComponentPools.count(hash)) {
 				m_Empty = true;

@@ -20,29 +20,33 @@ namespace Enigma::Editor {
 		Scene(const std::string& name);
 		~Scene();
 
+		// Create/Remove functions
 		Entity CreateEntity(const std::string& name = "");
 		Entity CreateEntity(const std::string& name, Engine::UUID uuid);
 		Entity CreateEntity(Entity parent, const std::string& name = "");
 		Entity CreateEntity(Entity parent, const std::string& name, Engine::UUID uuid);
 		void RemoveEntity(Entity entity);
+		
+		// Parent/Child functions
 		void ChangeParent(Entity entity, Entity parent);
-
 		bool IsChild(Entity entity, Entity parent);
+
+		void StartRuntime();
+		void EndRuntime();
+		void Update(Engine::DeltaTime deltaTime);
 
 		void ForEach(std::function<void(Entity)> func);
 		void ForEach(std::function<void(Entity, EntityMetaData&)> func);
 
-		void Update(Engine::DeltaTime deltaTime);
-
 		// Returns the entity with a uuid
 		Entity GetEntity(Engine::UUID uuid);
 
+		// Getters
 		EntityMetaData& GetRoot();
-		ref<Engine::ECS::ECS> GetECS();
-
 		SceneMetaData& GetMetaData();
 		std::string& GetName();
-		std::string& GetFileName();
+		std::string& GetFileName() { return m_FileName; }
+		ref<Engine::ECS::ECS> GetECS() { return m_ECS; }
 
 	private:
 		ref<Engine::ECS::ECS> m_ECS;

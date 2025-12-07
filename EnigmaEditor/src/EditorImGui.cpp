@@ -3,11 +3,15 @@
 #include <Enigma/Core/Core.h>
 #include <Enigma/Core/Utilities/Utilities.h>
 
+#include <EnigmaSerialization/Image.h>
+
 #include <misc/cpp/imgui_stdlib.h>
 #include <imgui_internal.h>
 #include <ImGuizmo.h>
 
 namespace Enigma::Editor {
+
+	std::string EntityDragSourceName = "DRAG_ENTITY_SOURCE";
 
 	// Create static EditorGui Data struct
 	unique<EditorGui::Data> EditorGui::s_Data = CreateUnique<EditorGui::Data>();
@@ -44,9 +48,9 @@ namespace Enigma::Editor {
 
 		// ImGui Font Config
 		ImGuiIO& io = ImGui::GetIO();
-		io.Fonts->AddFontFromFileTTF(style.regularFont.c_str(), style.fontSize);
-		io.Fonts->AddFontFromFileTTF(style.italicFont.c_str(), style.fontSize);
-		io.Fonts->AddFontFromFileTTF(style.boldFont.c_str(), style.fontSize);
+		io.Fonts->AddFontFromFileTTF(style.fontPaths[EditorFont_Regular].c_str(), style.fontSize);
+		io.Fonts->AddFontFromFileTTF(style.fontPaths[EditorFont_Italic].c_str(), style.fontSize);
+		io.Fonts->AddFontFromFileTTF(style.fontPaths[EditorFont_Bold].c_str(), style.fontSize);
 
 		io.FontDefault = io.Fonts->Fonts[static_cast<i32>(style.defaultFont)];
 
@@ -59,17 +63,31 @@ namespace Enigma::Editor {
 		gizmoStyle.Colors[ImGuizmo::COLOR::PLANE_X]     = ToImVec(style.colorX);
 		gizmoStyle.Colors[ImGuizmo::COLOR::PLANE_Y]     = ToImVec(style.colorY);
 		gizmoStyle.Colors[ImGuizmo::COLOR::PLANE_Z]     = ToImVec(style.colorZ);
+
+		// Load Icons
+		using namespace Serialization;
+		ImageConfig iconConfig;
+		iconConfig.minFilter = Renderer::TexFilterMode::Linear;
+		s_Data->icons[EditorIcon_Menu]      = ImageLoader::Load(style.iconPaths[EditorIcon_Menu],     iconConfig);
+		s_Data->icons[EditorIcon_Settings]  = ImageLoader::Load(style.iconPaths[EditorIcon_Settings], iconConfig);
+		s_Data->icons[EditorIcon_Translate] = ImageLoader::Load(style.iconPaths[EditorIcon_Translate], iconConfig);
+		s_Data->icons[EditorIcon_Rotate]    = ImageLoader::Load(style.iconPaths[EditorIcon_Rotate],   iconConfig);
+		s_Data->icons[EditorIcon_Scale]     = ImageLoader::Load(style.iconPaths[EditorIcon_Scale],    iconConfig);
 	}
 
 	EditorStyle& EditorGui::GetStyle() {
 		return s_Data->style;
 	}
 
+	ref<Renderer::Texture> EditorGui::GetIcon(EditorIcon icon) {
+		return s_Data->icons[icon];
+	}
+
 	// Int Inputs =======================
 	bool EditorGui::InputInt(const std::string& lable, i32& value, i32 resetValue, f32 columnWidth)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		ImFont* boldFont = io.Fonts->Fonts[static_cast<i32>(EditorFont::Bold)];
+		ImFont* boldFont = io.Fonts->Fonts[EditorFont_Bold];
 
 		ImGui::PushID(lable.c_str());
 
@@ -117,7 +135,7 @@ namespace Enigma::Editor {
 	bool EditorGui::InputInt2(const std::string& lable, glm::ivec2& value, i32 resetValue, f32 columnWidth)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		ImFont* boldFont = io.Fonts->Fonts[static_cast<i32>(EditorFont::Bold)];
+		ImFont* boldFont = io.Fonts->Fonts[EditorFont_Bold];
 
 		bool edited = false;
 
@@ -187,7 +205,7 @@ namespace Enigma::Editor {
 	bool EditorGui::InputInt3(const std::string& lable, glm::ivec3& value, i32 resetValue, f32 columnWidth)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		ImFont* boldFont = io.Fonts->Fonts[static_cast<i32>(EditorFont::Bold)];
+		ImFont* boldFont = io.Fonts->Fonts[EditorFont_Bold];
 
 		bool edited = false;
 
@@ -281,7 +299,7 @@ namespace Enigma::Editor {
 	bool EditorGui::InputFloat(const std::string& lable, f32& value, f32 resetValue, f32 columnWidth, u32 floatPrecision)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		ImFont* boldFont = io.Fonts->Fonts[static_cast<i32>(EditorFont::Bold)];
+		ImFont* boldFont = io.Fonts->Fonts[EditorFont_Bold];
 
 		std::string floatPrecisionStr = "%." + std::to_string(floatPrecision) + "f";
 		std::string tooltipTextStr = "Reset the %s field to " + floatPrecisionStr;
@@ -334,7 +352,7 @@ namespace Enigma::Editor {
 	bool EditorGui::InputVec2(const std::string& lable, glm::vec2& value, f32 resetValue, f32 columnWidth, u32 floatPrecision)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		ImFont* boldFont = io.Fonts->Fonts[static_cast<i32>(EditorFont::Bold)];
+		ImFont* boldFont = io.Fonts->Fonts[EditorFont_Bold];
 
 		std::string floatPrecisionStr = "%." + std::to_string(floatPrecision) + "f";
 		std::string tooltipTextStr = "Reset the %s field to " + floatPrecisionStr;
@@ -409,7 +427,7 @@ namespace Enigma::Editor {
 	bool EditorGui::InputVec3(const std::string& lable, glm::vec3& value, f32 resetValue, f32 columnWidth, u32 floatPrecision)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		ImFont* boldFont = io.Fonts->Fonts[static_cast<i32>(EditorFont::Bold)];
+		ImFont* boldFont = io.Fonts->Fonts[EditorFont_Bold];
 
 		std::string floatPrecisionStr = "%." + std::to_string(floatPrecision) + "f";
 		std::string tooltipTextStr = "Reset the %s field to " + floatPrecisionStr;
@@ -506,7 +524,7 @@ namespace Enigma::Editor {
 	bool EditorGui::InputVec4(const std::string& lable, glm::vec4& value, f32 resetValue, f32 columnWidth, u32 floatPrecision)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		ImFont* boldFont = io.Fonts->Fonts[static_cast<i32>(EditorFont::Bold)];
+		ImFont* boldFont = io.Fonts->Fonts[EditorFont_Bold];
 
 		std::string floatPrecisionStr = "%." + std::to_string(floatPrecision) + "f";
 		std::string tooltipTextStr = "Reset the %s field to " + floatPrecisionStr;
@@ -812,7 +830,7 @@ namespace Enigma::Editor {
 	bool EditorGui::InputColor(const std::string& lable, glm::vec3& value, f32 resetValue, f32 columnWidth)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		ImFont* boldFont = io.Fonts->Fonts[static_cast<i32>(EditorFont::Bold)];
+		ImFont* boldFont = io.Fonts->Fonts[EditorFont_Bold];
 
 		glm::vec3 rgbValue = value * 255.0f;
 		float rgbResetValue = resetValue * 255.0f;
@@ -912,26 +930,5 @@ namespace Enigma::Editor {
 
 		return edited;
 	}
-
-	bool EditorGui::InputEntity(const std::string& lable, const ref<Scene>& scene, Entity& entity, f32 columnWidth)
-	{
-
-		ImGui::PushID(lable.c_str());
-
-		ImGui::BeginColumns(("##Columns_" + lable).c_str(), 2, ImGuiOldColumnFlags_NoResize);
-		ImGui::SetColumnWidth(0, columnWidth);
-		ImGui::Text("%s", lable.c_str());
-		ImGui::NextColumn();
-
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-		
-		
-
-		ImGui::PopStyleVar();
-
-		ImGui::EndColumns();
-		ImGui::PopID();
-
-		return false;
-	}
+	
 }

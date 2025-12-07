@@ -1,8 +1,10 @@
 #pragma once
 #include <Enigma/Core/Types.h>
+#include <Enigma/Renderer/Texture.h>
 
 #include <string>
 #include <vector>
+#include <array>
 
 #include <imgui.h>
 
@@ -13,10 +15,19 @@
 
 namespace Enigma::Editor {
 
-	enum class EditorFont {
-		Regular = 0,
-		Italic  = 1,
-		Bold    = 2
+	enum EditorFont {
+		EditorFont_Regular = 0,
+		EditorFont_Italic,
+		EditorFont_Bold,
+		EditorFont_Last
+	};
+	enum EditorIcon {
+		EditorIcon_Menu = 0,
+		EditorIcon_Settings,
+		EditorIcon_Translate,
+		EditorIcon_Rotate,
+		EditorIcon_Scale,
+		EditorIcon_Last
 	};
 	struct EditorStyle {
 		glm::vec4 windowBackground         = glm::vec4(0.1f, 0.105f, 0.11f, 1.0f);
@@ -60,22 +71,35 @@ namespace Enigma::Editor {
 		glm::vec4 pressedColorW            = glm::vec4(0.9f, 0.25f, 0.8f, 1.0f);
 
 		// Font Paths
-		std::string regularFont = "assets/font/OpenSans-Regular.ttf";
-		std::string italicFont  = "assets/font/OpenSans-Italic.ttf";
-		std::string boldFont    = "assets/font/OpenSans-Bold.ttf";
-
+		std::array<std::string, EditorFont_Last> fontPaths = {
+			"resources/fonts/OpenSans-Regular.ttf",
+			"resources/fonts/OpenSans-Italic.ttf",
+			"resources/fonts/OpenSans-Bold.ttf"
+		};
 		f32 fontSize = 18.0f;
-		EditorFont defaultFont = EditorFont::Regular;
+		EditorFont defaultFont = EditorFont_Regular;
+		
+		// Icon Paths
+		std::array<std::string, EditorIcon_Last> iconPaths = {
+			"resources/icons/MenuIcon.png",
+			"resources/icons/SettingsIcon.png",
+			"resources/icons/TranslateIcon.png",
+			"resources/icons/RotateIcon.png",
+			"resources/icons/ScaleIcon.png",
+		};
 	};
 
 	inline glm::vec2 FromImVec(const ImVec2& vec) { return { vec.x, vec.y }; }
 	inline ImVec2 ToImVec(const glm::vec2& vec)   { return { vec.x, vec.y }; }
 	inline ImVec4 ToImVec(const glm::vec4& vec)   { return { vec.x, vec.y, vec.z, vec.w }; }
 
+	extern std::string EntityDragSourceName;
+
 	class EditorGui {
 	public:
 		static void SetStyle(const EditorStyle& style);
 		static EditorStyle& GetStyle();
+		static ref<Renderer::Texture> GetIcon(EditorIcon icon);
 
 		static bool InputInt(const std::string& lable, i32& value, i32 resetValue = 0, f32 columnWidth = 100.0f);
 		static bool InputInt2(const std::string& lable, glm::ivec2& value, i32 resetValue = 0, f32 columnWidth = 100.0f);
@@ -97,7 +121,8 @@ namespace Enigma::Editor {
 	
 		static bool InputColor(const std::string& lable, glm::vec3& value, f32 resetValue = 0.0f, f32 columnWidth = 100.0f);
 
-		static bool InputEntity(const std::string& lable, const ref<Scene>& scene, Entity& entity, f32 columnWidth = 100.0f);
+		template <typename... Comps>
+		static bool InputEntity(const std::string& lable, Entity& entity, const ref<Scene>& scene, f32 columnWidth = 100.0f);
 
 	private:
 		struct RenamableTextData {
@@ -107,9 +132,12 @@ namespace Enigma::Editor {
 		};
 		struct Data {
 			EditorStyle style;
+			std::array<ref<Renderer::Texture>, EditorIcon_Last> icons;
 			std::unordered_map<u64, void*> itemData;
 		};
 		static unique<Data> s_Data;
 	};
 	
 }
+
+#include "EditorImGui.inl"

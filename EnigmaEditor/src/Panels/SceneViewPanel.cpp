@@ -34,10 +34,6 @@ namespace Enigma::Editor {
 		Core::Application::EventCallback(e);
 	}
 
-	struct CameraData {
-		glm::mat4 viewProjection;
-	};
-
 	SceneViewPanel::SceneViewPanel(Core::ID windowID) : m_WindowID(windowID)
 	{
 		m_Hovered      = false;
@@ -73,30 +69,7 @@ namespace Enigma::Editor {
 		// Create camera
 		Renderer::ViewBox view = Renderer::ViewBox::SurfaceViewBox(m_Surface);
 		m_Camera = Renderer::OrthographicCamera::Create(view, 4, { 0.0f,0.0f, view.far - 1.0f });
-		m_CameraUniformBuffer = Renderer::UniformBuffer::Create(sizeof(CameraData), 0, Renderer::Usage::DynamicDraw);
-
-		// Configure render system for when a context is set
-		//m_RenderSystemConfig.renderAPI = window->GetAPI();
-		//m_RenderSystemConfig.surface = m_Surface;
-
-		// Configure entity picker shader
-		//Renderer::ShaderConfig entityPickerShaderConfig;
-		//entityPickerShaderConfig.vertexPath = "assets/DefaultShaders/EntityPicker.vert";
-		//entityPickerShaderConfig.pixelPath = "assets/DefaultShaders/EntityPicker.frag";
-		//m_EntityPickerShader = Renderer::Shader::Create(entityPickerShaderConfig);
-
-		//// Configure entity picker buffer
-		//Renderer::FrameBufferConfig entityPickerBufferConfig;
-		//entityPickerBufferConfig.width = m_Surface.scale.x;
-		//entityPickerBufferConfig.height = m_Surface.scale.y;
-
-		//Renderer::Attachment entityPickerAttachment;
-		//entityPickerAttachment.type           = Renderer::AttachmentType::ColorAttachment;
-		//entityPickerAttachment.internalFormat = Renderer::TexFormat::RED32I;
-		//entityPickerAttachment.format         = Renderer::TexFormat::RED_INT;
-
-		//entityPickerBufferConfig.attachments = { entityPickerAttachment };
-		//m_EntityPickerBuffer = Renderer::FrameBuffer::Create(entityPickerBufferConfig);
+		m_CameraUniformBuffer = Renderer::UniformBuffer::Create(sizeof(Renderer::CameraData), 0, Renderer::Usage::DynamicDraw);
 	}
 	void SceneViewPanel::SetContext(ref<Scene> context)
 	{
@@ -373,7 +346,7 @@ namespace Enigma::Editor {
 	{
 		// Configure window
 		ImGui::SetNextWindowPos(ToImVec(m_GizmoWindowPosition));
-		ImGui::SetNextWindowSize(ImVec2(57, 35));
+		ImGui::SetNextWindowSize(ImVec2(112, 45));
 		ImGui::SetNextWindowBgAlpha(0.5f);
 
 		ImGuiWindowFlags overlayFlags = 0;
@@ -386,18 +359,22 @@ namespace Enigma::Editor {
 		ImGui::Begin("SceneViewGizmoWindow", nullptr, overlayFlags);
 
 		// Gizmo button helper lamda
-		auto GizmoButton = [&](ImGuizmo::OPERATION type, const i8* name, const i8* desc, const i8* shortcut) {
-			ImGui::PushID(name);
-			if (m_GizmoType == type) ImGui::Text(name);
-			else {
-				// Create invisible button over the text
-				ImVec2 cursor = ImGui::GetCursorPos();
-				if (ImGui::InvisibleButton("InvisibleGizmoButton", ImGui::CalcTextSize(name))) {
-					m_GizmoType = type;
-				}
-				ImGui::SetCursorPos(cursor);
-				ImGui::TextDisabled(name);
+		auto GizmoButton = [&](ImGuizmo::OPERATION type, EditorIcon icon, const i8* desc, const i8* shortcut) {
+			ImGui::PushID(shortcut);
+			ImVec2 cursor = ImGui::GetCursorScreenPos();
+			u32 tint = (m_GizmoType == type) ? IM_COL32(255, 255, 255, 255) : IM_COL32(100, 100, 100, 255);
+			
+			// Create invisible button over the icon
+			if (ImGui::InvisibleButton("InvisibleGizmoButton", ImVec2(26, 26))) {
+				m_GizmoType = type;
 			}
+			ImGui::GetWindowDrawList()->AddImage(
+				ImGui::ToImGuiTexture(EditorGui::GetIcon(icon)),
+				cursor, ImVec2(cursor.x + 30, cursor.y + 30),
+				ImVec2(0, 1), ImVec2(1, 0),
+				tint
+			);
+
 			// Show gizmo description and keyboard shortcut
 			if (ImGui::BeginItemTooltip()) {
 				ImGui::Text(desc);
@@ -409,15 +386,15 @@ namespace Enigma::Editor {
 		};
 
 		// Translation
-		GizmoButton(ImGuizmo::OPERATION::TRANSLATE, "T", "Transform Gizmo", "W");
+		GizmoButton(ImGuizmo::OPERATION::TRANSLATE, EditorIcon_Translate, "Translate Gizmo", "W");
 		ImGui::SameLine();
 
 		// Scale
-		GizmoButton(ImGuizmo::OPERATION::SCALE, "S", "Scale Gizmo", "E");
+		GizmoButton(ImGuizmo::OPERATION::SCALE, EditorIcon_Scale, "Scale Gizmo", "E");
 		ImGui::SameLine();
 
 		// Rotate
-		GizmoButton(ImGuizmo::OPERATION::ROTATE, "R", "Rotate Gizmo", "R");
+		GizmoButton(ImGuizmo::OPERATION::ROTATE, EditorIcon_Rotate, "Rotate Gizmo", "R");
 
 		ImGui::End();
 	}

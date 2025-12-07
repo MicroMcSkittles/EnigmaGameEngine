@@ -18,6 +18,7 @@ namespace Enigma::Editor {
 
 		template<typename T> T& GetComponent();
 		template<typename T> bool HasComponent() const;
+		template<typename... Comps> bool HasComponents() const;
 		template<typename T> void RemoveComponent();
 		template<typename T, typename... Args> T& CreateComponent(Args&&... args);
 
