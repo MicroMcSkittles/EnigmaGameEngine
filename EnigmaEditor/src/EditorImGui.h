@@ -27,6 +27,8 @@ namespace Enigma::Editor {
 		EditorIcon_Translate,
 		EditorIcon_Rotate,
 		EditorIcon_Scale,
+		EditorIcon_Play,
+		EditorIcon_Pause,
 		EditorIcon_Last
 	};
 	struct EditorStyle {
@@ -86,6 +88,8 @@ namespace Enigma::Editor {
 			"resources/icons/TranslateIcon.png",
 			"resources/icons/RotateIcon.png",
 			"resources/icons/ScaleIcon.png",
+			"resources/icons/PlayIcon.png",
+			"resources/icons/PauseIcon.png"
 		};
 	};
 

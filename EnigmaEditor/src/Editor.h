@@ -11,6 +11,12 @@
 #include "UndoRedoAction.h"
 
 namespace Enigma::Editor {
+
+	enum EditorState {
+		EditorState_Editing = 0,
+		EditorState_Running
+	};
+
 	class EditorProcess : public Core::SubProcess {
 	public:
 		virtual void StartUp() override;
@@ -23,6 +29,9 @@ namespace Enigma::Editor {
 		virtual void ImGui() override;
 
 	private:
+		void StartRuntime();
+		void PauseRuntime();
+
 		void MainMenuBar();
 		void MainMenuBarFile();
 		void MainMenuBarEdit();
@@ -34,7 +43,10 @@ namespace Enigma::Editor {
 	private:
 		Core::ID m_WindowID;
 
+		u64 m_EditorState;
 		ref<Scene> m_ActiveScene;
+		ref<Scene> m_EditorScene;
+		ref<Scene> m_RuntimeScene;
 		Entity m_Entity;
 
 		unique<ActionHandler> m_ActionHandler;

@@ -1,6 +1,7 @@
 #pragma once
 #include <Enigma/Engine/ECS/EntityComponentSystem.h>
 #include <Enigma/Engine/ECS/Components.h>
+#include <Enigma/Engine/Physics/PhysicsEngine2D.h>
 #include <Enigma/Engine/DeltaTime.h>
 #include <Enigma/Engine/UUID.h>
 
@@ -18,6 +19,7 @@ namespace Enigma::Editor {
 		static ref<Scene> Create();
 		Scene();
 		Scene(const std::string& name);
+		Scene(const Scene& other);
 		~Scene();
 
 		// Create/Remove functions
@@ -50,8 +52,10 @@ namespace Enigma::Editor {
 
 	private:
 		ref<Engine::ECS::ECS> m_ECS;
+		ref<Engine::Physics::PhysicsEngine2D> m_PhysicsEngine;
 		std::unordered_map<Engine::UUID, Entity> m_EntityUUIDs;
 		std::string m_FileName;
+		bool m_Running;
 
 		friend class Entity;
 		friend class SceneSerializer;

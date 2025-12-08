@@ -90,6 +90,14 @@ namespace Enigma::Editor {
 
 		return false;
 	}
+	void RidgidBody2DMenuGui(Entity entity) {
+		bool degrees = false;
+		ImGui::Checkbox("Degrees", &degrees);
+		if (ImGui::BeginItemTooltip()) {
+			ImGui::Text("Show inputs in degrees");
+			ImGui::EndTooltip();
+		}
+	}
 	bool ColoredQuadGui(Entity entity) {
 		ColoredQuad& coloredQuad = entity.GetComponent<ColoredQuad>();
 
@@ -117,8 +125,6 @@ namespace Enigma::Editor {
 
 		return edited;
 	}
-
-	// TODO: fix the undo redo stuff
 
 	// Gui implementation
 	template <typename... Types>
@@ -374,7 +380,7 @@ namespace Enigma::Editor {
 		TransformMenuGui,
 		BlankMenuGui,
 		BlankMenuGui,
-		BlankMenuGui
+		RidgidBody2DMenuGui
 	};
 
 	EntityInspectorContext::EntityInspectorContext(Entity entity, ref<Scene> scene)

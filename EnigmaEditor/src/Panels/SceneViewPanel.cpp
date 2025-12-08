@@ -34,7 +34,7 @@ namespace Enigma::Editor {
 		Core::Application::EventCallback(e);
 	}
 
-	SceneViewPanel::SceneViewPanel(Core::ID windowID) : m_WindowID(windowID)
+	SceneViewPanel::SceneViewPanel(Core::ID windowID) : m_WindowID(windowID) 
 	{
 		m_Hovered      = false;
 		m_Focused      = false;
@@ -45,6 +45,7 @@ namespace Enigma::Editor {
 		m_MaxZoom      = 1.0f;
 		m_MinZoom      = 100.0f;
 		m_GizmoType    = ImGuizmo::OPERATION::TRANSLATE;
+		m_EditorState  = EditorState_Editing;
 
 		ref<Core::Window> window = Core::Application::GetWindow(m_WindowID);
 		Core::Application::UseRenderAPI(window->GetAPI());
@@ -70,19 +71,13 @@ namespace Enigma::Editor {
 		Renderer::ViewBox view = Renderer::ViewBox::SurfaceViewBox(m_Surface);
 		m_Camera = Renderer::OrthographicCamera::Create(view, 4, { 0.0f,0.0f, view.far - 1.0f });
 		m_CameraUniformBuffer = Renderer::UniformBuffer::Create(sizeof(Renderer::CameraData), 0, Renderer::Usage::DynamicDraw);
+	
+		m_RendererContext = Renderer::Renderer2D::Create(window->GetAPI(), m_Surface);
 	}
 	void SceneViewPanel::SetContext(ref<Scene> context)
 	{
 		m_Context = context;
-
-		if (context == nullptr) {
-			m_RendererContext = nullptr;
-			return;
-		}
-
-		ref<Core::Window> window = Core::Application::GetWindow(m_WindowID);
-		m_RendererContext = Renderer::Renderer2D::Create(window->GetAPI(), m_Surface);
-		m_RendererContext->Resize(m_Surface.scale.x, m_Surface.scale.y);
+		if (context == nullptr) m_RendererContext = nullptr;
 	}
 	void SceneViewPanel::SetSelected(Entity entity)
 	{
@@ -103,6 +98,15 @@ namespace Enigma::Editor {
 			m_Selected = {};
 			SetContext(e.GetScene());
 			return false;
+		});
+
+		handler.Dispatch<Event::StartRuntime>([&](Event::StartRuntime& e) {
+			m_EditorState = EditorState_Running;
+			return false; 
+		});
+		handler.Dispatch<Event::PauseRuntime>([&](Event::PauseRuntime& e) { 
+			m_EditorState = EditorState_Editing;
+			return false; 
 		});
 	}
 	void SceneViewPanel::OnScroll(Core::MouseScroll& e)
@@ -165,8 +169,7 @@ namespace Enigma::Editor {
 		}
 	}
 
-	void SceneViewPanel::ShowGui()
-	{
+	void SceneViewPanel::ShowGui() {
 		ImGui::Begin("Scene View");
 
 		// Get the size of ImGui window
@@ -180,14 +183,12 @@ namespace Enigma::Editor {
 			m_Camera->Resize(region.x, region.y);
 		}
 
-		glm::vec2 topLeft = FromImVec(ImGui::GetCursorScreenPos());
+		m_TopWindowPosition = FromImVec(ImGui::GetCursorScreenPos());
 
 		// Show texture
 		ImGui::Image(m_Frame);
 
-		// Find overlay positions
-		m_GizmoWindowPosition = topLeft + glm::vec2(3.0f, 3.0f);
-
+		m_BottomWindowPosition = m_TopWindowPosition + FromImVec(ImGui::GetWindowContentRegionMax());
 		// Process window status
 		m_Hovered = ImGui::IsItemHovered();
 		if (ImGui::IsMouseDown(ImGuiMouseButton_Right) && m_Hovered) {
@@ -201,6 +202,7 @@ namespace Enigma::Editor {
 
 		// Show overlay windows
 		ShowGizmoOverlayWindow();
+		ShowRuntimeOverlayWindow();
 
 		// Process mouse input
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && m_Hovered && !m_GizmoHovered) {
@@ -345,7 +347,9 @@ namespace Enigma::Editor {
 	void SceneViewPanel::ShowGizmoOverlayWindow()
 	{
 		// Configure window
-		ImGui::SetNextWindowPos(ToImVec(m_GizmoWindowPosition));
+		glm::vec2 windowPosition = m_TopWindowPosition;
+		windowPosition += glm::vec2(3.0f, 3.0f);
+		ImGui::SetNextWindowPos(ToImVec(windowPosition));
 		ImGui::SetNextWindowSize(ImVec2(112, 45));
 		ImGui::SetNextWindowBgAlpha(0.5f);
 
@@ -365,9 +369,7 @@ namespace Enigma::Editor {
 			u32 tint = (m_GizmoType == type) ? IM_COL32(255, 255, 255, 255) : IM_COL32(100, 100, 100, 255);
 			
 			// Create invisible button over the icon
-			if (ImGui::InvisibleButton("InvisibleGizmoButton", ImVec2(26, 26))) {
-				m_GizmoType = type;
-			}
+			if (ImGui::InvisibleButton("InvisibleGizmoButton", ImVec2(26, 26))) m_GizmoType = type;
 			ImGui::GetWindowDrawList()->AddImage(
 				ImGui::ToImGuiTexture(EditorGui::GetIcon(icon)),
 				cursor, ImVec2(cursor.x + 30, cursor.y + 30),
@@ -402,8 +404,13 @@ namespace Enigma::Editor {
 	void SceneViewPanel::ShowRuntimeOverlayWindow()
 	{
 		// Configure window
-		ImGui::SetNextWindowPos(ToImVec(m_RuntimeWindowPosition));
-		//ImGui::SetNextWindowSize(ImVec2(57, 35));
+		glm::vec2 windowSize = { 54, 54 };
+		glm::vec2 windowPosition = glm::vec2(0.0f, 0.0f);
+		windowPosition.x = ((m_TopWindowPosition.x + m_BottomWindowPosition.x) / 2.0f) - (windowSize.x / 2.0f);
+		windowPosition.y = m_TopWindowPosition.y + 3.0f;
+		
+		ImGui::SetNextWindowPos(ToImVec(windowPosition));
+		ImGui::SetNextWindowSize(ToImVec(windowSize));
 		ImGui::SetNextWindowBgAlpha(0.5f);
 
 		ImGuiWindowFlags overlayFlags = 0;
@@ -413,8 +420,42 @@ namespace Enigma::Editor {
 		overlayFlags |= ImGuiWindowFlags_NoResize;
 		overlayFlags |= ImGuiWindowFlags_NoTitleBar;
 
-		ImGui::Begin("SceneViewRuntimeWindow", nullptr, overlayFlags);
-		ImGui::Button("Run");
+		ImGui::Begin("SceneViewRuntimeControllsWindow", nullptr, overlayFlags);
+
+		// Get the correct icon
+		ref<Renderer::Texture> icon = nullptr;
+		if      (m_EditorState == EditorState_Editing) icon = EditorGui::GetIcon(EditorIcon_Play);
+		else if (m_EditorState == EditorState_Running) icon = EditorGui::GetIcon(EditorIcon_Pause);
+		
+		// Tint the image if it is hovered
+		u32 tint = IM_COL32(255, 255, 255, 255);
+		ImVec2 imageMin = ImVec2(ImGui::GetCursorScreenPos().x - 2.0f, ImGui::GetCursorScreenPos().y);
+		ImVec2 imageMax = ImVec2(imageMin.x + 40.0f, imageMin.y + 40.0f);
+		ImVec2 mousePos = ImGui::GetMousePos();
+		if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsMouseHoveringRect(imageMin, imageMax) && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId)) {
+			tint = IM_COL32(100, 100, 100, 255);
+		}
+
+		// Draw image
+		ImGui::GetWindowDrawList()->AddImage(
+			ImGui::ToImGuiTexture(icon),
+			imageMin, imageMax,
+			ImVec2(0.05f, 0.95f), ImVec2(0.95f, 0.05f),
+			tint
+		);
+
+		// Handle Clicks
+		if (ImGui::InvisibleButton("InvisiblePausePlayButton", ImVec2(35, 35))) {
+			if (m_EditorState == EditorState_Editing) {
+				Event::StartRuntime e;
+				Core::Application::EventCallback(e);
+			}
+			else if (m_EditorState == EditorState_Running) {
+				Event::PauseRuntime e;
+				Core::Application::EventCallback(e);
+			}
+		}
+
 		ImGui::End();
 	}
 

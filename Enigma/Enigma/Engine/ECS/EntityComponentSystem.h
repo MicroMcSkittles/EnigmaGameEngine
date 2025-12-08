@@ -33,6 +33,8 @@ namespace Enigma::Engine::ECS {
 		virtual bool Contains(EntityID entityID) = 0; // returns true if the entity has a component in the component pool
 		virtual u64 Size() = 0;
 		virtual std::vector<u64>& GetIDs() = 0;
+
+		virtual ref<ComponentPoolInterface> Clone() = 0;
 	};
 
 	template<typename T>
@@ -44,6 +46,12 @@ namespace Enigma::Engine::ECS {
 		virtual bool Contains(EntityID entityID) override { return m_Components.Contains(entityID); }
 		virtual u64 Size() override { return m_Components.Size(); }
 		virtual std::vector<u64>& GetIDs() override { return m_Components.GetIDs(); }
+
+		virtual ref<ComponentPoolInterface> Clone() override {
+			ref<ComponentPool<T>> pool = CreateRef<ComponentPool<T>>();
+			pool->m_Components = Core::SparseSet<T, ComponentPoolPageSize>(m_Components);
+			return pool;
+		}
 
 		T& GetComponent(EntityID entityID) { return m_Components.Get(entityID); }
 

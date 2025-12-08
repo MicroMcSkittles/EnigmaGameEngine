@@ -6,6 +6,7 @@
 #include "Scene/Scene.h"
 #include "Scene/Entity.h"
 #include "UndoRedoAction.h"
+#include "Editor.h"
 
 #include "Panels/InspectorPanel.h"
 
@@ -20,6 +21,8 @@ namespace Enigma::Editor::Event {
 		const u64 NewAction           = Core::Hash("NewAction");
 		const u64 Undo                = Core::Hash("Undo");
 		const u64 Redo                = Core::Hash("Redo");
+		const u64 StartRuntime        = Core::Hash("StartRuntime");
+		const u64 PauseRuntime        = Core::Hash("PauseRuntime");
 	}
 
 	/*class Save : public Core::Event {
@@ -33,6 +36,26 @@ namespace Enigma::Editor::Event {
 			return "Save Event";
 		}
 	};*/
+
+	class StartRuntime : public Core::Event {
+	public:
+		EVENT_TYPE(StartRuntime);
+		EVENT_CATEGORY(Core::EventCategory::EventNone);
+
+		virtual std::string ToString() override {
+			return "Start Runtime Event";
+		}
+
+	};
+	class PauseRuntime : public Core::Event {
+	public:
+		EVENT_TYPE(PauseRuntime);
+		EVENT_CATEGORY(Core::EventCategory::EventNone);
+
+		virtual std::string ToString() override {
+			return "Pause Runtime Event";
+		}
+	};
 
 	class SceneChange : public Core::Event {
 	public:

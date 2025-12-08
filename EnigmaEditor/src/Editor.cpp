@@ -46,21 +46,20 @@ namespace Enigma::Editor {
 		EditorGui::SetStyle(style);
 
 		// Load Scene
-		m_ActiveScene = Scene::Create();
-		SceneSerializer serializer(m_ActiveScene);
+		m_EditorScene = Scene::Create();
+		SceneSerializer serializer(m_EditorScene);
 		serializer.Deserialize("assets/Scene.scene");
+		m_ActiveScene = m_EditorScene;
 
 		// Create action handler
 		m_ActionHandler = CreateUnique<ActionHandler>();
 
-		// Configure Inspector
+		// Create Panels
 		m_InspectorPanel = CreateUnique<InspectorPanel>();
 
-		// Configure Scene View
 		m_SceneViewPanel = CreateUnique<SceneViewPanel>(m_WindowID);
 		m_SceneViewPanel->SetContext(m_ActiveScene);
 
-		// Configure Scene Hierachy
 		m_SceneHierachyPanel = CreateUnique<SceneHierachyPanel>();
 		m_SceneHierachyPanel->SetContext(m_ActiveScene);
 	}
@@ -79,11 +78,13 @@ namespace Enigma::Editor {
 		});
 
 		handler.Dispatch<Event::EntitySelected>([&](Event::EntitySelected& e) {
-			//m_InspectorPanel->SetContext(EntityInspectorContext::Create(e.GetEntity(), m_ActiveScene));
 			Event::NewInspectorContext contextEvent(EntityInspectorContext::Create(e.GetEntity(), m_ActiveScene));
 			Core::Application::EventCallback(contextEvent);
 			return false; 
 		});
+
+		handler.Dispatch<Event::StartRuntime>([&](Event::StartRuntime& e) { StartRuntime(); return false; });
+		handler.Dispatch<Event::PauseRuntime>([&](Event::PauseRuntime& e) { PauseRuntime(); return false; });
 
 		m_ActionHandler->OnEvent(e);
 
@@ -93,10 +94,114 @@ namespace Enigma::Editor {
 
 		return false;
 	}
+	void EditorProcess::StartRuntime() {
+		m_EditorState = EditorState_Running;
+		m_RuntimeScene = CreateRef<Scene>(*m_EditorScene.get());
+		m_ActiveScene = m_RuntimeScene;
+
+		Event::SceneChange e(m_ActiveScene);
+		Core::Application::EventCallback(e);
+
+		m_ActiveScene->StartRuntime();
+
+		EditorStyle& style = EditorGui::GetStyle();
+		style.windowBackground = glm::vec4(0.05f, 0.0525f, 0.055f, 1.0f);
+		style.header = glm::vec4(0.2f / 2.0f, 0.205f / 2.0f, 0.21f / 2.0f, 1.0f);
+		style.headerHovered = glm::vec4(0.3f / 2.0f, 0.305f / 2.0f, 0.31f / 2.0f, 1.0f);
+		style.headerActive = glm::vec4(0.15f / 2.0f, 0.1505f / 2.0f, 0.151f / 2.0f, 1.0f);
+		style.button = glm::vec4(0.2f / 2.0f, 0.205f / 2.0f, 0.21f / 2.0f, 1.0f);
+		style.buttonHovered = glm::vec4(0.3f / 2.0f, 0.305f / 2.0f, 0.31f / 2.0f, 1.0f);
+		style.buttonActive = glm::vec4(0.15f / 2.0f, 0.1505f / 2.0f, 0.151f / 2.0f, 1.0f);
+
+		// Frame Background Colors
+		style.frameBackground = glm::vec4(0.2f / 2.0f, 0.205f / 2.0f, 0.21f / 2.0f, 1.0f);
+		style.frameBackgroundHovered = glm::vec4(0.3f / 2.0f, 0.305f / 2.0f, 0.31f / 2.0f, 1.0f);
+		style.frameBackgroundActive = glm::vec4(0.15f / 2.0f, 0.1505f / 2.0f, 0.151f / 2.0f, 1.0f);
+
+		// Tab Colors
+		style.tab = glm::vec4(0.15f / 2.0f, 0.1505f / 2.0f, 0.151f / 2.0f, 1.0f);
+		style.tabHovered = glm::vec4(0.38f / 2.0f, 0.3805f / 2.0f, 0.381f / 2.0f, 1.0f);
+		style.tabActive = glm::vec4(0.28f / 2.0f, 0.2805f / 2.0f, 0.281f / 2.0f, 1.0f);
+		style.tabUnfocused = glm::vec4(0.15f / 2.0f, 0.1505f / 2.0f, 0.151f / 2.0f, 1.0f);
+		style.tabUnfocusedActive = glm::vec4(0.2f / 2.0f, 0.205f / 2.0f, 0.21f / 2.0f, 1.0f);
+
+		// Title Background Colors
+		style.titleBackground = glm::vec4(0.15f / 2.0f, 0.1505f / 2.0f, 0.151f / 2.0f, 1.0f);
+		style.titleBackgroundActive = glm::vec4(0.15f / 2.0f, 0.1505f / 2.0f, 0.151f / 2.0f, 1.0f);
+		style.titleBackgroundCollapsed = glm::vec4(0.95f / 2.0f, 0.1505f / 2.0f, 0.951f / 2.0f, 1.0f);
+
+		// Float Input Colors
+		style.colorX = glm::vec4(0.8f / 2.0f, 0.1f / 2.0f, 0.15f / 2.0f, 1.0f);
+		style.colorY = glm::vec4(0.2f / 2.0f, 0.7f / 2.0f, 0.2f / 2.0f, 1.0f);
+		style.colorZ = glm::vec4(0.1f / 2.0f, 0.25f / 2.0f, 0.8f / 2.0f, 1.0f);
+		style.colorW = glm::vec4(0.8f / 2.0f, 0.15f / 2.0f, 0.8f / 2.0f, 1.0f);
+
+		style.pressedColorX = glm::vec4(0.9f / 2.0f, 0.2f / 2.0f, 0.2f / 2.0f, 1.0f);
+		style.pressedColorY = glm::vec4(0.3f / 2.0f, 0.8f / 2.0f, 0.3f / 2.0f, 1.0f);
+		style.pressedColorZ = glm::vec4(0.2f / 2.0f, 0.35f / 2.0f, 0.9f / 2.0f, 1.0f);
+		style.pressedColorW = glm::vec4(0.9f / 2.0f, 0.25f / 2.0f, 0.8f / 2.0f, 1.0f);
+		
+		EditorGui::SetStyle(EditorGui::GetStyle());
+	}
+	void EditorProcess::PauseRuntime() {
+		m_EditorState = EditorState_Editing;
+		m_ActiveScene = m_EditorScene;
+		m_RuntimeScene = nullptr;
+
+		Event::SceneChange e(m_ActiveScene);
+		Core::Application::EventCallback(e);
+
+		m_ActiveScene->EndRuntime();
+
+		EditorStyle& style = EditorGui::GetStyle();
+
+		style.windowBackground = glm::vec4(0.1f, 0.105f, 0.11f, 1.0f);
+
+		// Header Colors
+		style.header = glm::vec4(0.2f, 0.205f, 0.21f, 1.0f);
+		style.headerHovered = glm::vec4(0.3f, 0.305f, 0.31f, 1.0f);
+		style.headerActive = glm::vec4(0.15f, 0.1505f, 0.151f, 1.0f);
+
+		// Button Colors
+		style.button = glm::vec4(0.2f, 0.205f, 0.21f, 1.0f);
+		style.buttonHovered = glm::vec4(0.3f, 0.305f, 0.31f, 1.0f);
+		style.buttonActive = glm::vec4(0.15f, 0.1505f, 0.151f, 1.0f);
+
+		// Frame Background Colors
+		style.frameBackground = glm::vec4(0.2f, 0.205f, 0.21f, 1.0f);
+		style.frameBackgroundHovered = glm::vec4(0.3f, 0.305f, 0.31f, 1.0f);
+		style.frameBackgroundActive = glm::vec4(0.15f, 0.1505f, 0.151f, 1.0f);
+
+		// Tab Colors
+		style.tab = glm::vec4(0.15f, 0.1505f, 0.151f, 1.0f);
+		style.tabHovered = glm::vec4(0.38f, 0.3805f, 0.381f, 1.0f);
+		style.tabActive = glm::vec4(0.28f, 0.2805f, 0.281f, 1.0f);
+		style.tabUnfocused = glm::vec4(0.15f, 0.1505f, 0.151f, 1.0f);
+		style.tabUnfocusedActive = glm::vec4(0.2f, 0.205f, 0.21f, 1.0f);
+
+		// Title Background Colors
+		style.titleBackground = glm::vec4(0.15f, 0.1505f, 0.151f, 1.0f);
+		style.titleBackgroundActive = glm::vec4(0.15f, 0.1505f, 0.151f, 1.0f);
+		style.titleBackgroundCollapsed = glm::vec4(0.95f, 0.1505f, 0.951f, 1.0f);
+
+		// Float Input Colors
+		style.colorX = glm::vec4(0.8f, 0.1f, 0.15f, 1.0f);
+		style.colorY = glm::vec4(0.2f, 0.7f, 0.2f, 1.0f);
+		style.colorZ = glm::vec4(0.1f, 0.25f, 0.8f, 1.0f);
+		style.colorW = glm::vec4(0.8f, 0.15f, 0.8f, 1.0f);
+
+		style.pressedColorX = glm::vec4(0.9f, 0.2f, 0.2f, 1.0f);
+		style.pressedColorY = glm::vec4(0.3f, 0.8f, 0.3f, 1.0f);
+		style.pressedColorZ = glm::vec4(0.2f, 0.35f, 0.9f, 1.0f);
+		style.pressedColorW = glm::vec4(0.9f, 0.25f, 0.8f, 1.0f);
+
+		EditorGui::SetStyle(EditorGui::GetStyle());
+	}
 
 	void EditorProcess::Update(Engine::DeltaTime deltaTime)
 	{
 		m_SceneViewPanel->Update(deltaTime);
+		m_ActiveScene->Update(deltaTime);
 	}
 	void EditorProcess::Render()
 	{
@@ -142,9 +247,9 @@ namespace Enigma::Editor {
 	void EditorProcess::MainMenuBarFile()
 	{
 		if (!ImGui::BeginMenu("File")) return;
-		if (ImGui::MenuItem("Save Scene", "CTRL+S"))       SaveActiveScene();
-		if (ImGui::MenuItem("Save Scene As"))              SaveActiveScene(true);
-		if (ImGui::MenuItem("Open Scene", "CTRL+O")) OpenScene();
+		if (ImGui::MenuItem("Save Scene", "CTRL+S")) SaveActiveScene();
+		if (ImGui::MenuItem("Save Scene As"))        SaveActiveScene(true);
+		if (ImGui::MenuItem("Open Scene", "CTRL+O", nullptr, m_EditorState == EditorState_Editing)) OpenScene();
 		ImGui::EndMenu();
 	}
 
@@ -179,18 +284,18 @@ namespace Enigma::Editor {
 
 	void EditorProcess::SaveActiveScene(bool dialog)
 	{
-		if (m_ActiveScene->GetFileName().empty() || dialog) {
-			m_ActiveScene->GetFileName() = Core::System::SaveFileDialog("Enigma Scene (*.scene)\0*.scene\0", m_WindowID);
+		if (m_EditorScene->GetFileName().empty() || dialog) {
+			m_EditorScene->GetFileName() = Core::System::SaveFileDialog("Enigma Scene (*.scene)\0*.scene\0", m_WindowID);
 		}
 
 		// Make sure filepath has the proper extension
-		std::filesystem::path scenePath = m_ActiveScene->GetFileName();
+		std::filesystem::path scenePath = m_EditorScene->GetFileName();
 		if (!scenePath.has_extension() || scenePath.extension() != SceneSerializer::FileExtension) {
-			m_ActiveScene->GetFileName().append(SceneSerializer::FileExtension);
+			m_EditorScene->GetFileName().append(SceneSerializer::FileExtension);
 		}
 
-		SceneSerializer serializer(m_ActiveScene);
-		serializer.Serialize(m_ActiveScene->GetFileName());
+		SceneSerializer serializer(m_EditorScene);
+		serializer.Serialize(m_EditorScene->GetFileName());
 	}
 	void EditorProcess::OpenScene()
 	{

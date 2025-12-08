@@ -7,13 +7,15 @@ namespace Enigma::Engine::ECS {
 	ECS::ECS() { 
 		m_EntityCount = 0;
 	}
-	ECS::ECS(const ECS& other) : 
-		m_ComponentPools(other.m_ComponentPools), 
-		m_ComponentPoolMaskBits(other.m_ComponentPoolMaskBits),
-		m_EntityComponentMasks(other.m_EntityComponentMasks),
-		m_EntityGroups(other.m_EntityGroups),
-		m_AvailableEntityIDs(other.m_AvailableEntityIDs),
-		m_EntityCount(other.m_EntityCount) { }
+	ECS::ECS(const ECS& other) { 
+		m_EntityComponentMasks = other.m_EntityComponentMasks;
+		m_AvailableEntityIDs = other.m_AvailableEntityIDs;
+		m_EntityCount = other.m_EntityCount;
+
+		for (const auto& [hash, bit] : other.m_ComponentPoolMaskBits) m_ComponentPoolMaskBits.insert({ hash, bit });
+		for (const auto& [hash, group] : other.m_EntityGroups) m_EntityGroups.insert({ hash, group });
+		for (const auto& [hash, pool] : other.m_ComponentPools) m_ComponentPools.insert({ hash, pool->Clone() });
+	}
 	ECS::~ECS() { }
 
 	EntityID ECS::CreateEntity() {

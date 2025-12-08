@@ -17,6 +17,11 @@ namespace Enigma::Core {
 	public:
 
 		SparseSet() { }
+		SparseSet(const SparseSet& other) { 
+			m_Dense = std::vector<T>(other.m_Dense.begin(), other.m_Dense.end());
+			m_IDMap = std::vector<u64>(other.m_IDMap.begin(), other.m_IDMap.end());
+			m_SparsePages = std::vector<std::array<u64, PageSize>>(other.m_SparsePages.begin(), other.m_SparsePages.end());
+		}
 		~SparseSet() { Clear(); }
 
 		void Create(u64 id) {

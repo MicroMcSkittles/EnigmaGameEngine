@@ -147,6 +147,8 @@ namespace Enigma::Renderer {
 
 		if (m_OutputBuffer != nullptr) m_OutputBuffer->Unbind();
 		s_Quad->Unbind();
+
+		m_CurrentECS = nullptr;
 	}
 
 	void Renderer2D::ColoredQuadSystem(Engine::ECS::EntityID entityID, Engine::ECS::Transform& transform, Engine::ECS::ColoredQuad& quad)

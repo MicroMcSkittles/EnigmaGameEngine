@@ -68,11 +68,13 @@ namespace Enigma::Editor {
 		using namespace Serialization;
 		ImageConfig iconConfig;
 		iconConfig.minFilter = Renderer::TexFilterMode::Linear;
-		s_Data->icons[EditorIcon_Menu]      = ImageLoader::Load(style.iconPaths[EditorIcon_Menu],     iconConfig);
-		s_Data->icons[EditorIcon_Settings]  = ImageLoader::Load(style.iconPaths[EditorIcon_Settings], iconConfig);
+		s_Data->icons[EditorIcon_Menu]      = ImageLoader::Load(style.iconPaths[EditorIcon_Menu],      iconConfig);
+		s_Data->icons[EditorIcon_Settings]  = ImageLoader::Load(style.iconPaths[EditorIcon_Settings],  iconConfig);
 		s_Data->icons[EditorIcon_Translate] = ImageLoader::Load(style.iconPaths[EditorIcon_Translate], iconConfig);
-		s_Data->icons[EditorIcon_Rotate]    = ImageLoader::Load(style.iconPaths[EditorIcon_Rotate],   iconConfig);
-		s_Data->icons[EditorIcon_Scale]     = ImageLoader::Load(style.iconPaths[EditorIcon_Scale],    iconConfig);
+		s_Data->icons[EditorIcon_Rotate]    = ImageLoader::Load(style.iconPaths[EditorIcon_Rotate],    iconConfig);
+		s_Data->icons[EditorIcon_Scale]     = ImageLoader::Load(style.iconPaths[EditorIcon_Scale],     iconConfig);
+		s_Data->icons[EditorIcon_Play]      = ImageLoader::Load(style.iconPaths[EditorIcon_Play],      iconConfig);
+		s_Data->icons[EditorIcon_Pause]     = ImageLoader::Load(style.iconPaths[EditorIcon_Pause],     iconConfig);
 	}
 
 	EditorStyle& EditorGui::GetStyle() {

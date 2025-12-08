@@ -3,7 +3,6 @@
 #include "Scene/Entity.h"
 
 #include <Enigma/Core/Event/InputEvent.h>
-//#include <Enigma/Engine/ECS/RenderSystem2D.h>
 #include <Enigma/Engine/Input.h>
 #include <Enigma/Renderer/Renderer2D.h>
 
@@ -40,12 +39,12 @@ namespace Enigma::Editor {
 		// Context Variables
 		ref<Scene> m_Context;
 		Entity m_Selected;
+		u64 m_EditorState;
 
 		// Render Variables
 		ref<Renderer::Renderer2D> m_RendererContext;
 		ref<Renderer::Texture> m_Frame;
 		ref<Renderer::Camera> m_Camera;
-
 		ref<Renderer::UniformBuffer> m_CameraUniformBuffer;
 
 		// Input Context
@@ -57,7 +56,6 @@ namespace Enigma::Editor {
 		bool m_UsingGizmo; // Is the user using a gizmo
 		i32 m_GizmoType;
 		Engine::ECS::Transform m_OriginalTransform; // The original transform of the entity currently being moved
-		glm::vec2 m_GizmoWindowPosition;
 		
 		// Editor Camera Input Variables
 		bool m_Hovered; // Is the user hovering the scene view image
@@ -68,7 +66,8 @@ namespace Enigma::Editor {
 		f32 m_MinZoom; // The most the user can be zoomed out
 
 		// Other
-		glm::vec2 m_RuntimeWindowPosition;
+		glm::vec2 m_TopWindowPosition;
+		glm::vec2 m_BottomWindowPosition;
 	};
 
 }

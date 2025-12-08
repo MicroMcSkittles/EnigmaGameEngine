@@ -35,12 +35,15 @@ namespace Enigma::Engine::Physics {
 		// TODO: impl angular momentum
 
 		// Calculate the rotation of the ridgid body
-		glm::mat3 cross(0.0f);
-		cross[0][1] = -ridgidBody.angularVelocity;
-		cross[1][0] = ridgidBody.angularVelocity;
-		ridgidBody.rotationMatrix += (cross * ridgidBody.rotationMatrix) * m_Config.stepSize;
+		//glm::mat3 cross(0.0f);
+		//cross[0][1] = -ridgidBody.angularVelocity;
+		//cross[1][0] = ridgidBody.angularVelocity;
+		//ridgidBody.rotationMatrix += (cross * ridgidBody.rotationMatrix) * m_Config.stepSize;
 
-		transform.rotation = glm::quat_cast(ridgidBody.rotationMatrix);
+		//transform.rotation = glm::quat_cast(ridgidBody.rotationMatrix);
+		glm::vec3 eularAngles = glm::eulerAngles(transform.rotation);
+		eularAngles.z += ridgidBody.angularVelocity / 1000.0f;
+		transform.rotation = glm::quat(eularAngles);
 		//transform.rotation = glm::rotate(transform.rotation, ridgidBody.angularVelocity, { 0.0f,0.0f,1.0f });
 		transform.position += glm::vec3(ridgidBody.linearVelocity * m_Config.stepSize, 0.0f);
 	}

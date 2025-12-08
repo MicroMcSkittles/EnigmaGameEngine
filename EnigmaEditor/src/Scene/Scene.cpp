@@ -23,14 +23,40 @@ namespace Enigma::Editor {
 		Entity root = { m_ECS->CreateEntity(), this };
 		root.CreateComponent<EntityMetaData>("Untitled Scene");
 		root.CreateComponent<SceneMetaData>();
+
+		m_Running = false;
+		m_PhysicsEngine = Engine::Physics::PhysicsEngine2D::Create(m_ECS);
 	}
 	Scene::Scene(const std::string& name) {
 		m_ECS = Engine::ECS::ECS::Create();
 		Entity root = { m_ECS->CreateEntity(), this };
 		root.CreateComponent<EntityMetaData>(name);
 		root.CreateComponent<SceneMetaData>();
+
+		m_Running = false;
+		m_PhysicsEngine = Engine::Physics::PhysicsEngine2D::Create(m_ECS);
 	}
-	Scene::~Scene() { }
+	Scene::Scene(const Scene& other) {
+		m_FileName = other.m_FileName;
+		m_Running = other.m_Running;
+
+		m_ECS = CreateRef<ECS>(*other.m_ECS.get());
+		
+		for (const auto& [uuid, entity] : other.m_EntityUUIDs) m_EntityUUIDs.insert({ uuid, { entity.GetID(), this } });
+	
+		// Update parent and child entities in metadata components
+		View<EntityMetaData> view(m_ECS);
+		view.ForEach([&](EntityID id, EntityMetaData& data) {
+			if (data.parent) data.parent = { data.parent.GetID(), this };
+			for (Entity& child : data.children.GetData()) child = { child.GetID(), this };
+		});
+
+		m_PhysicsEngine = Engine::Physics::PhysicsEngine2D::Create(m_ECS);
+	}
+	Scene::~Scene() { 
+		std::string name = GetName();
+		LOG_WARNING("Destoried Scene \"%s\"", name.c_str());
+	}
 
 	Entity Scene::GetEntity(Engine::UUID uuid) { 
 		if (!m_EntityUUIDs.count(uuid)) return {};
@@ -178,13 +204,15 @@ namespace Enigma::Editor {
 	}
 
 	void Scene::StartRuntime() {
-
+		m_Running = true;
 	}
 	void Scene::EndRuntime() {
-
+		m_Running = false;
 	}
 	void Scene::Update(Engine::DeltaTime deltaTime) {
+		if (!m_Running) return;
 
+		m_PhysicsEngine->Update(deltaTime);
 	}
 
 	void Scene::ForEach(std::function<void(Entity)> func) {
