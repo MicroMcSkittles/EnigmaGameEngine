@@ -4,14 +4,14 @@
 
 namespace Enigma::Engine::ECS{
 
-	Transform Transform::ApplyParent(ref<ECS> ecs) const
+	TransformComponent TransformComponent::ApplyParent(ref<ECS> ecs) const
 	{
 		// Return the unmodifed data if there is no parent
 		if (parent == InvalidEntityID) return *this;
 
 		//LOG_WARNING("Transform Transform::ApplyParent() not impl yet!!");
-		Transform result;
-		Transform parentTransform = ecs->GetComponent<Transform>(parent).ApplyParent(ecs);
+		TransformComponent result;
+		TransformComponent parentTransform = ecs->GetComponent<TransformComponent>(parent).ApplyParent(ecs);
 
 		glm::mat4 parentModel = parentTransform.GetRelativeMatrix();
 
@@ -22,7 +22,7 @@ namespace Enigma::Engine::ECS{
 		return result;
 	}
 
-	glm::mat4 Transform::GetRelativeMatrix() const
+	glm::mat4 TransformComponent::GetRelativeMatrix() const
 	{
 		glm::mat4 result = glm::mat4(1.0f);
 		result = glm::translate(result, position);
@@ -32,11 +32,11 @@ namespace Enigma::Engine::ECS{
 		return result;
 	}
 
-	glm::mat4 Transform::GetWorldMatrix(ref<ECS> ecs) const
+	glm::mat4 TransformComponent::GetWorldMatrix(ref<ECS> ecs) const
 	{
 		if (parent == InvalidEntityID) return GetRelativeMatrix();
 
-		Transform parentTransform = ecs->GetComponent<Transform>(parent).ApplyParent(ecs);
+		TransformComponent parentTransform = ecs->GetComponent<TransformComponent>(parent).ApplyParent(ecs);
 		
 		glm::mat4 result = GetRelativeMatrix();
 		result = parentTransform.GetWorldMatrix(ecs) * result;

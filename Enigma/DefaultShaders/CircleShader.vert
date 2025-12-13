@@ -10,6 +10,8 @@ layout (std140, binding = 1) uniform Model {
     mat4 u_Model;
     vec4 u_Tint;
     int u_EntityID;
+    float u_Thickness;
+    float u_Fade;
 };
 
 struct VertexOutput {

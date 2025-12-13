@@ -12,6 +12,8 @@ namespace Enigma::Engine::ECS {
 		m_AvailableEntityIDs = other.m_AvailableEntityIDs;
 		m_EntityCount = other.m_EntityCount;
 
+		//m_ComponentPoolMaskBits = other.m_ComponentPoolMaskBits;
+		//m_EntityGroups = other.m_EntityGroups;
 		for (const auto& [hash, bit] : other.m_ComponentPoolMaskBits) m_ComponentPoolMaskBits.insert({ hash, bit });
 		for (const auto& [hash, group] : other.m_EntityGroups) m_EntityGroups.insert({ hash, group });
 		for (const auto& [hash, pool] : other.m_ComponentPools) m_ComponentPools.insert({ hash, pool->Clone() });

@@ -52,7 +52,7 @@ namespace Enigma::Editor {
 		m_ActiveScene = m_EditorScene;
 
 		// Create action handler
-		m_ActionHandler = CreateUnique<ActionHandler>();
+		m_EditorActionHandler = CreateUnique<ActionHandler>();
 
 		// Create Panels
 		m_InspectorPanel = CreateUnique<InspectorPanel>();
@@ -86,7 +86,8 @@ namespace Enigma::Editor {
 		handler.Dispatch<Event::StartRuntime>([&](Event::StartRuntime& e) { StartRuntime(); return false; });
 		handler.Dispatch<Event::PauseRuntime>([&](Event::PauseRuntime& e) { PauseRuntime(); return false; });
 
-		m_ActionHandler->OnEvent(e);
+		if (m_EditorState == EditorState_Editing) m_EditorActionHandler->OnEvent(e);
+		else if (m_EditorState == EditorState_Running) m_RuntimeActionHandler->OnEvent(e);
 
 		m_SceneViewPanel->OnEvent(e);
 		m_SceneHierachyPanel->OnEvent(e);
@@ -104,44 +105,10 @@ namespace Enigma::Editor {
 
 		m_ActiveScene->StartRuntime();
 
-		EditorStyle& style = EditorGui::GetStyle();
-		style.windowBackground = glm::vec4(0.05f, 0.0525f, 0.055f, 1.0f);
-		style.header = glm::vec4(0.2f / 2.0f, 0.205f / 2.0f, 0.21f / 2.0f, 1.0f);
-		style.headerHovered = glm::vec4(0.3f / 2.0f, 0.305f / 2.0f, 0.31f / 2.0f, 1.0f);
-		style.headerActive = glm::vec4(0.15f / 2.0f, 0.1505f / 2.0f, 0.151f / 2.0f, 1.0f);
-		style.button = glm::vec4(0.2f / 2.0f, 0.205f / 2.0f, 0.21f / 2.0f, 1.0f);
-		style.buttonHovered = glm::vec4(0.3f / 2.0f, 0.305f / 2.0f, 0.31f / 2.0f, 1.0f);
-		style.buttonActive = glm::vec4(0.15f / 2.0f, 0.1505f / 2.0f, 0.151f / 2.0f, 1.0f);
+		m_RuntimeActionHandler = CreateUnique<ActionHandler>();
 
-		// Frame Background Colors
-		style.frameBackground = glm::vec4(0.2f / 2.0f, 0.205f / 2.0f, 0.21f / 2.0f, 1.0f);
-		style.frameBackgroundHovered = glm::vec4(0.3f / 2.0f, 0.305f / 2.0f, 0.31f / 2.0f, 1.0f);
-		style.frameBackgroundActive = glm::vec4(0.15f / 2.0f, 0.1505f / 2.0f, 0.151f / 2.0f, 1.0f);
-
-		// Tab Colors
-		style.tab = glm::vec4(0.15f / 2.0f, 0.1505f / 2.0f, 0.151f / 2.0f, 1.0f);
-		style.tabHovered = glm::vec4(0.38f / 2.0f, 0.3805f / 2.0f, 0.381f / 2.0f, 1.0f);
-		style.tabActive = glm::vec4(0.28f / 2.0f, 0.2805f / 2.0f, 0.281f / 2.0f, 1.0f);
-		style.tabUnfocused = glm::vec4(0.15f / 2.0f, 0.1505f / 2.0f, 0.151f / 2.0f, 1.0f);
-		style.tabUnfocusedActive = glm::vec4(0.2f / 2.0f, 0.205f / 2.0f, 0.21f / 2.0f, 1.0f);
-
-		// Title Background Colors
-		style.titleBackground = glm::vec4(0.15f / 2.0f, 0.1505f / 2.0f, 0.151f / 2.0f, 1.0f);
-		style.titleBackgroundActive = glm::vec4(0.15f / 2.0f, 0.1505f / 2.0f, 0.151f / 2.0f, 1.0f);
-		style.titleBackgroundCollapsed = glm::vec4(0.95f / 2.0f, 0.1505f / 2.0f, 0.951f / 2.0f, 1.0f);
-
-		// Float Input Colors
-		style.colorX = glm::vec4(0.8f / 2.0f, 0.1f / 2.0f, 0.15f / 2.0f, 1.0f);
-		style.colorY = glm::vec4(0.2f / 2.0f, 0.7f / 2.0f, 0.2f / 2.0f, 1.0f);
-		style.colorZ = glm::vec4(0.1f / 2.0f, 0.25f / 2.0f, 0.8f / 2.0f, 1.0f);
-		style.colorW = glm::vec4(0.8f / 2.0f, 0.15f / 2.0f, 0.8f / 2.0f, 1.0f);
-
-		style.pressedColorX = glm::vec4(0.9f / 2.0f, 0.2f / 2.0f, 0.2f / 2.0f, 1.0f);
-		style.pressedColorY = glm::vec4(0.3f / 2.0f, 0.8f / 2.0f, 0.3f / 2.0f, 1.0f);
-		style.pressedColorZ = glm::vec4(0.2f / 2.0f, 0.35f / 2.0f, 0.9f / 2.0f, 1.0f);
-		style.pressedColorW = glm::vec4(0.9f / 2.0f, 0.25f / 2.0f, 0.8f / 2.0f, 1.0f);
-		
-		EditorGui::SetStyle(EditorGui::GetStyle());
+		EditorGui::TintStyle(0.5f);
+		LOG_MESSAGE("Started Scene Runtime", 5);
 	}
 	void EditorProcess::PauseRuntime() {
 		m_EditorState = EditorState_Editing;
@@ -153,49 +120,10 @@ namespace Enigma::Editor {
 
 		m_ActiveScene->EndRuntime();
 
-		EditorStyle& style = EditorGui::GetStyle();
+		m_RuntimeActionHandler = nullptr;
+		EditorGui::RemoveStyleTint();
 
-		style.windowBackground = glm::vec4(0.1f, 0.105f, 0.11f, 1.0f);
-
-		// Header Colors
-		style.header = glm::vec4(0.2f, 0.205f, 0.21f, 1.0f);
-		style.headerHovered = glm::vec4(0.3f, 0.305f, 0.31f, 1.0f);
-		style.headerActive = glm::vec4(0.15f, 0.1505f, 0.151f, 1.0f);
-
-		// Button Colors
-		style.button = glm::vec4(0.2f, 0.205f, 0.21f, 1.0f);
-		style.buttonHovered = glm::vec4(0.3f, 0.305f, 0.31f, 1.0f);
-		style.buttonActive = glm::vec4(0.15f, 0.1505f, 0.151f, 1.0f);
-
-		// Frame Background Colors
-		style.frameBackground = glm::vec4(0.2f, 0.205f, 0.21f, 1.0f);
-		style.frameBackgroundHovered = glm::vec4(0.3f, 0.305f, 0.31f, 1.0f);
-		style.frameBackgroundActive = glm::vec4(0.15f, 0.1505f, 0.151f, 1.0f);
-
-		// Tab Colors
-		style.tab = glm::vec4(0.15f, 0.1505f, 0.151f, 1.0f);
-		style.tabHovered = glm::vec4(0.38f, 0.3805f, 0.381f, 1.0f);
-		style.tabActive = glm::vec4(0.28f, 0.2805f, 0.281f, 1.0f);
-		style.tabUnfocused = glm::vec4(0.15f, 0.1505f, 0.151f, 1.0f);
-		style.tabUnfocusedActive = glm::vec4(0.2f, 0.205f, 0.21f, 1.0f);
-
-		// Title Background Colors
-		style.titleBackground = glm::vec4(0.15f, 0.1505f, 0.151f, 1.0f);
-		style.titleBackgroundActive = glm::vec4(0.15f, 0.1505f, 0.151f, 1.0f);
-		style.titleBackgroundCollapsed = glm::vec4(0.95f, 0.1505f, 0.951f, 1.0f);
-
-		// Float Input Colors
-		style.colorX = glm::vec4(0.8f, 0.1f, 0.15f, 1.0f);
-		style.colorY = glm::vec4(0.2f, 0.7f, 0.2f, 1.0f);
-		style.colorZ = glm::vec4(0.1f, 0.25f, 0.8f, 1.0f);
-		style.colorW = glm::vec4(0.8f, 0.15f, 0.8f, 1.0f);
-
-		style.pressedColorX = glm::vec4(0.9f, 0.2f, 0.2f, 1.0f);
-		style.pressedColorY = glm::vec4(0.3f, 0.8f, 0.3f, 1.0f);
-		style.pressedColorZ = glm::vec4(0.2f, 0.35f, 0.9f, 1.0f);
-		style.pressedColorW = glm::vec4(0.9f, 0.25f, 0.8f, 1.0f);
-
-		EditorGui::SetStyle(EditorGui::GetStyle());
+		LOG_MESSAGE("Paused Scene Runtime", 5);
 	}
 
 	void EditorProcess::Update(Engine::DeltaTime deltaTime)
@@ -221,8 +149,11 @@ namespace Enigma::Editor {
 		ImGuiInputFlags shortcutFlags = ImGuiInputFlags_RouteAlways;
 
 		// Undo/Redo
-		if (ImGui::Shortcut(ImGuiKey_Z | ImGuiMod_Ctrl, shortcutFlags) && m_ActionHandler->CanUndo()) m_ActionHandler->Undo();
-		if (ImGui::Shortcut(ImGuiKey_Y | ImGuiMod_Ctrl, shortcutFlags) && m_ActionHandler->CanRedo()) m_ActionHandler->Redo();
+		ActionHandler* activeActionHandler;
+		if (m_EditorState == EditorState_Editing) activeActionHandler = m_EditorActionHandler.get();
+		else if (m_EditorState == EditorState_Running) activeActionHandler = m_RuntimeActionHandler.get();
+		if (ImGui::Shortcut(ImGuiKey_Z | ImGuiMod_Ctrl, shortcutFlags) && activeActionHandler->CanUndo()) activeActionHandler->Undo();
+		if (ImGui::Shortcut(ImGuiKey_Y | ImGuiMod_Ctrl, shortcutFlags) && activeActionHandler->CanRedo()) activeActionHandler->Redo();
 
 		// File
 		if (ImGui::Shortcut(ImGuiKey_S | ImGuiMod_Ctrl, shortcutFlags)) SaveActiveScene();
@@ -257,8 +188,11 @@ namespace Enigma::Editor {
 	{
 		if (!ImGui::BeginMenu("Edit")) return;
 
-		if (ImGui::MenuItem("Undo", "CTRL+Z", false, m_ActionHandler->CanUndo())) m_ActionHandler->Undo();
-		if (ImGui::MenuItem("Redo", "CTRL+Y", false, m_ActionHandler->CanRedo())) m_ActionHandler->Redo();
+		ActionHandler* activeActionHandler;
+		if (m_EditorState == EditorState_Editing) activeActionHandler = m_EditorActionHandler.get();
+		else if (m_EditorState == EditorState_Running) activeActionHandler = m_RuntimeActionHandler.get();
+		if (ImGui::MenuItem("Undo", "CTRL+Z", false, activeActionHandler->CanUndo())) activeActionHandler->Undo();
+		if (ImGui::MenuItem("Redo", "CTRL+Y", false, activeActionHandler->CanRedo())) activeActionHandler->Redo();
 
 		ImGui::EndMenu();
 	}

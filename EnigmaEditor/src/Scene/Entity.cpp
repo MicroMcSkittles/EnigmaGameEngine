@@ -18,20 +18,12 @@ namespace Enigma::Editor {
 	Entity::Entity() : m_EntityID(Engine::ECS::InvalidEntityID), m_Scene(nullptr) { }
 	Entity::Entity(Engine::ECS::EntityID entityID, Scene* scene) : m_EntityID(entityID), m_Scene(scene) { }
 	
-	bool Entity::operator==(const Entity& other) {
-		return (m_EntityID == other.m_EntityID) && (m_Scene == other.m_Scene);
-	}
-	bool Entity::operator!=(const Entity& other) {
-		return (m_EntityID != other.m_EntityID) || (m_Scene != other.m_Scene);
-	}
+	bool Entity::operator==(const Entity& other) { return (m_EntityID == other.m_EntityID) && (m_Scene == other.m_Scene); }
+	bool Entity::operator!=(const Entity& other) { return (m_EntityID != other.m_EntityID) || (m_Scene != other.m_Scene); }
 
-	EntityMetaData& Entity::GetMetaData()
-	{
-		return GetComponent<EntityMetaData>();
-	}
+	EntityMetaData& Entity::GetMetaData() { return GetComponent<EntityMetaData>(); }
 
-	bool Entity::Valid() const
-	{
+	bool Entity::Valid() const {
 		if (m_EntityID == Engine::ECS::InvalidEntityID) return false;
 		if (m_Scene == nullptr) return false;
 
@@ -40,93 +32,10 @@ namespace Enigma::Editor {
 		return true;
 	}
 
+
+	// Gui implementation ============
 	void BlankMenuGui(Entity entity) { }
 
-	bool TransformGui(Entity entity) {
-		Transform& transform = entity.GetComponent<Transform>();
-		TransformMetaData& metaData = entity.GetComponent<TransformMetaData>();
-
-		// Angle values
-		glm::vec3 originalEulerAngles = (metaData.degrees) ? glm::degrees(metaData.eulerAngles) : metaData.eulerAngles;
-		glm::vec3 eulerAngles = originalEulerAngles;
-		bool edited = false;
-
-		// Show input guis
-		if (EditorGui::InputVec3("Position", transform.position)) edited = true;
-		if (EditorGui::InputVec3("Rotation", eulerAngles))        edited = true;
-		if (EditorGui::InputVec3("Scale", transform.scale, 1.0f)) edited = true;
-
-		// Update quaternion if the euler angles were changed
-		if (eulerAngles != originalEulerAngles) {
-			metaData.eulerAngles = (metaData.degrees) ? glm::radians(eulerAngles) : eulerAngles;
-			transform.rotation = glm::quat(metaData.eulerAngles);
-		}
-
-		// Relative controls
-		if (entity.GetMetaData().parent) {
-			bool relative = (transform.parent != InvalidEntityID);
-			if (EditorGui::CheckBox("Relative", relative)) {
-				if (relative) transform.parent = entity.GetMetaData().parent.GetID();
-				else transform.parent = InvalidEntityID;
-				edited = true;
-			}
-		}
-
-		return edited;
-	}
-	void TransformMenuGui(Entity entity) {
-		TransformMetaData& metaData = entity.GetComponent<TransformMetaData>();
-		ImGui::Checkbox("Degrees", &metaData.degrees);
-		if (ImGui::BeginItemTooltip()) {
-			ImGui::Text("Show rotation in degrees");
-			ImGui::EndTooltip();
-		}
-	}
-	bool RidgidBody2DGui(Entity entity) {
-		Engine::Physics::RidgidBody2D& ridgidBody2D = entity.GetComponent<Engine::Physics::RidgidBody2D>();
-
-		EditorGui::InputVec2("Linear Velocity", ridgidBody2D.linearVelocity, 0.0f, 125.0f);
-		EditorGui::InputFloat("Angular Velocity", ridgidBody2D.angularVelocity, 0.0f, 125.0f);
-
-		return false;
-	}
-	void RidgidBody2DMenuGui(Entity entity) {
-		bool degrees = false;
-		ImGui::Checkbox("Degrees", &degrees);
-		if (ImGui::BeginItemTooltip()) {
-			ImGui::Text("Show inputs in degrees");
-			ImGui::EndTooltip();
-		}
-	}
-	bool ColoredQuadGui(Entity entity) {
-		ColoredQuad& coloredQuad = entity.GetComponent<ColoredQuad>();
-
-		bool edited = false;
-
-		// Show input guis
-		edited = EditorGui::InputColor("Color", coloredQuad.tint, 1.0f);
-
-		return edited;
-	}
-	bool OrthographicCameraGui(Entity entity) {
-		OrthographicCamera& camera = entity.GetComponent<OrthographicCamera>();
-
-		bool edited = false;
-
-		bool main = false;
-		if (EditorGui::CheckBox("Fit To Screen", main)) edited = true;
-		if (EditorGui::InputFloat("Left",   camera.view.left))   edited = true;
-		if (EditorGui::InputFloat("Right",  camera.view.right))  edited = true;
-		if (EditorGui::InputFloat("Top",    camera.view.top))    edited = true;
-		if (EditorGui::InputFloat("Bottom", camera.view.bottom)) edited = true;
-		if (EditorGui::InputFloat("Near",   camera.view.near))   edited = true;
-		if (EditorGui::InputFloat("Far",    camera.view.far))    edited = true;
-		if (EditorGui::InputFloat("Zoom",   camera.zoom))        edited = true;
-
-		return edited;
-	}
-
-	// Gui implementation
 	template <typename... Types>
 	class ComponentGuiImpl {
 	private:
@@ -146,7 +55,7 @@ namespace Enigma::Editor {
 			Event::NewAction e(action);
 			Core::Application::EventCallback(e);
 		}
-		
+
 		template <typename Comp>
 		static void AddComponent(Entity entity, Comp component) {
 			entity.CreateComponent<Comp>(component);
@@ -161,7 +70,7 @@ namespace Enigma::Editor {
 			action.undoFunc = std::bind(AddComponent<Comp>, entity, entity.GetComponent<Comp>());
 			action.redoFunc = std::bind(RemoveComponent<Comp>, entity);
 			action.name = "Removed component \"" + name + "\" from entity \"" + entity.GetMetaData().name + "\"";
-	
+
 			Event::NewAction e(action);
 			Core::Application::EventCallback(e);
 		}
@@ -211,12 +120,12 @@ namespace Enigma::Editor {
 			u64 componentHash = ComponentHasher<T>::Hash();
 			ImGui::PushID(componentHash);
 			bool open = ImGui::TreeNodeEx(name.c_str(), flags);
-		
+
 			// Show component settings button
 			ImGui::SameLine(ImGui::GetContentRegionMax().x - 20.0f);
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 			bool optionsButton = ImGui::ImageButton(
-				"ComponentSettingsOptionsButton", 
+				"ComponentSettingsOptionsButton",
 				ImGui::ToImGuiTexture(EditorGui::GetIcon(EditorIcon_Menu)),
 				ImVec2(24, 24)
 			);
@@ -228,7 +137,7 @@ namespace Enigma::Editor {
 			if (ImGui::BeginPopup("ComponentSettings")) {
 
 				// Show remove option for any component that isn't a transform
-				if (componentHash != ComponentHasher<Transform>::Hash()) {
+				if (componentHash != ComponentHasher<TransformComponent>::Hash()) {
 					if (ImGui::MenuItem("Remove")) {
 						CreateRemovedComponentActionEvent<T>(entity, name);
 						entity.RemoveComponent<T>();
@@ -309,9 +218,9 @@ namespace Enigma::Editor {
 			return std::vector<std::function<bool(Entity, const std::string&)>> {
 				[&t](Entity entity, const std::string& name) {
 					if (entity.HasComponent<std::tuple_element_t<Indices, std::tuple<Types...>>>()) return false;
-					if (ImGui::Selectable(name.c_str())) {
+					if (ImGui::MenuItem(name.c_str())) {
 						entity.CreateComponent<std::tuple_element_t<Indices, std::tuple<Types...>>>();
-						CreateAddedComponentActionEvent< std::tuple_element_t<Indices, std::tuple<Types...>>>(entity, name);
+						CreateAddedComponentActionEvent<std::tuple_element_t<Indices, std::tuple<Types...>>>(entity, name);
 						return true;
 					}
 					return false;
@@ -326,19 +235,13 @@ namespace Enigma::Editor {
 
 	public:
 		static bool AddComponentGui(Entity entity) {
-			ImGui::Text("Add Component");
-			if (!ImGui::BeginListBox("##AddComponentListBox")) return false;
 
 			auto selectors = ComponentSelectors(std::tuple<Types...>());
 
 			for (u64 i = 0; i < sizeof...(Types); ++i) {
-				if (selectors[i](entity, s_Names[i])) {
-					ImGui::EndListBox();
-					return true;
-				}
+				if (selectors[i](entity, s_Names[i])) return true;
 			}
 
-			ImGui::EndListBox();
 			return false;
 		}
 		static void ShowComponents(Entity entity) {
@@ -355,41 +258,146 @@ namespace Enigma::Editor {
 		static std::vector<std::function<bool(Entity)>> s_UIFunctions;
 		static std::vector<std::function<void(Entity)>> s_UIMenuFunctions;
 	};
+	// ===============================
 
+	// General components ============
+	bool TransformGui(Entity entity) {
+		TransformComponent& transform = entity.GetComponent<TransformComponent>();
+		TransformMetaData& metaData = entity.GetComponent<TransformMetaData>();
+
+		// Angle values
+		glm::vec3 originalEulerAngles = (metaData.degrees) ? glm::degrees(metaData.eulerAngles) : metaData.eulerAngles;
+		glm::vec3 eulerAngles = originalEulerAngles;
+		bool edited = false;
+
+		// Show input guis
+		if (EditorGui::InputVec3("Position", transform.position)) edited = true;
+		if (EditorGui::InputVec3("Rotation", eulerAngles))        edited = true;
+		if (EditorGui::InputVec3("Scale", transform.scale, 1.0f)) edited = true;
+
+		// Update quaternion if the euler angles were changed
+		if (eulerAngles != originalEulerAngles) {
+			metaData.eulerAngles = (metaData.degrees) ? glm::radians(eulerAngles) : eulerAngles;
+			transform.rotation = glm::quat(metaData.eulerAngles);
+		}
+
+		// Relative controls
+		if (entity.GetMetaData().parent) {
+			bool relative = (transform.parent != InvalidEntityID);
+			if (EditorGui::CheckBox("Relative", relative)) {
+				if (relative) transform.parent = entity.GetMetaData().parent.GetID();
+				else transform.parent = InvalidEntityID;
+				edited = true;
+			}
+		}
+
+		return edited;
+	}
+	void TransformMenuGui(Entity entity) {
+		TransformMetaData& metaData = entity.GetComponent<TransformMetaData>();
+		ImGui::Checkbox("Degrees", &metaData.degrees);
+		if (ImGui::BeginItemTooltip()) {
+			ImGui::Text("Show rotation in degrees");
+			ImGui::EndTooltip();
+		}
+	}
+
+	// Renderer components ===========
+	bool QuadRendererGui(Entity entity) {
+		QuadRendererComponent& quad = entity.GetComponent<QuadRendererComponent>();
+		bool edited = false;
+
+		// Show input guis
+		if (EditorGui::InputColor("Color", quad.tint, 1.0f)) edited = true;
+
+		return edited;
+	}
+	bool CircleRendererGui(Entity entity) {
+		CircleRendererComponent& circle = entity.GetComponent<CircleRendererComponent>();
+		bool edited = false;
+
+		// Show input guis
+		if (EditorGui::InputColor("Color",     circle.tint, 1.0f))              edited = true;
+		if (EditorGui::InputFloat("Thickness", circle.thickness, 1.0f))         edited = true;
+		if (EditorGui::InputFloat("Fade",      circle.fade, 0.005f, 100.0f, 4)) edited = true;
+		
+		return edited;
+	}
+	bool OrthographicCameraGui(Entity entity) {
+		OrthographicCameraComponent& camera = entity.GetComponent<OrthographicCameraComponent>();
+
+		bool edited = false;
+
+		if (EditorGui::CheckBox("Fit To Screen", camera.fitToScreen)) edited = true;
+		if (!camera.fitToScreen) {
+			if (EditorGui::InputFloat("Left", camera.view.left))     edited = true;
+			if (EditorGui::InputFloat("Right", camera.view.right))   edited = true;
+			if (EditorGui::InputFloat("Top", camera.view.top))       edited = true;
+			if (EditorGui::InputFloat("Bottom", camera.view.bottom)) edited = true;
+		}
+		if (EditorGui::InputFloat("Near",   camera.view.near))   edited = true;
+		if (EditorGui::InputFloat("Far",    camera.view.far))    edited = true;
+		if (EditorGui::InputFloat("Zoom",   camera.zoom))        edited = true;
+
+		return edited;
+	}
+
+	// Physics components ============
+	bool RidgidBody2DGui(Entity entity) {
+		Engine::Physics::RidgidBody2D& ridgidBody2D = entity.GetComponent<Engine::Physics::RidgidBody2D>();
+
+		bool edited = false;
+
+		if (EditorGui::InputVec2("Linear Velocity", ridgidBody2D.linearVelocity, 0.0f, 125.0f)) edited = true;
+		if (EditorGui::InputFloat("Angular Velocity", ridgidBody2D.angularVelocity, 0.0f, 125.0f)) edited = true;
+
+		return edited;
+	}
+	void RidgidBody2DMenuGui(Entity entity) {
+		bool degrees = false;
+		ImGui::Checkbox("Degrees", &degrees);
+		if (ImGui::BeginItemTooltip()) {
+			ImGui::Text("Show inputs in degrees");
+			ImGui::EndTooltip();
+		}
+	}
+
+	// TODO: find a better way to handle component guis
 	using ComponentGui = ComponentGuiImpl<
-		Transform,
-		OrthographicCamera,
-		ColoredQuad,
+		TransformComponent,
+		OrthographicCameraComponent,
+		QuadRendererComponent,
+		CircleRendererComponent,
 		Engine::Physics::RidgidBody2D
 	>;
 
 	std::vector<std::string> ComponentGui::s_Names = {
 		"Transform",
 		"Orthographic Camera",
-		"Colored Quad",
+		"Quad Renderer",
+		"Circle Renderer",
 		"Ridgid Body 2D"
 	};
-
 	std::vector<std::function<bool(Entity)>> ComponentGui::s_UIFunctions = {
 		TransformGui,
 		OrthographicCameraGui,
-		ColoredQuadGui,
+		QuadRendererGui,
+		CircleRendererGui,
 		RidgidBody2DGui
 	};
 	std::vector<std::function<void(Entity)>> ComponentGui::s_UIMenuFunctions = {
 		TransformMenuGui,
 		BlankMenuGui,
 		BlankMenuGui,
+		BlankMenuGui,
 		RidgidBody2DMenuGui
 	};
 
-	EntityInspectorContext::EntityInspectorContext(Entity entity, ref<Scene> scene)
-	{
+	EntityInspectorContext::EntityInspectorContext(Entity entity, ref<Scene> scene) {
 		m_Entity = entity;
 		m_Scene = scene;
 	}
-	void EntityInspectorContext::ShowGui()
-	{
+	void EntityInspectorContext::ShowGui() {
 		if (!m_Entity) return;
 		ImGui::PushID(m_Entity.GetID());
 

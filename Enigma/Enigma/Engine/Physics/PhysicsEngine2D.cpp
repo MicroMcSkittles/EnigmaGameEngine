@@ -16,20 +16,20 @@ namespace Enigma::Engine::Physics {
 
 	void PhysicsEngine2D::Update(const DeltaTime& deltaTime)
 	{
-		ECS::View<ECS::Transform, RidgidBody2D> physicsView(m_ECS);
+		ECS::View<ECS::TransformComponent, RidgidBody2D> physicsView(m_ECS);
 		// Run as many steps that can fit into deltaTime
 		m_AccumulatedTime += deltaTime;
 		while (m_AccumulatedTime >= m_Config.stepSize) {
 
 			// Update every ridgid body in the scene
-			physicsView.ForEach([&](ECS::Transform& transform, RidgidBody2D& ridgidBody) {
+			physicsView.ForEach([&](ECS::TransformComponent& transform, RidgidBody2D& ridgidBody) {
 				Step(transform, ridgidBody);
 			});
 
 			m_AccumulatedTime -= m_Config.stepSize;
 		}
 	}
-	void PhysicsEngine2D::Step(ECS::Transform& transform, RidgidBody2D& ridgidBody)
+	void PhysicsEngine2D::Step(ECS::TransformComponent& transform, RidgidBody2D& ridgidBody)
 	{
 		// TODO: figure out how quaturnions work
 		// TODO: impl angular momentum

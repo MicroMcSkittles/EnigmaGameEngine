@@ -7,20 +7,22 @@
 using namespace Enigma::Engine::ECS;
 
 namespace Enigma::Renderer {
-	ref<Renderer2D> Renderer2D::Create(Renderer::API renderAPI, const Engine::Surface& surface)
-	{
-		return CreateRef<Renderer2D>(renderAPI, surface);
-	}
-	Renderer2D::Renderer2D(Renderer::API renderAPI, const Engine::Surface& surface)
-		: m_RenderAPI(renderAPI), m_Surface(surface)
-	{
+	ref<Renderer2D> Renderer2D::Create(Renderer::API renderAPI, const Engine::Surface& surface) { return CreateRef<Renderer2D>(renderAPI, surface); }
+	Renderer2D::Renderer2D(Renderer::API renderAPI, const Engine::Surface& surface) : m_RenderAPI(renderAPI), m_Surface(surface) {
 		// Load shaders
-		ShaderConfig mainShaderConfig;
-		mainShaderConfig.stages = {
-			{ ShaderStageType::Vertex, "../Enigma/DefaultShaders/DefaultShader.vert" },
-			{ ShaderStageType::Fragment, "../Enigma/DefaultShaders/DefaultShader.frag" },
+		ShaderConfig quadShaderConfig;
+		quadShaderConfig.stages = {
+			{ ShaderStageType::Vertex, "../Enigma/DefaultShaders/QuadShader.vert" },
+			{ ShaderStageType::Fragment, "../Enigma/DefaultShaders/QuadShader.frag" },
 		};
-		m_MainShader = Shader::Create(mainShaderConfig);
+		m_QuadShader = Shader::Create(quadShaderConfig);
+
+		ShaderConfig circleShaderConfig;
+		circleShaderConfig.stages = {
+			{ ShaderStageType::Vertex, "../Enigma/DefaultShaders/CircleShader.vert" },
+			{ ShaderStageType::Fragment, "../Enigma/DefaultShaders/CircleShader.frag" },
+		};
+		m_CircleShader = Shader::Create(circleShaderConfig);
 
 		ShaderConfig postProcShaderConfig;
 		postProcShaderConfig.stages = {
@@ -37,6 +39,8 @@ namespace Enigma::Renderer {
 		// Main attachment
 		Attachment colorAttachment;
 		colorAttachment.type = AttachmentType::ColorAttachment;
+		colorAttachment.internalFormat = TexFormat::RGBA;
+		colorAttachment.format = TexFormat::RGBA;
 
 		// Entity IDs get written to this buffer
 		Attachment entityIDAttachment;
@@ -67,12 +71,9 @@ namespace Enigma::Renderer {
 		RenderAPI::SetDrawMode(DrawMode::Triangles);
 		RenderAPI::SetViewport(static_cast<u32>(m_Surface.scale.x), static_cast<u32>(m_Surface.scale.y));
 	}
-	Renderer2D::~Renderer2D()
-	{
-	}
+	Renderer2D::~Renderer2D() { }
 
-	void Renderer2D::InitQuad()
-	{
+	void Renderer2D::InitQuad()	{
 		s_Quad = Renderer::VertexArray::Create();
 		s_Quad->Bind();
 
@@ -88,16 +89,14 @@ namespace Enigma::Renderer {
 		s_Quad->Unbind();
 	}
 
-	void Renderer2D::Resize(u32 width, u32 height)
-	{
+	void Renderer2D::Resize(u32 width, u32 height) {
 		Renderer::RenderAPI::SetViewport(width, height);
 		m_FrameBuffer->Resize(width, height);
 		if (m_OutputBuffer != nullptr)  m_OutputBuffer->Resize(width, height);
 		if (m_CurrentCamera != nullptr) m_CurrentCamera->Resize(width, height);
 	}
 
-	void Renderer2D::StartScene(const ref<Engine::ECS::ECS> ecs, const ref<Camera>& camera)
-	{
+	void Renderer2D::StartScene(const ref<Engine::ECS::ECS> ecs, const ref<Camera>& camera) {
 		m_CurrentECS = ecs;
 		m_CurrentCamera = camera;
 
@@ -111,21 +110,7 @@ namespace Enigma::Renderer {
 		m_FrameBuffer->Bind();
 		Renderer::RenderAPI::Clear();
 	}
-	void Renderer2D::EndScene()
-	{
-		s_Quad->Bind();
-
-		// Bind the quad shader
-		m_MainShader->Bind();
-
-		// Draw colored quads
-		View<Transform, ColoredQuad> coloredQuadView(m_CurrentECS);
-		if (!coloredQuadView.Empty()) {
-			coloredQuadView.ForEach([&](EntityID entityID, Transform& transform, ColoredQuad& quad) { ColoredQuadSystem(entityID, transform, quad); });
-		}
-
-		m_MainShader->Unbind();
-
+	void Renderer2D::EndScene() {
 		m_FrameBuffer->Unbind();
 
 		// If the surface passed to the renderer has a frame then render to that frame with the output buffer
@@ -134,24 +119,81 @@ namespace Enigma::Renderer {
 			Renderer::RenderAPI::Clear();
 		}
 
-		// Run the frame through the post process shader
 		m_PostProcShader->Bind();
+		s_Quad->Bind();
+
+		// Run the frame through the post process shader
 		ref<Renderer::Texture> frame = m_FrameBuffer->GetColorAttachment(0);
 
 		frame->Bind();
-
 		Renderer::RenderAPI::DrawIndexed(6, Renderer::DataType::UnsignedInt, NULL);
-
 		frame->Unbind();
+
+		s_Quad->Unbind();
 		m_PostProcShader->Unbind();
 
 		if (m_OutputBuffer != nullptr) m_OutputBuffer->Unbind();
-		s_Quad->Unbind();
-
 		m_CurrentECS = nullptr;
 	}
 
-	void Renderer2D::ColoredQuadSystem(Engine::ECS::EntityID entityID, Engine::ECS::Transform& transform, Engine::ECS::ColoredQuad& quad)
+	void Renderer2D::DrawEntity(EntityID id) {
+		// Make sure entity has a render component
+		bool hasQuad = m_CurrentECS->HasComponent<QuadRendererComponent>(id);
+		bool hasCircle = m_CurrentECS->HasComponent<CircleRendererComponent>(id);
+		if (!hasQuad && !hasCircle) return;
+		
+		// Get world transform matrix
+		TransformComponent& transformComponent = m_CurrentECS->GetComponent<TransformComponent>(id);
+		glm::mat4 transformMatrix = transformComponent.GetWorldMatrix(m_CurrentECS);
+
+		// Draw a quad if entity has a quad component
+		if (hasQuad) {
+			QuadRendererComponent& quadComponent = m_CurrentECS->GetComponent<QuadRendererComponent>(id);
+			DrawColoredQuad(transformMatrix, quadComponent.tint, id);
+		}
+
+		// Draw a circle if entity has a circle component
+		if (hasCircle) {
+			CircleRendererComponent& circleComponent = m_CurrentECS->GetComponent<CircleRendererComponent>(id);
+			DrawColoredCircle(transformMatrix, circleComponent.tint, circleComponent.thickness, circleComponent.fade, id);
+		}
+	}
+	void Renderer2D::DrawColoredQuad(const glm::mat4& transform, const glm::vec3& tint, EntityID id) {
+		// Configure quad
+		ModelData data;
+		data.model = transform;
+		data.tint = { tint, 1.0f };
+		data.entityID = static_cast<i32>(id);
+		data.thickness = 0.0f;
+		data.fade = 0.0f;
+		m_ModelUniformBuffer->SetData(&data, sizeof(ModelData), 0);
+
+		// Draw quad
+		m_QuadShader->Bind();
+		s_Quad->Bind();
+		Renderer::RenderAPI::DrawIndexed(6, Renderer::DataType::UnsignedInt, NULL);
+		s_Quad->Unbind();
+		m_QuadShader->Unbind();
+	}
+	void Renderer2D::DrawColoredCircle(const glm::mat4& transform, const glm::vec3& tint, f32 thickness, f32 fade, Engine::ECS::EntityID id) {
+		// Configure quad
+		ModelData data;
+		data.model = transform;
+		data.tint = { tint, 1.0f };
+		data.entityID = static_cast<i32>(id);
+		data.thickness = thickness;
+		data.fade = fade;
+		m_ModelUniformBuffer->SetData(&data, sizeof(ModelData), 0);
+
+		// Draw quad
+		m_CircleShader->Bind();
+		s_Quad->Bind();
+		Renderer::RenderAPI::DrawIndexed(6, Renderer::DataType::UnsignedInt, NULL);
+		s_Quad->Unbind();
+		m_CircleShader->Unbind();
+	}
+
+	void Renderer2D::ColoredQuadSystem(EntityID entityID, TransformComponent& transform, QuadRendererComponent& quad)
 	{
 		glm::mat4 model = transform.GetWorldMatrix(m_CurrentECS);
 

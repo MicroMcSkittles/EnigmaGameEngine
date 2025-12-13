@@ -1,12 +1,14 @@
 # An Enigma scene file
 Scene: Scene Name
-ActiveCamera: 15686696671289303743
+ActiveCamera: 0xd9b25782c78062bf
 Entities:
-  - Entity: 15686696671289303743
+  - Entity: 0xd9b25782c78062bf
     EntityMetaData:  # Extra data needed by the editor
       Name: Camera
+      Parent: 0x375bab1d50e79a09
     Transform:
-      Position: [0, 0, 0]
+      Parent: 0x375bab1d50e79a09
+      Position: [0, 0, 1]
       Rotation: [0, 0, 0, 1]  # Quaternion
       Scale: [1, 1, 1]
       Degrees: true
@@ -18,12 +20,13 @@ Entities:
       Bottom: 0
       Near: 0
       Far: 0
-      Zoom: 0
-  - Entity: 12088195524106242844
+      Zoom: 3
+      FitToScreen: true
+  - Entity: 0xa7c1e5c87dd1cb1c
     EntityMetaData:  # Extra data needed by the editor
       Name: Camera1
     Transform:
-      Position: [0, 0, 0]
+      Position: [0, 0, 1]
       Rotation: [0, 0, 0, 1]  # Quaternion
       Scale: [1, 1, 1]
       Degrees: true
@@ -35,30 +38,81 @@ Entities:
       Bottom: 0
       Near: 0
       Far: 0
-      Zoom: 0
-  - Entity: 3988970037366462985
+      Zoom: 10
+      FitToScreen: true
+  - Entity: 0x375bab1d50e79a09
     EntityMetaData:  # Extra data needed by the editor
       Name: Child Entity
-      Parent: 2839810922040287596
+      Parent: 0x276908fcd57c616c
+      Children:
+        - 0xd9b25782c78062bf
     Transform:
-      Parent: 2839810922040287596
+      Parent: 0x276908fcd57c616c
       Position: [-2.708173, -0.47427583, 0]
       Rotation: [0, 0, 0.49380285, 0.86957407]  # Quaternion
       Scale: [1, 1, 1]
       Degrees: true
       EulerAngles: [0, -0, 1.032915]  # Radians
-    ColoredQuad:
+    QuadRenderer:
       Tint: [0.71814674, 0.10813793, 0.10813793]
-  - Entity: 2839810922040287596
+    RidgidBody2D:
+      LinearVelocity: [0.3, 0]
+      AngularVelocity: 6.8  # Radians per second
+  - Entity: 0x276908fcd57c616c
     EntityMetaData:  # Extra data needed by the editor
       Name: Parent Entity
       Children:
-        - 3988970037366462985
+        - 0x375bab1d50e79a09
     Transform:
-      Position: [-1.0550363, 1.035316, 0]
+      Position: [-0.53639764, 0.34811974, 0]
       Rotation: [0, 0, -0.90307873, -0.42947495]  # Quaternion
       Scale: [0.92, 0.92, 0.92]
       Degrees: true
       EulerAngles: [-0, -0, 2.25377]  # Radians
-    ColoredQuad:
+    QuadRenderer:
       Tint: [0.10975779, 0.45882356, 0.3150905]
+    RidgidBody2D:
+      LinearVelocity: [0, 0]
+      AngularVelocity: 0.8  # Radians per second
+  - Entity: 0xe4772477457828c0
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Circle1
+      Parent: 0x1829223ef6ad021b
+    Transform:
+      Parent: 0x1829223ef6ad021b
+      Position: [-1.5948132, 1.06321, 0.9]
+      Rotation: [0, 0, 0, 1]  # Quaternion
+      Scale: [1, 1, 1]
+      Degrees: true
+      EulerAngles: [0, -0, 0]  # Radians
+    CircleRenderer:
+      Tint: [1, 1, 1]
+      Thickness: 0.4
+      Fade: 0.005
+  - Entity: 0x1829223ef6ad021b
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Circles
+      Children:
+        - 0xe4772477457828c0
+        - 0xd02c981dabd6c08
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0, 1]  # Quaternion
+      Scale: [1, 1, 1]
+      Degrees: true
+      EulerAngles: [0, 0, 0]  # Radians
+  - Entity: 0xd02c981dabd6c08
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Circle2
+      Parent: 0x1829223ef6ad021b
+    Transform:
+      Parent: 0x1829223ef6ad021b
+      Position: [-0.3111835, -1.2836308, 0.5]
+      Rotation: [0, 0, 0, 1]  # Quaternion
+      Scale: [1, 1, 1]
+      Degrees: true
+      EulerAngles: [0, 0, 0]  # Radians
+    CircleRenderer:
+      Tint: [0.53854656, 0.49417868, 0.8532819]
+      Thickness: 1
+      Fade: 0.405

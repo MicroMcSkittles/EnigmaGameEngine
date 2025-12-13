@@ -1,0 +1,76 @@
+# An Enigma scene file
+Scene: Scene Name
+ActiveCamera: 12088195524106242844
+Entities:
+  - Entity: 15686696671289303743
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Camera
+      Parent: 3988970037366462985
+    Transform:
+      Parent: 3988970037366462985
+      Position: [0, 0, 1]
+      Rotation: [0, 0, 0, 1]  # Quaternion
+      Scale: [1, 1, 1]
+      Degrees: true
+      EulerAngles: [0, 0, 0]  # Radians
+    OrthographicCamera:
+      Left: 0
+      Right: 0
+      Top: 0
+      Bottom: 0
+      Near: 0
+      Far: 0
+      Zoom: 3
+      FitToScreen: true
+  - Entity: 12088195524106242844
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Camera1
+    Transform:
+      Position: [0, 0, 1]
+      Rotation: [0, 0, 0, 1]  # Quaternion
+      Scale: [1, 1, 1]
+      Degrees: true
+      EulerAngles: [0, 0, 0]  # Radians
+    OrthographicCamera:
+      Left: 0
+      Right: 0
+      Top: 0
+      Bottom: 0
+      Near: 0
+      Far: 0
+      Zoom: 10
+      FitToScreen: true
+  - Entity: 3988970037366462985
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Child Entity
+      Parent: 2839810922040287596
+      Children:
+        - 15686696671289303743
+    Transform:
+      Parent: 2839810922040287596
+      Position: [-2.7081728, -0.47427553, 0]
+      Rotation: [0, 0, 0.49380285, 0.86957407]  # Quaternion
+      Scale: [1, 1, 1]
+      Degrees: true
+      EulerAngles: [0, -0, 1.032915]  # Radians
+    ColoredQuad:
+      Tint: [0.71814674, 0.10813793, 0.10813793]
+    RidgidBody2D:
+      LinearVelocity: [0.3, 0]
+      AngularVelocity: 6.8  # Radians per second
+  - Entity: 2839810922040287596
+    EntityMetaData:  # Extra data needed by the editor
+      Name: Parent Entity
+      Children:
+        - 3988970037366462985
+    Transform:
+      Position: [-1.0550363, 1.035316, 0]
+      Rotation: [0, 0, -0.90307873, -0.42947495]  # Quaternion
+      Scale: [0.92, 0.92, 0.92]
+      Degrees: true
+      EulerAngles: [-0, -0, 2.25377]  # Radians
+    ColoredQuad:
+      Tint: [0.10975779, 0.45882356, 0.3150905]
+    RidgidBody2D:
+      LinearVelocity: [0, 0]
+      AngularVelocity: 0.8  # Radians per second

@@ -36,12 +36,12 @@ namespace Enigma::Platform::OpenGL {
 	private:
 
 		bool IsStageVKSpirvCached(const OpenGLShaderStage& stage);
-		void LoadStageVKSpirvCache(OpenGLShaderStage& stage);
-		void CompileStageToVKSpirv(OpenGLShaderStage& stage);
+		bool LoadStageVKSpirvCache(OpenGLShaderStage& stage);
+		bool CompileStageToVKSpirv(OpenGLShaderStage& stage);
 
 		bool IsStageGLSpirvCached(const OpenGLShaderStage& stage);
-		void LoadStageGLSpirvCache(OpenGLShaderStage& stage);
-		void CompileStageToGLSpirv(OpenGLShaderStage& stage);
+		bool LoadStageGLSpirvCache(OpenGLShaderStage& stage);
+		bool CompileStageToGLSpirv(OpenGLShaderStage& stage);
 
 		void CreateProgram();
 

@@ -30,6 +30,8 @@ namespace Enigma::Editor {
 		void ShowGizmoOverlayWindow();
 
 		void ShowRuntimeOverlayWindow();
+		void ShowSettingsOverlayWindow();
+		void ShowSettingsMenu();
 
 		Entity GetHoveredEntity();
 
@@ -44,18 +46,20 @@ namespace Enigma::Editor {
 		// Render Variables
 		ref<Renderer::Renderer2D> m_RendererContext;
 		ref<Renderer::Texture> m_Frame;
-		ref<Renderer::Camera> m_Camera;
-		ref<Renderer::UniformBuffer> m_CameraUniformBuffer;
+		ref<Renderer::Camera> m_ActiveCamera;
+		ref<Renderer::Camera> m_EditorCamera;
+		ref<Renderer::Camera> m_RuntimeCamera;
 
 		// Input Context
 		Engine::Surface m_Surface;
 		ref<Engine::Input> m_InputContext;
 
 		// Gizmo Variables
+		bool m_ShowGizmos;
 		bool m_GizmoHovered; // Is the user hovering a gizmo
 		bool m_UsingGizmo; // Is the user using a gizmo
 		i32 m_GizmoType;
-		Engine::ECS::Transform m_OriginalTransform; // The original transform of the entity currently being moved
+		Engine::ECS::TransformComponent m_OriginalTransform; // The original transform of the entity currently being moved
 		
 		// Editor Camera Input Variables
 		bool m_Hovered; // Is the user hovering the scene view image

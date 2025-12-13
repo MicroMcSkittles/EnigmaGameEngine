@@ -1,5 +1,6 @@
 #pragma once
 #include "Scene/Scene.h"
+#include <Enigma/Engine/Physics/PhysicsComponents.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -24,15 +25,19 @@ namespace Enigma::Editor {
 
 	private:
 		void SerializeEntityMetaData(YAML::Emitter& out, Entity entity, EntityMetaData& entityMetaData);
-		void SerializeTransform(YAML::Emitter& out, Entity entity, Engine::ECS::Transform& transform);
-		void SerializeOrthographicCamera(YAML::Emitter& out, Entity entity, Engine::ECS::OrthographicCamera& camera);
-		void SerializeColoredQuad(YAML::Emitter& out, Entity entity, Engine::ECS::ColoredQuad& quad);
+		void SerializeTransform(YAML::Emitter& out, Entity entity, Engine::ECS::TransformComponent& transform);
+		void SerializeOrthographicCamera(YAML::Emitter& out, Entity entity, Engine::ECS::OrthographicCameraComponent& camera);
+		void SerializeQuadRenderer(YAML::Emitter& out, Entity entity, Engine::ECS::QuadRendererComponent& quad);
+		void SerializeCircleRenderer(YAML::Emitter& out, Entity entity, Engine::ECS::CircleRendererComponent& circle);
+		void SerializeRidgidBody2D(YAML::Emitter& out, Entity entity, Engine::Physics::RidgidBody2D& ridgidBody);
 		void SerializeEntity(YAML::Emitter& out, Entity entity);
 
 		void DeserializeEntityMetaData(const YAML::Node& data, Entity entity, EntityMetaData& metaData);
-		void DeserializeTransform(const YAML::Node& data, Entity entity, Engine::ECS::Transform& transform);
-		void DeserializeOrthographicCamera(const YAML::Node& data, Entity entity, Engine::ECS::OrthographicCamera& camera);
-		void DeserializeColoredQuad(const YAML::Node& data, Entity entity, Engine::ECS::ColoredQuad& quad);
+		void DeserializeTransform(const YAML::Node& data, Entity entity, Engine::ECS::TransformComponent& transform);
+		void DeserializeOrthographicCamera(const YAML::Node& data, Entity entity, Engine::ECS::OrthographicCameraComponent& camera);
+		void DeserializeQuadRenderer(const YAML::Node& data, Entity entity, Engine::ECS::QuadRendererComponent& quad);
+		void DeserializeCircleRenderer(const YAML::Node& data, Entity entity, Engine::ECS::CircleRendererComponent& circle);
+		void DeserializeRidgidBody2D(const YAML::Node& data, Entity entity, Engine::Physics::RidgidBody2D& ridgidBody);
 		void DeserializeEntity(const YAML::Node& data, Entity entity);
 
 	private:

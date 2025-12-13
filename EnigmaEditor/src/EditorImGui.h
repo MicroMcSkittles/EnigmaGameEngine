@@ -104,6 +104,8 @@ namespace Enigma::Editor {
 		static void SetStyle(const EditorStyle& style);
 		static EditorStyle& GetStyle();
 		static ref<Renderer::Texture> GetIcon(EditorIcon icon);
+		static void TintStyle(const f32& tint);
+		static void RemoveStyleTint();
 
 		static bool InputInt(const std::string& lable, i32& value, i32 resetValue = 0, f32 columnWidth = 100.0f);
 		static bool InputInt2(const std::string& lable, glm::ivec2& value, i32 resetValue = 0, f32 columnWidth = 100.0f);
@@ -136,6 +138,7 @@ namespace Enigma::Editor {
 		};
 		struct Data {
 			EditorStyle style;
+			f32 tint;
 			std::array<ref<Renderer::Texture>, EditorIcon_Last> icons;
 			std::unordered_map<u64, void*> itemData;
 		};

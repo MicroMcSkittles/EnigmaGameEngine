@@ -51,11 +51,13 @@ namespace Enigma::Editor {
 			for (Entity& child : data.children.GetData()) child = { child.GetID(), this };
 		});
 
+		GetMetaData().activeCamera = { GetMetaData().activeCamera.GetID(), this };
+
 		m_PhysicsEngine = Engine::Physics::PhysicsEngine2D::Create(m_ECS);
 	}
 	Scene::~Scene() { 
-		std::string name = GetName();
-		LOG_WARNING("Destoried Scene \"%s\"", name.c_str());
+		//std::string name = GetName();
+		//LOG_WARNING("Destoried Scene \"%s\"", name.c_str());
 	}
 
 	Entity Scene::GetEntity(Engine::UUID uuid) { 
@@ -75,7 +77,7 @@ namespace Enigma::Editor {
 	Entity Scene::CreateEntity(const std::string& name) {
 		Entity entity = { m_ECS->CreateEntity(), this };
 		entity.CreateComponent<EntityMetaData>(name);
-		entity.CreateComponent<Transform>();
+		entity.CreateComponent<TransformComponent>();
 		entity.CreateComponent<TransformMetaData>();
 
 		Engine::UUID uuid = entity.CreateComponent<Engine::UUID>();
@@ -89,7 +91,7 @@ namespace Enigma::Editor {
 	Entity Scene::CreateEntity(const std::string& name, Engine::UUID uuid) {
 		Entity entity = { m_ECS->CreateEntity(), this };
 		entity.CreateComponent<EntityMetaData>(name);
-		entity.CreateComponent<Transform>();
+		entity.CreateComponent<TransformComponent>();
 		entity.CreateComponent<TransformMetaData>();
 
 		entity.CreateComponent<Engine::UUID>(uuid);
@@ -110,7 +112,7 @@ namespace Enigma::Editor {
 
 		// Create and set transform
 		entity.CreateComponent<TransformMetaData>();
-		Transform& transform = entity.CreateComponent<Transform>();
+		TransformComponent& transform = entity.CreateComponent<TransformComponent>();
 		transform.parent = parent.GetID();
 
 		// Update parent entity
@@ -129,7 +131,7 @@ namespace Enigma::Editor {
 
 		// Create and set transform
 		entity.CreateComponent<TransformMetaData>();
-		Transform& transform = entity.CreateComponent<Transform>();
+		TransformComponent& transform = entity.CreateComponent<TransformComponent>();
 		transform.parent = parent.GetID();
 
 		// Update parent entity
@@ -191,7 +193,7 @@ namespace Enigma::Editor {
 
 		// Update entity metadata and transform
 		entityMetaData.parent = parent;
-		Transform& transform = entity.GetComponent<Transform>();
+		TransformComponent& transform = entity.GetComponent<TransformComponent>();
 		transform.parent = parent.GetID();
 	}
 	bool Scene::IsChild(Entity entity, Entity parent) {
@@ -216,8 +218,8 @@ namespace Enigma::Editor {
 	}
 
 	void Scene::ForEach(std::function<void(Entity)> func) {
-		View<Transform> entities(m_ECS);
-		entities.ForEach([&](EntityID id, Transform& transform) {
+		View<TransformComponent> entities(m_ECS);
+		entities.ForEach([&](EntityID id, TransformComponent& transform) {
 			func({ id, this });
 		});
 	}
@@ -257,7 +259,7 @@ namespace Enigma::Editor {
 
 		bool edited = false;
 		SceneMetaData oldMetaData = m_Scene->GetMetaData();
-		if (EditorGui::InputEntity<Engine::ECS::OrthographicCamera>("Main Camera", m_Scene->GetMetaData().activeCamera, m_Scene)) edited = true;
+		if (EditorGui::InputEntity<Engine::ECS::OrthographicCameraComponent>("Main Camera", m_Scene->GetMetaData().activeCamera, m_Scene)) edited = true;
 
 		if (edited) SceneMetaDataAction(m_Scene, oldMetaData);
 	}

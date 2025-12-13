@@ -123,6 +123,7 @@ namespace YAML {
 		return out;
 	}
 	YAML::Emitter& operator<<(YAML::Emitter& out, const Enigma::Engine::UUID& uuid) {
+		out.SetIntBase(YAML::Hex);
 		out << static_cast<u64>(uuid);
 		return out;
 	}
@@ -174,7 +175,7 @@ namespace Enigma::Editor {
 
 		out << YAML::EndMap;
 	}
-	void SceneSerializer::SerializeTransform(YAML::Emitter& out, Entity entity, ECS::Transform& transform) {
+	void SceneSerializer::SerializeTransform(YAML::Emitter& out, Entity entity, ECS::TransformComponent& transform) {
 		// Start Transform Node
 		out << YAML::Key << "Transform";
 		out << YAML::BeginMap;
@@ -195,7 +196,7 @@ namespace Enigma::Editor {
 
 		out << YAML::EndMap;
 	}
-	void SceneSerializer::SerializeOrthographicCamera(YAML::Emitter& out, Entity entity, ECS::OrthographicCamera& camera)
+	void SceneSerializer::SerializeOrthographicCamera(YAML::Emitter& out, Entity entity, ECS::OrthographicCameraComponent& camera)
 	{
 		// Start ColoredQuad Node
 		out << YAML::Key << "OrthographicCamera";
@@ -209,16 +210,40 @@ namespace Enigma::Editor {
 		out << YAML::Key << "Near" << YAML::Value << camera.view.near;
 		out << YAML::Key << "Far" << YAML::Value << camera.view.far;
 		out << YAML::Key << "Zoom" << YAML::Value << camera.zoom;
+		out << YAML::Key << "FitToScreen" << YAML::Value << camera.fitToScreen;
 
 		out << YAML::EndMap;
 	}
-	void SceneSerializer::SerializeColoredQuad(YAML::Emitter& out, Entity entity, ECS::ColoredQuad& quad) {
+	void SceneSerializer::SerializeQuadRenderer(YAML::Emitter& out, Entity entity, ECS::QuadRendererComponent& quad) {
 		// Start ColoredQuad Node
-		out << YAML::Key << "ColoredQuad";
+		out << YAML::Key << "QuadRenderer";
 		out << YAML::BeginMap;
 
 		// Push tint
 		out << YAML::Key << "Tint" << YAML::Value << quad.tint;
+
+		out << YAML::EndMap;
+	}
+	void SceneSerializer::SerializeCircleRenderer(YAML::Emitter& out, Entity entity, ECS::CircleRendererComponent& circle) {
+		// Start ColoredQuad Node
+		out << YAML::Key << "CircleRenderer";
+		out << YAML::BeginMap;
+
+		// Push tint
+		out << YAML::Key << "Tint" << YAML::Value << circle.tint;
+		out << YAML::Key << "Thickness" << YAML::Value << circle.thickness;
+		out << YAML::Key << "Fade" << YAML::Value << circle.fade;
+
+		out << YAML::EndMap;
+	}
+	void SceneSerializer::SerializeRidgidBody2D(YAML::Emitter& out, Entity entity, Engine::Physics::RidgidBody2D& ridgidBody)
+	{
+		// Start ColoredQuad Node
+		out << YAML::Key << "RidgidBody2D";
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "LinearVelocity" << YAML::Value << ridgidBody.linearVelocity;
+		out << YAML::Key << "AngularVelocity" << YAML::Value << ridgidBody.angularVelocity << YAML::Comment("Radians per second");
 
 		out << YAML::EndMap;
 	}
@@ -228,10 +253,12 @@ namespace Enigma::Editor {
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 
 		// Push component data
-		SerializeComponent<EntityMetaData>(out, entity,   &SceneSerializer::SerializeEntityMetaData, this);
-		SerializeComponent<ECS::Transform>(out, entity,   &SceneSerializer::SerializeTransform,      this);
-		SerializeComponent<ECS::OrthographicCamera>(out, entity, &SceneSerializer::SerializeOrthographicCamera, this);
-		SerializeComponent<ECS::ColoredQuad>(out, entity, &SceneSerializer::SerializeColoredQuad,    this);
+		SerializeComponent<EntityMetaData>(out,                   entity, &SceneSerializer::SerializeEntityMetaData,     this);
+		SerializeComponent<ECS::TransformComponent>(out,          entity, &SceneSerializer::SerializeTransform,          this);
+		SerializeComponent<ECS::OrthographicCameraComponent>(out, entity, &SceneSerializer::SerializeOrthographicCamera, this);
+		SerializeComponent<ECS::QuadRendererComponent>(out,       entity, &SceneSerializer::SerializeQuadRenderer,       this);
+		SerializeComponent<ECS::CircleRendererComponent>(out,     entity, &SceneSerializer::SerializeCircleRenderer,     this);
+		SerializeComponent<Physics::RidgidBody2D>(out,            entity, &SceneSerializer::SerializeRidgidBody2D,       this);
 
 		out << YAML::EndMap;
 	}
@@ -362,7 +389,7 @@ namespace Enigma::Editor {
 			}
 		}
 	}
-	void SceneSerializer::DeserializeTransform(const YAML::Node& data, Entity entity, ECS::Transform& transform) {
+	void SceneSerializer::DeserializeTransform(const YAML::Node& data, Entity entity, ECS::TransformComponent& transform) {
 		// Get parent entity if it exists
 		if (data["Parent"]) {
 			UUID uuid = data["Parent"].as<UUID>();
@@ -379,7 +406,7 @@ namespace Enigma::Editor {
 		metaData.degrees     = data["Degrees"].as<bool>();
 		metaData.eulerAngles = data["EulerAngles"].as<glm::vec3>();
 	}
-	void SceneSerializer::DeserializeOrthographicCamera(const YAML::Node& data, Entity entity, ECS::OrthographicCamera& camera) {
+	void SceneSerializer::DeserializeOrthographicCamera(const YAML::Node& data, Entity entity, ECS::OrthographicCameraComponent& camera) {
 		camera.view.left   = data["Left"].as<f32>();
 		camera.view.right  = data["Right"].as<f32>();
 		camera.view.top    = data["Top"].as<f32>();
@@ -387,19 +414,32 @@ namespace Enigma::Editor {
 		camera.view.near   = data["Near"].as<f32>();
 		camera.view.far    = data["Far"].as<f32>();
 		camera.zoom        = data["Zoom"].as<f32>();
+		camera.fitToScreen = data["FitToScreen"].as<bool>();
 	}
-	void SceneSerializer::DeserializeColoredQuad(const YAML::Node& data, Entity entity, ECS::ColoredQuad& quad) {
+	void SceneSerializer::DeserializeQuadRenderer(const YAML::Node& data, Entity entity, ECS::QuadRendererComponent& quad) {
 		quad.tint = data["Tint"].as<glm::vec3>();
+		quad.texture = nullptr;
+	}
+	void SceneSerializer::DeserializeCircleRenderer(const YAML::Node& data, Entity entity, Engine::ECS::CircleRendererComponent& circle) {
+		circle.tint      = data["Tint"].as<glm::vec3>();
+		circle.thickness = data["Thickness"].as<f32>();
+		circle.fade      = data["Fade"].as<f32>();
+		circle.texture = nullptr;
+	}
+	void SceneSerializer::DeserializeRidgidBody2D(const YAML::Node & data, Entity entity, Engine::Physics::RidgidBody2D & ridgidBody) {
+		ridgidBody.linearVelocity = data["LinearVelocity"].as<glm::vec2>();
+		ridgidBody.angularVelocity = data["AngularVelocity"].as<f32>();
 	}
 	void SceneSerializer::DeserializeEntity(const YAML::Node& data, Entity entity) {
-		DeserializeComponent<EntityMetaData>("EntityMetaData", entity, data, &SceneSerializer::DeserializeEntityMetaData, this);
-		DeserializeComponent<ECS::Transform>("Transform",      entity, data, &SceneSerializer::DeserializeTransform,      this);
-		DeserializeComponent<ECS::OrthographicCamera>("OrthographicCamera", entity, data, &SceneSerializer::DeserializeOrthographicCamera, this);
-		DeserializeComponent<ECS::ColoredQuad>("ColoredQuad",  entity, data, &SceneSerializer::DeserializeColoredQuad,    this);
+		DeserializeComponent<EntityMetaData>("EntityMetaData",                       entity, data, &SceneSerializer::DeserializeEntityMetaData,     this);
+		DeserializeComponent<ECS::TransformComponent>("Transform",                   entity, data, &SceneSerializer::DeserializeTransform,          this);
+		DeserializeComponent<ECS::OrthographicCameraComponent>("OrthographicCamera", entity, data, &SceneSerializer::DeserializeOrthographicCamera, this);
+		DeserializeComponent<ECS::QuadRendererComponent>("QuadRenderer",             entity, data, &SceneSerializer::DeserializeQuadRenderer,       this);
+		DeserializeComponent<ECS::CircleRendererComponent>("CircleRenderer",         entity, data, &SceneSerializer::DeserializeCircleRenderer,     this);
+		DeserializeComponent<Physics::RidgidBody2D>("RidgidBody2D",                  entity, data, &SceneSerializer::DeserializeRidgidBody2D,       this);
 	}
 
-	bool SceneSerializer::Deserialize(const std::string& filename)
-	{
+	bool SceneSerializer::Deserialize(const std::string& filename) {
 		// Read YAML file
 		std::string fileContent = Core::System::ReadFileStr(filename);
 		YAML::Node data = YAML::Load(fileContent);

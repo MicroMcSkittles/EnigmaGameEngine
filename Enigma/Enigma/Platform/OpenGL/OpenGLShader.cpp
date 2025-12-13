@@ -105,19 +105,25 @@ namespace Enigma::Platform::OpenGL {
 
 			if (m_Config.flags & Renderer::ShaderFlagForceCompile) {
 				// Compile shaders
-				CompileStageToVKSpirv(stage);
-				CompileStageToGLSpirv(stage);
+				if (!CompileStageToVKSpirv(stage)) return;
+				if (!CompileStageToGLSpirv(stage)) return;
 			}
 			else {
 				// Check if opengl cache exists
-				if (IsStageGLSpirvCached(stage)) LoadStageGLSpirvCache(stage);
+				if (IsStageGLSpirvCached(stage)) {
+					if (!LoadStageGLSpirvCache(stage)) return;
+				}
 				else {
 					// Check if vulkan cache exists
-					if (IsStageVKSpirvCached(stage)) LoadStageVKSpirvCache(stage);
-					else CompileStageToVKSpirv(stage);
+					if (IsStageVKSpirvCached(stage)) {
+						if (!LoadStageVKSpirvCache(stage)) return;
+					}
+					else {
+						if (!CompileStageToVKSpirv(stage)) return;
+					}
 
 					// Compile shaders
-					CompileStageToGLSpirv(stage);
+					if (!CompileStageToGLSpirv(stage)) return;
 				}
 			}
 			
@@ -289,7 +295,7 @@ namespace Enigma::Platform::OpenGL {
 		if (checksum != stage.checksum) return false;
 		return true;
 	}
-	void OpenGLShader::LoadStageVKSpirvCache(OpenGLShaderStage& stage)
+	bool OpenGLShader::LoadStageVKSpirvCache(OpenGLShaderStage& stage)
 	{
 		// Get cache directory
 		std::string name = std::filesystem::path(stage.filename).filename().string();
@@ -301,7 +307,8 @@ namespace Enigma::Platform::OpenGL {
 		std::ifstream file;
 		file.open(cacheDir.string(), std::ios::binary);
 		if (!file.is_open()) {
-			LOG_ERROR("Failed to open shader spir-v cache for \"%s\"", stage.filename.c_str());
+			LOG_SOFT_ERROR("Failed to open shader spir-v cache for \"%s\"", stage.filename.c_str());
+			return false;
 		}
 
 		// Read byte code
@@ -310,8 +317,10 @@ namespace Enigma::Platform::OpenGL {
 		file.seekg(c_CacheChecksumSize, std::ios::beg);
 		file.read(reinterpret_cast<char*>(stage.vulkanSpirv.data()), fileSize);
 		file.close();
+
+		return true;
 	}
-	void OpenGLShader::CompileStageToVKSpirv(OpenGLShaderStage& stage)
+	bool OpenGLShader::CompileStageToVKSpirv(OpenGLShaderStage& stage)
 	{
 		std::string typeStr = Renderer::ToString(stage.type);
 		LOG_MESSAGE("Compiling shader stage \"%s\" from file \"%s\" to Vulkan SPIR-V", 5, typeStr.c_str(), stage.filename.c_str());
@@ -320,7 +329,8 @@ namespace Enigma::Platform::OpenGL {
 		std::ifstream file;
 		file.open(stage.filename);
 		if (!file.is_open()) {
-			LOG_ERROR("Failed to open shader source file \"%s\"", stage.filename.c_str());
+			LOG_SOFT_ERROR("Failed to open shader source file \"%s\"", stage.filename.c_str());
+			return false;
 		}
 
 		// Read source code
@@ -349,7 +359,7 @@ namespace Enigma::Platform::OpenGL {
 				result.GetNumWarnings(),
 				message.c_str()
 			);
-			return;
+			return false;
 		}
 		
 		// Store result
@@ -365,13 +375,14 @@ namespace Enigma::Platform::OpenGL {
 		cache.open(cacheDir.string(), std::ios::binary);
 		if (!cache.is_open()) {
 			LOG_WARNING("Failed to open shader Vulkan SPIR-V cache \"%s\"", cacheDir.string().c_str());
-			return;
+			return true;
 		}
 
 		// Write data and close
 		cache.write(reinterpret_cast<char*>(&stage.checksum), c_CacheChecksumSize);
 		cache.write(reinterpret_cast<char*>(stage.vulkanSpirv.data()), stage.vulkanSpirv.size() * sizeof(u32));
 		cache.close();
+		return true;
 	}
 
 	bool OpenGLShader::IsStageGLSpirvCached(const OpenGLShaderStage& stage)
@@ -396,7 +407,7 @@ namespace Enigma::Platform::OpenGL {
 		if (checksum != stage.checksum) return false;
 		return true;
 	}
-	void OpenGLShader::LoadStageGLSpirvCache(OpenGLShaderStage& stage)
+	bool OpenGLShader::LoadStageGLSpirvCache(OpenGLShaderStage& stage)
 	{
 		// Get cache directory
 		std::string name = std::filesystem::path(stage.filename).filename().string();
@@ -408,7 +419,8 @@ namespace Enigma::Platform::OpenGL {
 		std::ifstream file;
 		file.open(cacheDir.string(), std::ios::binary);
 		if (!file.is_open()) {
-			LOG_ERROR("Failed to open shader OpenGL SPIR-V cache for \"%s\"", stage.filename.c_str());
+			LOG_SOFT_ERROR("Failed to open shader OpenGL SPIR-V cache for \"%s\"", stage.filename.c_str());
+			return false;
 		}
 
 		// Read byte code
@@ -417,8 +429,10 @@ namespace Enigma::Platform::OpenGL {
 		file.seekg(c_CacheChecksumSize, std::ios::beg);
 		file.read(reinterpret_cast<char*>(stage.openglSpirv.data()), fileSize);
 		file.close();
+
+		return true;
 	}
-	void OpenGLShader::CompileStageToGLSpirv(OpenGLShaderStage& stage)
+	bool OpenGLShader::CompileStageToGLSpirv(OpenGLShaderStage& stage)
 	{
 		std::string typeStr = Renderer::ToString(stage.type);
 		LOG_MESSAGE("Compiling shader stage \"%s\" from file \"%s\" to OpenGL SPIR-V", 5, typeStr.c_str(), stage.filename.c_str());
@@ -452,7 +466,7 @@ namespace Enigma::Platform::OpenGL {
 				result.GetNumWarnings(),
 				message.c_str()
 			);
-			return;
+			return false;
 		}
 		
 		stage.openglSpirv = std::vector<u32>(result.begin(), result.end());
@@ -467,13 +481,15 @@ namespace Enigma::Platform::OpenGL {
 		cache.open(cacheDir.string(), std::ios::binary);
 		if (!cache.is_open()) {
 			LOG_WARNING("Failed to open shader OpenGL SPIR-V cache \"%s\"", cacheDir.string().c_str());
-			return;
+			return true;
 		}
 
 		// Write data and close
 		cache.write(reinterpret_cast<char*>(&stage.checksum), c_CacheChecksumSize);
 		cache.write(reinterpret_cast<char*>(stage.openglSpirv.data()), stage.openglSpirv.size() * sizeof(u32));
 		cache.close();
+
+		return true;
 	}
 
 	void OpenGLShader::CreateProgram()

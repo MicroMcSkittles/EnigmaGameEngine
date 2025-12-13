@@ -20,14 +20,14 @@
 
 namespace Enigma::Editor {
 
-	static void UndoRedoChangedTransform(Entity entity, Engine::ECS::Transform transform) {
-		entity.GetComponent<Engine::ECS::Transform>() = transform;
+	static void UndoRedoChangedTransform(Entity entity, Engine::ECS::TransformComponent transform) {
+		entity.GetComponent<Engine::ECS::TransformComponent>() = transform;
 		entity.GetComponent<TransformMetaData>().eulerAngles = glm::eulerAngles(transform.rotation);
 	}
-	static void ChangedTransformAction(Entity entity, const Engine::ECS::Transform& original) {
+	static void ChangedTransformAction(Entity entity, const Engine::ECS::TransformComponent& original) {
 		Action action;
 		action.undoFunc = std::bind(UndoRedoChangedTransform, entity, original);
-		action.redoFunc = std::bind(UndoRedoChangedTransform, entity, entity.GetComponent<Engine::ECS::Transform>());
+		action.redoFunc = std::bind(UndoRedoChangedTransform, entity, entity.GetComponent<Engine::ECS::TransformComponent>());
 		action.name = "Edited component \"Transform\" of entity \"" + entity.GetMetaData().name + "\"";
 
 		Event::NewAction e(action);
@@ -38,6 +38,7 @@ namespace Enigma::Editor {
 	{
 		m_Hovered      = false;
 		m_Focused      = false;
+		m_ShowGizmos   = true;
 		m_GizmoHovered = false;
 		m_UsingGizmo   = false;
 		m_CameraSpeed  = 7.5f;
@@ -69,13 +70,13 @@ namespace Enigma::Editor {
 
 		// Create camera
 		Renderer::ViewBox view = Renderer::ViewBox::SurfaceViewBox(m_Surface);
-		m_Camera = Renderer::OrthographicCamera::Create(view, 4, { 0.0f,0.0f, view.far - 1.0f });
-		m_CameraUniformBuffer = Renderer::UniformBuffer::Create(sizeof(Renderer::CameraData), 0, Renderer::Usage::DynamicDraw);
-	
+		m_EditorCamera = Renderer::OrthographicCamera::Create(view, 4, { 0.0f,0.0f, view.far - 1.0f });
+		m_RuntimeCamera = Renderer::OrthographicCamera::Create(view, 4, { 0.0f,0.0f, view.far - 1.0f });
+		m_ActiveCamera = m_EditorCamera;
+
 		m_RendererContext = Renderer::Renderer2D::Create(window->GetAPI(), m_Surface);
 	}
-	void SceneViewPanel::SetContext(ref<Scene> context)
-	{
+	void SceneViewPanel::SetContext(ref<Scene> context) {
 		m_Context = context;
 		if (context == nullptr) m_RendererContext = nullptr;
 	}
@@ -111,11 +112,12 @@ namespace Enigma::Editor {
 	}
 	void SceneViewPanel::OnScroll(Core::MouseScroll& e)
 	{
+		if (m_EditorState != EditorState_Editing) return;
 		if (!Engine::Input::IsMouseButtonPressed(Engine::KeyCode::MouseButtonRight)) return;
 		if (!m_Hovered) return;
 
 		// Get camera zoom
-		ref<Renderer::OrthographicCamera> orthoCamera = CastRef<Renderer::OrthographicCamera>(m_Camera);
+		ref<Renderer::OrthographicCamera> orthoCamera = CastRef<Renderer::OrthographicCamera>(m_EditorCamera);
 		f32 zoom = orthoCamera->GetZoom();
 
 		// Calculate new zoom value
@@ -149,7 +151,7 @@ namespace Enigma::Editor {
 		Engine::Input::MakeCurrent(m_InputContext);
 
 		// Handle camera controls
-		if (!m_Hovered || !Engine::Input::IsMouseButtonPressed(Engine::KeyCode::MouseButtonRight)) return;
+		if (!m_Hovered || !Engine::Input::IsMouseButtonPressed(Engine::KeyCode::MouseButtonRight) || m_EditorState != EditorState_Editing) return;
 
 		// Get movement direction
 		glm::vec2 moveDir = glm::vec2(0.0f);
@@ -161,26 +163,32 @@ namespace Enigma::Editor {
 		// Update camera position
 		if (moveDir.x || moveDir.y) {
 			moveDir = glm::normalize(moveDir);
-			glm::vec3 cameraPos = m_Camera->GetPosition();
-			f32 zoom = CastRef<Renderer::OrthographicCamera>(m_Camera)->GetZoom();
+			glm::vec3 cameraPos = m_EditorCamera->GetPosition();
+			f32 zoom = CastRef<Renderer::OrthographicCamera>(m_EditorCamera)->GetZoom();
 			f32 speed = m_CameraSpeed * (zoom / 4.0f);
 			cameraPos += glm::vec3(moveDir * speed * (float)deltaTime, 0.0f);
-			m_Camera->SetPosition(cameraPos);
+			m_EditorCamera->SetPosition(cameraPos);
 		}
 	}
 
 	void SceneViewPanel::ShowGui() {
 		ImGui::Begin("Scene View");
 
+		if (m_Context == nullptr) {
+			ImGui::Text("No scene selected");
+			ImGui::End();
+			return;
+		}
+
 		// Get the size of ImGui window
 		glm::vec2 region = FromImVec(ImGui::GetContentRegionAvail());
 		m_Surface.position = FromImVec(ImGui::GetCursorScreenPos());
 
 		// Make sure the texture is the right size
-		if (m_Surface.scale != region) {
+		if (m_Surface.scale != region && m_RendererContext != nullptr) {
 			m_Surface.Resize(region.x, region.y);
 			m_RendererContext->Resize(region.x, region.y);
-			m_Camera->Resize(region.x, region.y);
+			m_ActiveCamera->Resize(region.x, region.y);
 		}
 
 		m_TopWindowPosition = FromImVec(ImGui::GetCursorScreenPos());
@@ -188,7 +196,7 @@ namespace Enigma::Editor {
 		// Show texture
 		ImGui::Image(m_Frame);
 
-		m_BottomWindowPosition = m_TopWindowPosition + FromImVec(ImGui::GetWindowContentRegionMax());
+		m_BottomWindowPosition = m_TopWindowPosition + FromImVec(ImGui::GetContentRegionAvail());
 		// Process window status
 		m_Hovered = ImGui::IsItemHovered();
 		if (ImGui::IsMouseDown(ImGuiMouseButton_Right) && m_Hovered) {
@@ -203,6 +211,7 @@ namespace Enigma::Editor {
 		// Show overlay windows
 		ShowGizmoOverlayWindow();
 		ShowRuntimeOverlayWindow();
+		ShowSettingsOverlayWindow();
 
 		// Process mouse input
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && m_Hovered && !m_GizmoHovered) {
@@ -275,17 +284,18 @@ namespace Enigma::Editor {
 	}
 	void SceneViewPanel::ShowGizmos()
 	{
+		if (!m_ShowGizmos) return;
 		// Configure ImGuizmo
 		ImGuizmo::SetOrthographic(true);
 		ImGuizmo::SetDrawlist();
 		ImGuizmo::SetRect(m_Surface.position.x, m_Surface.position.y, m_Surface.scale.x, m_Surface.scale.y);
 
 		// Camera
-		const glm::mat4& cameraProj = m_Camera->GetProjection();
-		const glm::mat4& cameraView = m_Camera->GetView();
+		const glm::mat4& cameraProj = m_ActiveCamera->GetProjection();
+		const glm::mat4& cameraView = m_ActiveCamera->GetView();
 
 		// Entity transform
-		Engine::ECS::Transform& transform = m_Selected.GetComponent<Engine::ECS::Transform>();
+		Engine::ECS::TransformComponent& transform = m_Selected.GetComponent<Engine::ECS::TransformComponent>();
 		glm::mat4 transformWorldMatrix = transform.ApplyParent(m_Context->GetECS()).GetRelativeMatrix();//= transform.GetWorldMatrix(m_Context->GetECS());
 		
 		glm::mat4 deltaMatrix = glm::mat4(1.0f);
@@ -319,7 +329,7 @@ namespace Enigma::Editor {
 		Entity parentEntity = { transform.parent, m_Context.get() };
 		if (parentEntity) {
 			// Get the inverse matrix of the parent transform world matrix
-			Engine::ECS::Transform& parentTransform = parentEntity.GetComponent<Engine::ECS::Transform>();
+			Engine::ECS::TransformComponent& parentTransform = parentEntity.GetComponent<Engine::ECS::TransformComponent>();
 			glm::mat4 parentTransformMatrix = parentTransform.GetWorldMatrix(m_Context->GetECS());
 			parentTransformMatrix = glm::inverse(parentTransformMatrix);
 			// Convert the world matrix to a local matrix
@@ -459,6 +469,61 @@ namespace Enigma::Editor {
 		ImGui::End();
 	}
 
+	void SceneViewPanel::ShowSettingsOverlayWindow()
+	{
+		// Configure window
+		glm::vec2 windowSize = { 45, 45 };
+		glm::vec2 windowPosition = glm::vec2(0.0f, 0.0f);
+		windowPosition.x = m_BottomWindowPosition.x - windowSize.x - 3.0f;
+		windowPosition.y = m_TopWindowPosition.y + 3.0f;
+
+		ImGui::SetNextWindowPos(ToImVec(windowPosition));
+		ImGui::SetNextWindowSize(ToImVec(windowSize));
+		ImGui::SetNextWindowBgAlpha(0.5f);
+
+		ImGuiWindowFlags overlayFlags = 0;
+		overlayFlags |= ImGuiWindowFlags_NoDocking;
+		overlayFlags |= ImGuiWindowFlags_NoFocusOnAppearing;
+		overlayFlags |= ImGuiWindowFlags_NoMove;
+		overlayFlags |= ImGuiWindowFlags_NoResize;
+		overlayFlags |= ImGuiWindowFlags_NoTitleBar;
+
+		ImGui::Begin("SceneViewSettingsWindow", nullptr, overlayFlags);
+
+		// Tint the image if it is hovered
+		u32 tint = IM_COL32(255, 255, 255, 255);
+		ImVec2 imageMin = ImVec2(ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y);
+		ImVec2 imageMax = ImVec2(imageMin.x + windowSize.x - 14.0f, imageMin.y + windowSize.y - 14.0f);
+		ImVec2 mousePos = ImGui::GetMousePos();
+		if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsMouseHoveringRect(imageMin, imageMax) && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId)) {
+			tint = IM_COL32(100, 100, 100, 255);
+		}
+
+		// Draw image
+		ImGui::GetWindowDrawList()->AddImage(
+			ImGui::ToImGuiTexture(EditorGui::GetIcon(EditorIcon_Menu)),
+			imageMin, imageMax,
+			ImVec2(0.05f, 0.95f), ImVec2(0.95f, 0.05f),
+			tint
+		);
+
+		// Handle Clicks
+		if (ImGui::InvisibleButton("InvisiblePausePlayButton", ImVec2(windowSize.x - 19.0f, windowSize.y - 19.0f))) {
+			ImGui::OpenPopup("SceneViewSettingsMenu");
+		}
+
+		ShowSettingsMenu();
+
+		ImGui::End();
+	}
+
+	void SceneViewPanel::ShowSettingsMenu()
+	{
+		if (!ImGui::BeginPopup("SceneViewSettingsMenu")) return;
+		ImGui::Checkbox("Show Gizmos", &m_ShowGizmos);
+		ImGui::EndPopup();
+	}
+
 	Entity SceneViewPanel::GetHoveredEntity()
 	{
 		// Get mouse position
@@ -468,9 +533,7 @@ namespace Enigma::Editor {
 		// Get entity at mouse position
 		Engine::ECS::EntityID entityID = 0;
 		m_RendererContext->GetFrameBuffer()->GetPixel(mouseX, mouseY, 1, &entityID);
-		if (entityID == 0) {
-			return {};
-		}
+		if (entityID == 0) return {};
 		
 		return { entityID - 1, m_Context.get() };
 	}
@@ -479,7 +542,30 @@ namespace Enigma::Editor {
 	{
 		if (m_Context == nullptr) return;
 
-		m_RendererContext->StartScene(m_Context->GetECS(), m_Camera);
+		if (m_EditorState == EditorState_Editing) m_ActiveCamera = m_EditorCamera;
+		else if (m_EditorState == EditorState_Running) {
+			Engine::ECS::OrthographicCameraComponent& cameraComponent = m_Context->GetMetaData().activeCamera.GetComponent<Engine::ECS::OrthographicCameraComponent>();
+			Engine::ECS::TransformComponent cameraTransform = m_Context->GetMetaData().activeCamera.GetComponent<Engine::ECS::TransformComponent>().ApplyParent(m_Context->GetECS());
+		
+			ref<Renderer::OrthographicCamera> orthoCamera = CastRef<Renderer::OrthographicCamera>(m_RuntimeCamera);
+			if (cameraComponent.fitToScreen) cameraComponent.view = Renderer::ViewBox::SurfaceViewBox(m_Surface);
+			orthoCamera->SetViewBox(cameraComponent.view);
+			orthoCamera->SetZoom(cameraComponent.zoom);
+			orthoCamera->SetPosition(cameraTransform.position);
+
+			m_ActiveCamera = orthoCamera;
+		}
+
+		m_RendererContext->StartScene(m_Context->GetECS(), m_ActiveCamera);
+
+		using namespace Engine::ECS;
+
+		// Render the RenderComponents
+		View<QuadRendererComponent> quadView(m_Context->GetECS());
+		quadView.ForEach([&](EntityID id) { m_RendererContext->DrawEntity(id); });
+
+		View<CircleRendererComponent> circleView(m_Context->GetECS());
+		circleView.ForEach([&](EntityID id) { m_RendererContext->DrawEntity(id); });
 
 		m_RendererContext->EndScene();
 	}

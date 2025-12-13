@@ -49,7 +49,8 @@ namespace Enigma::Editor {
 		ref<Scene> m_RuntimeScene;
 		Entity m_Entity;
 
-		unique<ActionHandler> m_ActionHandler;
+		unique<ActionHandler> m_EditorActionHandler;
+		unique<ActionHandler> m_RuntimeActionHandler;
 
 		unique<SceneHierachyPanel> m_SceneHierachyPanel;
 		unique<SceneViewPanel> m_SceneViewPanel;

@@ -23,7 +23,7 @@ namespace Enigma::Engine::Physics {
 		void Update(const DeltaTime& deltaTime);
 
 	private:
-		void Step(ECS::Transform& transform, RidgidBody2D& ridgidBody);
+		void Step(ECS::TransformComponent& transform, RidgidBody2D& ridgidBody);
 
 	private:
 		ref<ECS::ECS> m_ECS;

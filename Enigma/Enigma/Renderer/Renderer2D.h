@@ -20,12 +20,16 @@ namespace Enigma::Renderer {
 		void StartScene(const ref<Engine::ECS::ECS> ecs, const ref<Camera>& camera);
 		void EndScene();
 
+		void DrawEntity(Engine::ECS::EntityID id);
+		void DrawColoredQuad(const glm::mat4& transform, const glm::vec3& tint, Engine::ECS::EntityID id = Engine::ECS::InvalidEntityID);
+		void DrawColoredCircle(const glm::mat4& transform, const glm::vec3& tint, f32 thickness = 1.0f, f32 fade = 0.005f, Engine::ECS::EntityID id = Engine::ECS::InvalidEntityID);
+
 		ref<FrameBuffer> GetFrameBuffer() { return m_FrameBuffer; }
 		Renderer::API GetRenderAPI() { return m_RenderAPI; }
 
 	private:
 		static void InitQuad();
-		void ColoredQuadSystem(Engine::ECS::EntityID entityID, Engine::ECS::Transform& transform, Engine::ECS::ColoredQuad& quad);
+		void ColoredQuadSystem(Engine::ECS::EntityID entityID, Engine::ECS::TransformComponent& transform, Engine::ECS::QuadRendererComponent& quad);
 
 	private:
 		Renderer::API m_RenderAPI;
@@ -39,7 +43,8 @@ namespace Enigma::Renderer {
 		ref<FrameBuffer> m_FrameBuffer;
 		ref<FrameBuffer> m_OutputBuffer;
 
-		ref<Shader> m_MainShader;
+		ref<Shader> m_QuadShader;
+		ref<Shader> m_CircleShader;
 		ref<Shader> m_PostProcShader;
 
 	private:
@@ -47,6 +52,8 @@ namespace Enigma::Renderer {
 			glm::mat4 model;
 			glm::vec4 tint;
 			i32 entityID;
+			f32 thickness;
+			f32 fade;
 		};
 
 		struct Vertex {

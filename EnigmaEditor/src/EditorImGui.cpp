@@ -75,6 +75,7 @@ namespace Enigma::Editor {
 		s_Data->icons[EditorIcon_Scale]     = ImageLoader::Load(style.iconPaths[EditorIcon_Scale],     iconConfig);
 		s_Data->icons[EditorIcon_Play]      = ImageLoader::Load(style.iconPaths[EditorIcon_Play],      iconConfig);
 		s_Data->icons[EditorIcon_Pause]     = ImageLoader::Load(style.iconPaths[EditorIcon_Pause],     iconConfig);
+
 	}
 
 	EditorStyle& EditorGui::GetStyle() {
@@ -83,6 +84,93 @@ namespace Enigma::Editor {
 
 	ref<Renderer::Texture> EditorGui::GetIcon(EditorIcon icon) {
 		return s_Data->icons[icon];
+	}
+
+	void EditorGui::TintStyle(const f32& tint)
+	{
+		s_Data->style.windowBackground *= tint;
+
+		s_Data->style.header        *= tint;
+		s_Data->style.headerHovered *= tint;
+		s_Data->style.headerActive  *= tint;
+								    
+		s_Data->style.button        *= tint;
+		s_Data->style.buttonHovered *= tint;
+		s_Data->style.buttonActive  *= tint;
+
+		// Frame Background Colors
+		s_Data->style.frameBackground        *= tint;
+		s_Data->style.frameBackgroundHovered *= tint;
+		s_Data->style.frameBackgroundActive  *= tint;
+
+		// Tab Colors
+		s_Data->style.tab                *= tint;
+		s_Data->style.tabHovered         *= tint;
+		s_Data->style.tabActive          *= tint;
+		s_Data->style.tabUnfocused       *= tint;
+		s_Data->style.tabUnfocusedActive *= tint;
+
+		// Title Background Colors
+		s_Data->style.titleBackground          *= tint;
+		s_Data->style.titleBackgroundActive    *= tint;
+		s_Data->style.titleBackgroundCollapsed *= tint;
+
+		// Float Input Colors
+		s_Data->style.colorX *= tint;
+		s_Data->style.colorY *= tint;
+		s_Data->style.colorZ *= tint;
+		s_Data->style.colorW *= tint;
+
+		s_Data->style.pressedColorX *= tint;
+		s_Data->style.pressedColorY *= tint;
+		s_Data->style.pressedColorZ *= tint;
+		s_Data->style.pressedColorW *= tint;
+
+		s_Data->tint = tint;
+		SetStyle(s_Data->style);
+	}
+	void EditorGui::RemoveStyleTint()
+	{
+		s_Data->style.windowBackground /= s_Data->tint;
+
+		s_Data->style.header        /= s_Data->tint;
+		s_Data->style.headerHovered /= s_Data->tint;
+		s_Data->style.headerActive  /= s_Data->tint;
+
+		s_Data->style.button        /= s_Data->tint;
+		s_Data->style.buttonHovered /= s_Data->tint;
+		s_Data->style.buttonActive  /= s_Data->tint;
+
+		// Frame Background Colors
+		s_Data->style.frameBackground        /= s_Data->tint;
+		s_Data->style.frameBackgroundHovered /= s_Data->tint;
+		s_Data->style.frameBackgroundActive  /= s_Data->tint;
+
+		// Tab Colors
+		s_Data->style.tab                /= s_Data->tint;
+		s_Data->style.tabHovered         /= s_Data->tint;
+		s_Data->style.tabActive          /= s_Data->tint;
+		s_Data->style.tabUnfocused       /= s_Data->tint;
+		s_Data->style.tabUnfocusedActive /= s_Data->tint;
+
+		// Title Background Colors
+		s_Data->style.titleBackground          /= s_Data->tint;
+		s_Data->style.titleBackgroundActive    /= s_Data->tint;
+		s_Data->style.titleBackgroundCollapsed /= s_Data->tint;
+
+		// Float Input Colors
+		s_Data->style.colorX /= s_Data->tint;
+		s_Data->style.colorY /= s_Data->tint;
+		s_Data->style.colorZ /= s_Data->tint;
+		s_Data->style.colorW /= s_Data->tint;
+
+		s_Data->style.pressedColorX /= s_Data->tint;
+		s_Data->style.pressedColorY /= s_Data->tint;
+		s_Data->style.pressedColorZ /= s_Data->tint;
+		s_Data->style.pressedColorW /= s_Data->tint;
+
+		s_Data->tint = 1.0f;
+		SetStyle(s_Data->style);
 	}
 
 	// Int Inputs =======================
